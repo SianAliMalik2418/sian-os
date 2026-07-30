@@ -24,27 +24,6 @@ export const checkinSchema = z.object({
   }
 })
 
-export const workoutSetSchema = z.object({
-  exercise: z.string().trim().min(1).max(120),
-  muscle_group: z.string().trim().max(80).optional(),
-  set_number: z.number().int().positive().max(100),
-  reps: z.number().int().min(0).max(1000).optional(),
-  weight_kg: z.number().min(0).max(2000).optional(),
-  rpe: z.number().min(0).max(10).optional(),
-  rir: z.number().min(0).max(20).optional(),
-  rest_seconds: z.number().int().min(0).max(7200).optional(),
-  notes: optionalText,
-})
-
-export const workoutSchema = z.object({
-  date,
-  title: z.string().trim().min(1).max(160),
-  program: z.string().trim().max(160).optional(),
-  duration_minutes: z.number().int().min(0).max(1440).optional(),
-  notes: optionalText,
-  sets: z.array(workoutSetSchema).max(200).default([]),
-})
-
 export const profileSchema = z.object({
   height_cm: z.number().positive().max(300).optional(),
   weight_kg: z.number().positive().max(500).optional(),
@@ -81,11 +60,9 @@ export const nutritionSchema = z.object({
 
 export const weeklyReviewSchema = z.object({
   week_start: date,
-  missed_workouts: z.number().int().min(0).max(50).optional(),
   wins: optionalText,
   lessons: optionalText,
   focus_next_week: optionalText,
-})
+}).strict()
 
 export type CheckinInput = z.infer<typeof checkinSchema>
-export type WorkoutInput = z.infer<typeof workoutSchema>

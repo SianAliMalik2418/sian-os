@@ -12,39 +12,6 @@ export interface DailyCheckin {
   updated_at: string
 }
 
-export interface Workout {
-  id: number
-  date: string
-  title: string
-  program: string | null
-  duration_minutes: number | null
-  notes: string | null
-  created_at: string
-}
-
-export interface Exercise {
-  id: number
-  name: string
-  muscle_group: string | null
-  equipment: string | null
-  notes: string | null
-  created_at: string
-}
-
-export interface WorkoutSet {
-  id: number
-  workout_id: number
-  exercise_id: number
-  exercise_name: string
-  set_number: number
-  reps: number | null
-  weight_kg: number | null
-  rpe: number | null
-  rir: number | null
-  rest_seconds: number | null
-  notes: string | null
-}
-
 export interface BodyMeasurement {
   id: number
   date: string
@@ -81,40 +48,18 @@ export interface ProgressPhoto {
 export interface WeeklyReview {
   id: number
   week_start: string
-  workouts_completed: number
-  missed_workouts: number
-  strength_improvements: string | null
   body_weight_change: number | null
   nutrition_consistency: number | null
   water_consistency: number | null
-  best_workout: string | null
-  weakest_area: string | null
   wins: string | null
   lessons: string | null
   focus_next_week: string | null
   created_at: string
 }
 
-export interface ExerciseHistoryRow {
-  workout_id: number
-  date: string
-  title: string
-  set_number: number
-  reps: number | null
-  weight_kg: number | null
-  rpe: number | null
-  rir: number | null
-  rest_seconds: number | null
-  notes: string | null
-  estimated_1rm: number | null
-}
-
 export interface DashboardSummary {
   checkin: DailyCheckin | null
-  workouts: Workout[]
-  prs: Array<{ name: string; max_weight: number | null; max_reps: number | null; estimated_1rm: number | null }>
   weightTrend: Array<{ date: string; weight_kg: number }>
   streak: number
   weeklyCheckins: Array<{ date: string }>
-  weeklyWorkoutCount: number
 }

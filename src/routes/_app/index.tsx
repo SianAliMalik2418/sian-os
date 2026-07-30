@@ -1,5 +1,5 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
-import { Activity, ArrowRight, Check, Droplets, Dumbbell, Moon, Scale, Sparkles, Trophy } from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
+import { Activity, Check, Droplets, Moon, Scale, Sparkles } from 'lucide-react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -32,7 +32,6 @@ function Dashboard() {
     { label: 'Weight', value: formatValue(checkin?.weight_kg, ' kg'), icon: Scale },
     { label: 'Water', value: formatValue(checkin?.water_liters, ' L'), icon: Droplets },
     { label: 'Sleep', value: formatValue(checkin?.sleep_hours, ' hrs'), icon: Moon },
-    { label: 'Workouts this week', value: String(data.weeklyWorkoutCount), icon: Dumbbell },
   ]
 
   return (
@@ -41,7 +40,7 @@ function Dashboard() {
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Today</p>
           <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Build the next strong day.</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">Keep the signal clean: check in, train with intent, and recover deliberately.</p>
+          <p className="mt-2 max-w-2xl text-muted-foreground">Keep the signal clean: check in, nourish yourself, and recover deliberately.</p>
         </div>
         <Button type="button" size="lg" onClick={openCheckin} className="min-h-11 rounded-xl">
           <Activity className="size-4" /> {checkin?.date === new Date().toISOString().slice(0, 10) ? 'Edit today' : 'Check in'}
@@ -70,37 +69,11 @@ function Dashboard() {
         </CardPanel>
       </Card>
 
-      <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
         {metrics.map(({ label, value, icon: Icon }) => (
           <Card key={label}><CardHeader><CardDescription>{label}</CardDescription><CardAction><Icon className="size-5 text-primary" /></CardAction><CardTitle className="text-2xl">{value}</CardTitle></CardHeader></Card>
         ))}
       </section>
-
-      <section className="grid gap-6 xl:grid-cols-[1.35fr_1fr]">
-        <Card>
-          <CardHeader><CardTitle>Recent workouts</CardTitle><CardDescription>Your latest training sessions</CardDescription><CardAction><Link to="/workouts" className="text-sm text-primary">View all</Link></CardAction></CardHeader>
-          <CardPanel className="space-y-2">
-            {data.workouts.length ? data.workouts.map((workout) => (
-              <Link key={workout.id} to="/workouts" className="flex items-center justify-between rounded-xl border p-3 transition hover:bg-accent">
-                <div><p className="font-medium">{workout.title}</p><p className="text-sm text-muted-foreground">{workout.date}{workout.program ? ` · ${workout.program}` : ''}</p></div><ArrowRight className="size-4 text-muted-foreground" />
-              </Link>
-            )) : <EmptyMessage title="No workouts yet" body="Log your first session and build a permanent training history." to="/workouts" action="Log workout" />}
-          </CardPanel>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>Strength records</CardTitle><CardDescription>Best estimated performance by exercise</CardDescription><CardAction><Trophy className="size-5 text-primary" /></CardAction></CardHeader>
-          <CardPanel className="space-y-3">
-            {data.prs.length ? data.prs.map((record, index) => (
-              <div key={record.name} className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"><div className="flex items-center gap-3"><span className="grid size-7 place-items-center rounded-full bg-secondary text-xs">{index + 1}</span><span className="font-medium">{record.name}</span></div><span className="text-sm tabular-nums text-muted-foreground">{record.estimated_1rm ? `${Math.round(record.estimated_1rm)} kg e1RM` : '—'}</span></div>
-            )) : <p className="py-8 text-center text-sm text-muted-foreground">Records appear after you log weighted sets.</p>}
-          </CardPanel>
-        </Card>
-      </section>
     </div>
   )
-}
-
-function EmptyMessage({ title, body, to, action }: { title: string; body: string; to: '/workouts'; action: string }) {
-  return <div className="rounded-xl border border-dashed p-6 text-center"><Dumbbell className="mx-auto mb-3 size-6 text-muted-foreground" /><p className="font-medium">{title}</p><p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{body}</p><Link to={to} className="mt-4 inline-flex text-sm font-medium text-primary">{action}</Link></div>
 }

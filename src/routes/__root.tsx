@@ -3,7 +3,7 @@ import '../styles.css'
 
 export const Route = createRootRoute({
   head: () => ({
-    meta: [{ title: 'Sian OS' }, { name: 'description', content: 'Public personal fitness operating system' }],
+    meta: [{ title: 'Sian OS' }, { name: 'description', content: 'Public personal wellness operating system' }],
   }),
   component: Root,
 })

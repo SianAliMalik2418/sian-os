@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkinSchema } from './schemas'
+import { checkinSchema, weeklyReviewSchema } from './schemas'
 
 describe('daily check-in schema', () => {
   it('accepts the streamlined daily fields', () => {
@@ -20,5 +20,13 @@ describe('daily check-in schema', () => {
 
   it('requires sleep and wake times together', () => {
     expect(() => checkinSchema.parse({ date: '2026-07-30', sleep_time: '23:30' })).toThrow()
+  })
+})
+
+describe('weekly review schema', () => {
+  it('rejects retired workout fields', () => {
+    expect(() => weeklyReviewSchema.parse({ week_start: '2026-07-27', workouts_completed: 3 })).toThrow()
+    expect(() => weeklyReviewSchema.parse({ week_start: '2026-07-27', missed_workouts: 1 })).toThrow()
+    expect(() => weeklyReviewSchema.parse({ week_start: '2026-07-27', best_workout: 'Legacy session' })).toThrow()
   })
 })

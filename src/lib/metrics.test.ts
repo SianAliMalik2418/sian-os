@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { calculateDailyStreak, calculateSleepHours, estimatedOneRepMax, progressionSuggestion, startOfWeekIso } from './metrics'
+import { calculateDailyStreak, calculateSleepHours, startOfWeekIso } from './metrics'
 
-describe('fitness metrics', () => {
+describe('wellness metrics', () => {
   it('calculates a streak through today', () => {
     expect(calculateDailyStreak(
       [{ date: '2026-08-10' }, { date: '2026-08-09' }, { date: '2026-08-08' }],
@@ -36,14 +36,4 @@ describe('fitness metrics', () => {
     expect(calculateSleepHours('01:00', '08:30')).toBe(7.5)
   })
 
-  it('calculates and rounds estimated one-rep max', () => {
-    expect(estimatedOneRepMax(100, 5)).toBe(116.7)
-    expect(estimatedOneRepMax(0, 5)).toBeNull()
-  })
-
-  it('suggests conservative double progression', () => {
-    expect(progressionSuggestion({ reps: 6, rpe: 9 })).toContain('Maintain')
-    expect(progressionSuggestion({ reps: 10, rpe: 8 })).toContain('load increase')
-    expect(progressionSuggestion({ reps: 8, rpe: 8 })).toContain('one clean rep')
-  })
 })

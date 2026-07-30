@@ -1,6 +1,6 @@
 # Sian OS
 
-Public personal fitness operating system built with TanStack Start, Cloudflare Workers, D1, and R2.
+Public personal wellness operating system built with TanStack Start, Cloudflare Workers, D1, and R2.
 
 ## Access model
 
@@ -57,7 +57,7 @@ The production Worker is configured as `sian-os`. Confirm migrations before depl
 - `POST /api/export` writes a timestamped JSON snapshot under `backups/` in R2.
 - Progress-photo metadata is included in exports. Original images are publicly retrievable through the application endpoint.
 
-The JSON format is versioned (`sian-os-export`, version `1`) so a future importer can validate it before writing.
+The JSON format is versioned (`sian-os-export`, version `2`) so a future importer can validate it before writing.
 
 ## External coaching agents
 
