@@ -4,15 +4,16 @@
 
 This is the operating guide for an external wellness coach that can use the Sian OS HTTP API and the owner's Cloudflare account.
 
+For the owner's personal profile, goals, coaching rules, current training phase, Hevy decision, and dated decision history, read the canonical [`FITNESS_COACHING_CONTEXT.md`](./FITNESS_COACHING_CONTEXT.md) first.
+
 ## Purpose
 
 Sian OS is a single-user wellness operating system for:
 
 - daily check-ins;
-- sleep, hydration, protein, and body-weight tracking;
-- body measurements and nutrition logs;
-- progress photos;
-- weekly reflection;
+- sleep, hydration, protein, body-weight, and meal tracking;
+- progress photos inside the daily check-in flow;
+- daily, weekly, and monthly reports with charts and date ranges;
 - structured context for an external coaching agent.
 
 Sian OS does **not** track workouts, exercises, sets, or strength records.
@@ -68,7 +69,7 @@ curl -sS "$SIAN_OS_URL/api/health"
 curl -sS "$SIAN_OS_URL/api/agent/context"
 ```
 
-Do not invent body measurements, food intake, sleep times, symptoms, or subjective scores. Omit unknown optional fields rather than sending guesses or zeroes.
+Do not invent body weight, food intake, sleep times, symptoms, or subjective scores. Omit unknown optional fields rather than sending guesses or zeroes.
 
 ## API conventions
 
@@ -96,7 +97,6 @@ Formats and units:
 - dates: `YYYY-MM-DD`;
 - sleep/wake times: `HH:mm` using 24-hour time;
 - weight: kilograms;
-- circumference: centimeters;
 - water: liters;
 - protein: grams;
 - optional text: generally limited to 2,000 characters.
@@ -111,9 +111,7 @@ Formats and units:
 | `GET` | `/api/profile` | Owner profile and goals |
 | `GET` | `/api/checkins?limit=30` | Recent check-ins; limit 1–365 |
 | `GET` | `/api/checkins?date=YYYY-MM-DD` | One check-in or `null` |
-| `GET` | `/api/body-measurements` | Up to 365 recent measurements |
-| `GET` | `/api/nutrition` | Up to 365 recent nutrition records |
-| `GET` | `/api/weekly-reviews` | Up to 104 weekly reviews |
+| `GET` | `/api/reports?interval=monthly&from=2026-01-01&to=2026-12-31` | Report summary and daily, weekly, or monthly points |
 | `GET` | `/api/progress-photos` | Progress-photo metadata |
 | `GET` | `/api/progress-photos/:id` | Original image streamed through the app |
 | `GET` | `/api/export` | Complete versioned JSON export |
@@ -122,8 +120,6 @@ Bounded query modes:
 
 ```text
 GET /api/agent/query?mode=dashboard
-GET /api/agent/query?mode=weekly-reviews
-GET /api/agent/query?mode=body-progress
 ```
 
 There is deliberately no public arbitrary-SQL endpoint.
@@ -142,6 +138,7 @@ There is deliberately no public arbitrary-SQL endpoint.
   "wake_time": "07:00",
   "water_liters": 2.5,
   "protein_grams": 145,
+  "nutrition_notes": "Breakfast: eggs\nLunch: daal\nDinner: chicken",
   "notes": "Normal day"
 }
 ```
@@ -155,7 +152,9 @@ Rules:
 - `23:30` to `07:00` becomes `7.5` hours;
 - `water_liters` is 0–30;
 - `protein_grams` is an integer from 0–2000;
-- there are no readiness or mood fields.
+- `nutrition_notes` is optional text, normally organized under Breakfast, Lunch, and Dinner;
+- there are no readiness or mood fields;
+- `DELETE /api/checkins?date=YYYY-MM-DD` permanently removes one check-in but keeps photos for that date.
 
 ### Profile
 
@@ -163,28 +162,9 @@ Rules:
 
 Supported fields: `height_cm`, `weight_kg`, `age`, `goals`, `experience_level`, `training_style`, `gym_schedule`, `equipment`, `injuries`, and `long_term_vision`.
 
-### Body measurement
+### Reports
 
-`POST /api/body-measurements` appends a row with `date` and optional `weight_kg`, `chest_cm`, `waist_cm`, `hips_cm`, `arm_cm`, `thigh_cm`, and `notes`.
-
-### Nutrition
-
-`POST /api/nutrition` appends a row with `date` and optional `meal`, `protein_grams`, `water_liters`, `supplements`, `consistency`, and `notes`. Consistency is an integer from 1–10.
-
-### Weekly review
-
-`POST /api/weekly-reviews` upserts by `week_start`:
-
-```json
-{
-  "week_start": "2026-07-27",
-  "wins": "Kept a consistent sleep schedule",
-  "lessons": "Earlier meals improved energy",
-  "focus_next_week": "Keep the evening routine simple"
-}
-```
-
-The server recomputes first-to-last body-weight change, average nutrition consistency, and hydration consistency for the seven-day period. Use a Monday for `week_start`.
+Reports are derived read-only views; they are not saved as separate records. `GET /api/reports` accepts optional `from` and `to` dates plus `interval=daily|weekly|monthly`. It returns summary averages and aggregated points for weight, sleep, water, protein, and check-in coverage.
 
 ### Progress photo
 
@@ -196,29 +176,27 @@ The server recomputes first-to-last body-weight change, average nutrition consis
 
 ### Export and backup
 
-- `GET /api/export` downloads `sian-os-export`, version `2`.
+- `GET /api/export` downloads `sian-os-export`, version `4`.
 - `POST /api/export` writes a timestamped JSON snapshot under `backups/` in R2.
 - Exported progress-photo records do not include original image bytes.
 
 ## Data model
 
 - `profile`: singleton owner profile where `id = 1`.
-- `daily_checkins`: one row per date with weight, sleep times, calculated duration, water, protein, and notes.
-- `body_measurements`: append-only dated body measurements.
-- `nutrition_logs`: append-only dated nutrition and hydration records.
+- `daily_checkins`: one row per date with weight, sleep times, calculated duration, water, protein, nutrition text, and general notes.
 - `progress_photos`: D1 metadata and private R2 object key.
-- `weekly_reviews`: unique week start, computed wellness metrics, and reflection fields.
 - `agent_audit_log`: API write history with action, entity type, entity ID, payload, and timestamp.
 
-Migration `0005_remove_workout_tracking.sql` permanently removes the retired tracking tables, related audit payloads, and retired weekly-review columns. Pre-migration backups may still contain that historical data.
+Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both are local-only until explicitly approved for production.
 
 ## Calculated metrics
 
 - Daily streak uses consecutive UTC dates and may anchor on yesterday when today is incomplete.
 - Weeks start Monday in UTC.
 - Sleep duration rolls wake time into the next day when it is earlier than or equal to sleep time.
-- Weekly body-weight change uses the first and last check-in weights in the period.
-- Hydration consistency maps 2 L or more to 10 and multiplies lower values by 5 before averaging.
+- Weekly reports use Monday-based UTC periods; monthly reports use calendar months.
+- Report averages ignore missing values rather than treating them as zero.
+- Report points are derived directly from daily check-ins.
 
 These are product heuristics, not clinical judgments.
 
@@ -277,10 +255,11 @@ Migration rules:
 | Path | Purpose |
 | --- | --- |
 | `src/routes/_app/index.tsx` | Dashboard |
-| `src/components/daily-checkin-dialog.tsx` | Global check-in dialog |
+| `src/routes/_app/profile.tsx` | Editable owner profile |
+| `src/components/daily-checkin-dialog.tsx` | Global check-in, nutrition, and progress-photo dialog |
 | `src/components/ui/date-picker.tsx` | Shared Date Picker |
-| `src/routes/_app/progress.tsx` | Body, nutrition, and progress photos |
-| `src/routes/_app/weekly-review.tsx` | Weekly reflection UI |
+| `src/routes/_app/reports.tsx` | Date-ranged reports with daily edit/delete controls |
+| `src/components/dither-kit/` | Dither Kit chart engine and components |
 | `src/routes/api/` | Public API routes |
 | `src/lib/schemas.ts` | Zod write contracts |
 | `src/lib/db.ts` | D1 queries and audit writes |
@@ -289,7 +268,7 @@ Migration rules:
 | `migrations/` | Append-only D1 migrations |
 | `wrangler.jsonc` | Worker, D1, and R2 bindings |
 
-Stack: React 19, TanStack Start/Router, TypeScript, Vite, Cloudflare Workers, D1, R2, Coss UI, Zod, and Vitest.
+Stack: React 19, TanStack Start/Router, TypeScript, Vite, Cloudflare Workers, D1, R2, Coss UI, Dither Kit, Zod, and Vitest.
 
 ## Development and deployment
 
@@ -323,17 +302,18 @@ npm run deploy
 4. Use Coss UI and the shared Date Picker instead of native date inputs.
 5. Mood and readiness do not belong in the UI, API, types, or database.
 6. Sleep duration is calculated from sleep and wake times.
-7. Workout tracking does not belong in the product.
-8. API inputs remain strict and validated.
-9. There is no arbitrary-SQL public endpoint.
-10. Migrations remain append-only.
-11. Back up before risky production changes.
-12. Never fabricate or silently overwrite personal data.
+7. Workout tracking, body-measurement tracking, separate nutrition logs, and weekly-review journaling do not belong in the product.
+8. Nutrition text and progress-photo management remain inside the daily check-in dialog.
+9. Reports remain derived from source records and use Dither Kit charts.
+10. API inputs remain strict and validated.
+11. There is no arbitrary-SQL public endpoint.
+12. Migrations remain append-only.
+13. Back up before risky production changes.
+14. Never fabricate or silently overwrite personal data.
 
 ## Known limitations
 
-- Body measurement and nutrition endpoints append rows and have no edit/delete API.
-- Check-ins have no delete API but upsert by date.
+- Deleting a check-in does not delete progress photos for its date.
 - There is no import/restore API.
 - R2 JSON backups do not embed original progress-photo bytes.
 - Public access cannot reliably identify who made a write; the audit log records actions, not authenticated identity.

@@ -42,7 +42,7 @@ function Dashboard() {
           <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Build the next strong day.</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">Keep the signal clean: check in, nourish yourself, and recover deliberately.</p>
         </div>
-        <Button type="button" size="lg" onClick={openCheckin} className="min-h-11 rounded-xl">
+        <Button type="button" size="lg" onClick={() => openCheckin()} className="min-h-11 rounded-xl">
           <Activity className="size-4" /> {checkin?.date === new Date().toISOString().slice(0, 10) ? 'Edit today' : 'Check in'}
         </Button>
       </header>

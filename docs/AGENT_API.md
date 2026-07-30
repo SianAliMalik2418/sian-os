@@ -32,27 +32,23 @@ Errors use an HTTP error status and a stable shape:
 }
 ```
 
-Dates use `YYYY-MM-DD` and sleep/wake times use 24-hour `HH:mm`. Sleep duration is calculated by the server. Weights are kilograms, measurements are centimeters, and water is liters. Omit unknown optional fields; do not invent data.
+Dates use `YYYY-MM-DD` and sleep/wake times use 24-hour `HH:mm`. Sleep duration is calculated by the server. Weight is kilograms and water is liters. Omit unknown optional fields; do not invent data.
 
 ## Read endpoints
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| GET | `/api/agent/context` | Profile plus recent check-ins, body data, nutrition, reviews, and dashboard |
+| GET | `/api/agent/context` | Profile, recent check-ins, and dashboard |
 | GET | `/api/dashboard` | Latest check-in, streak, current week, and weight trend |
 | GET | `/api/profile` | Personal profile and goals |
 | GET | `/api/checkins?limit=30` | Recent daily check-ins (max 365) |
 | GET | `/api/checkins?date=2026-08-01` | One date, or `null` |
-| GET | `/api/body-measurements` | Body progress history |
-| GET | `/api/nutrition` | Nutrition and hydration logs |
-| GET | `/api/weekly-reviews` | Saved weekly reviews |
+| GET | `/api/reports?interval=weekly&from=2026-01-01&to=2026-12-31` | Daily, weekly, or monthly report points and summary |
 | GET | `/api/progress-photos` | Progress-photo metadata |
 
 For bounded queries, use `/api/agent/query` with one explicit mode:
 
 - `?mode=dashboard`
-- `?mode=weekly-reviews`
-- `?mode=body-progress`
 
 Arbitrary SQL is never accepted.
 
@@ -70,16 +66,16 @@ curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
     "wake_time": "07:00",
     "water_liters": 2.5,
     "protein_grams": 145,
+    "nutrition_notes": "Breakfast: eggs\nLunch: daal\nDinner: chicken",
     "notes": "Normal day"
   }'
 ```
 
+`DELETE /api/checkins?date=YYYY-MM-DD` permanently removes one daily check-in. Progress photos on that date are retained.
+
 ## Other writes
 
 - `PUT /api/profile` — upsert profile fields.
-- `POST /api/body-measurements` — append dated weight and circumference measurements.
-- `POST /api/nutrition` — append meal, protein, water, supplements, consistency, and notes.
-- `POST /api/weekly-reviews` — recompute a week from D1 and save reflection fields.
 - `POST /api/progress-photos` — multipart form with `date`, `photo`, optional `label`, and optional `notes`; maximum 15 MB image.
 - `DELETE /api/progress-photos/:id` — permanently remove a photo and its metadata.
 - `POST /api/export` — create a timestamped R2 JSON backup.
@@ -91,5 +87,5 @@ Public API writes are audit logged with action, entity type/id, payload, and tim
 1. Read context before coaching or writing.
 2. Ask the user before destructive operations.
 3. Do not infer health measurements or subjective scores.
-4. Retry check-ins safely by date; avoid retrying append-only endpoints without checking whether the write succeeded.
+4. Retry check-ins safely by date; verify photo uploads before retrying.
 5. Treat this as wellness tracking, not medical diagnosis.

@@ -5,26 +5,20 @@ import { handleApi, json } from '@/lib/http'
 
 async function buildExport() {
   const database = db()
-  const [profile, checkins, measurements, nutrition, photos, reviews, audit] = await Promise.all([
+  const [profile, checkins, photos, audit] = await Promise.all([
     database.prepare('SELECT * FROM profile').all(),
     database.prepare('SELECT * FROM daily_checkins ORDER BY date').all(),
-    database.prepare('SELECT * FROM body_measurements ORDER BY date, id').all(),
-    database.prepare('SELECT * FROM nutrition_logs ORDER BY date, id').all(),
     database.prepare('SELECT * FROM progress_photos ORDER BY date, id').all(),
-    database.prepare('SELECT * FROM weekly_reviews ORDER BY week_start').all(),
     database.prepare('SELECT * FROM agent_audit_log ORDER BY id').all(),
   ])
   return {
     format: 'sian-os-export',
-    version: 2,
+    version: 4,
     exportedAt: new Date().toISOString(),
     data: {
       profile: profile.results,
       dailyCheckins: checkins.results,
-      bodyMeasurements: measurements.results,
-      nutritionLogs: nutrition.results,
       progressPhotos: photos.results,
-      weeklyReviews: reviews.results,
       agentAuditLog: audit.results,
     },
   }

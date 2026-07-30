@@ -11,17 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppProgressRouteImport } from './routes/_app/progress'
-import { Route as AppWeeklyReviewRouteImport } from './routes/_app/weekly-review'
-import { Route as ApiBodyMeasurementsRouteImport } from './routes/api/body-measurements'
+import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as ApiCheckinsRouteImport } from './routes/api/checkins'
 import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
 import { Route as ApiExportRouteImport } from './routes/api/export'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
-import { Route as ApiNutritionRouteImport } from './routes/api/nutrition'
 import { Route as ApiProfileRouteImport } from './routes/api/profile'
 import { Route as ApiProgressPhotosRouteImport } from './routes/api/progress-photos'
-import { Route as ApiWeeklyReviewsRouteImport } from './routes/api/weekly-reviews'
+import { Route as ApiReportsRouteImport } from './routes/api/reports'
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
 import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
 import { Route as ApiProgressPhotosPhotoIdRouteImport } from './routes/api/progress-photos/$photoId'
@@ -35,20 +33,15 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppProgressRoute = AppProgressRouteImport.update({
-  id: '/progress',
-  path: '/progress',
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
-const AppWeeklyReviewRoute = AppWeeklyReviewRouteImport.update({
-  id: '/weekly-review',
-  path: '/weekly-review',
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AppRoute,
-} as any)
-const ApiBodyMeasurementsRoute = ApiBodyMeasurementsRouteImport.update({
-  id: '/api/body-measurements',
-  path: '/api/body-measurements',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCheckinsRoute = ApiCheckinsRouteImport.update({
   id: '/api/checkins',
@@ -70,11 +63,6 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiNutritionRoute = ApiNutritionRouteImport.update({
-  id: '/api/nutrition',
-  path: '/api/nutrition',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiProfileRoute = ApiProfileRouteImport.update({
   id: '/api/profile',
   path: '/api/profile',
@@ -85,9 +73,9 @@ const ApiProgressPhotosRoute = ApiProgressPhotosRouteImport.update({
   path: '/api/progress-photos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiWeeklyReviewsRoute = ApiWeeklyReviewsRouteImport.update({
-  id: '/api/weekly-reviews',
-  path: '/api/weekly-reviews',
+const ApiReportsRoute = ApiReportsRouteImport.update({
+  id: '/api/reports',
+  path: '/api/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAgentContextRoute = ApiAgentContextRouteImport.update({
@@ -109,33 +97,29 @@ const ApiProgressPhotosPhotoIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
-  '/progress': typeof AppProgressRoute
-  '/weekly-review': typeof AppWeeklyReviewRoute
-  '/api/body-measurements': typeof ApiBodyMeasurementsRoute
+  '/profile': typeof AppProfileRoute
+  '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
-  '/api/nutrition': typeof ApiNutritionRoute
   '/api/profile': typeof ApiProfileRoute
   '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
-  '/api/weekly-reviews': typeof ApiWeeklyReviewsRoute
+  '/api/reports': typeof ApiReportsRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
 }
 export interface FileRoutesByTo {
-  '/progress': typeof AppProgressRoute
-  '/weekly-review': typeof AppWeeklyReviewRoute
-  '/api/body-measurements': typeof ApiBodyMeasurementsRoute
+  '/profile': typeof AppProfileRoute
+  '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
-  '/api/nutrition': typeof ApiNutritionRoute
   '/api/profile': typeof ApiProfileRoute
   '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
-  '/api/weekly-reviews': typeof ApiWeeklyReviewsRoute
+  '/api/reports': typeof ApiReportsRoute
   '/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
@@ -144,17 +128,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
-  '/_app/progress': typeof AppProgressRoute
-  '/_app/weekly-review': typeof AppWeeklyReviewRoute
-  '/api/body-measurements': typeof ApiBodyMeasurementsRoute
+  '/_app/profile': typeof AppProfileRoute
+  '/_app/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
-  '/api/nutrition': typeof ApiNutritionRoute
   '/api/profile': typeof ApiProfileRoute
   '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
-  '/api/weekly-reviews': typeof ApiWeeklyReviewsRoute
+  '/api/reports': typeof ApiReportsRoute
   '/_app/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
@@ -164,33 +146,29 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/progress'
-    | '/weekly-review'
-    | '/api/body-measurements'
+    | '/profile'
+    | '/reports'
     | '/api/checkins'
     | '/api/dashboard'
     | '/api/export'
     | '/api/health'
-    | '/api/nutrition'
     | '/api/profile'
     | '/api/progress-photos'
-    | '/api/weekly-reviews'
+    | '/api/reports'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/progress-photos/$photoId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/progress'
-    | '/weekly-review'
-    | '/api/body-measurements'
+    | '/profile'
+    | '/reports'
     | '/api/checkins'
     | '/api/dashboard'
     | '/api/export'
     | '/api/health'
-    | '/api/nutrition'
     | '/api/profile'
     | '/api/progress-photos'
-    | '/api/weekly-reviews'
+    | '/api/reports'
     | '/'
     | '/api/agent/context'
     | '/api/agent/query'
@@ -198,17 +176,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
-    | '/_app/progress'
-    | '/_app/weekly-review'
-    | '/api/body-measurements'
+    | '/_app/profile'
+    | '/_app/reports'
     | '/api/checkins'
     | '/api/dashboard'
     | '/api/export'
     | '/api/health'
-    | '/api/nutrition'
     | '/api/profile'
     | '/api/progress-photos'
-    | '/api/weekly-reviews'
+    | '/api/reports'
     | '/_app/'
     | '/api/agent/context'
     | '/api/agent/query'
@@ -217,15 +193,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
-  ApiBodyMeasurementsRoute: typeof ApiBodyMeasurementsRoute
   ApiCheckinsRoute: typeof ApiCheckinsRoute
   ApiDashboardRoute: typeof ApiDashboardRoute
   ApiExportRoute: typeof ApiExportRoute
   ApiHealthRoute: typeof ApiHealthRoute
-  ApiNutritionRoute: typeof ApiNutritionRoute
   ApiProfileRoute: typeof ApiProfileRoute
   ApiProgressPhotosRoute: typeof ApiProgressPhotosRouteWithChildren
-  ApiWeeklyReviewsRoute: typeof ApiWeeklyReviewsRoute
+  ApiReportsRoute: typeof ApiReportsRoute
   ApiAgentContextRoute: typeof ApiAgentContextRoute
   ApiAgentQueryRoute: typeof ApiAgentQueryRoute
 }
@@ -246,26 +220,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/progress': {
-      id: '/_app/progress'
-      path: '/progress'
-      fullPath: '/progress'
-      preLoaderRoute: typeof AppProgressRouteImport
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/weekly-review': {
-      id: '/_app/weekly-review'
-      path: '/weekly-review'
-      fullPath: '/weekly-review'
-      preLoaderRoute: typeof AppWeeklyReviewRouteImport
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
       parentRoute: typeof AppRoute
-    }
-    '/api/body-measurements': {
-      id: '/api/body-measurements'
-      path: '/api/body-measurements'
-      fullPath: '/api/body-measurements'
-      preLoaderRoute: typeof ApiBodyMeasurementsRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/api/checkins': {
       id: '/api/checkins'
@@ -295,13 +262,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/nutrition': {
-      id: '/api/nutrition'
-      path: '/api/nutrition'
-      fullPath: '/api/nutrition'
-      preLoaderRoute: typeof ApiNutritionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/profile': {
       id: '/api/profile'
       path: '/api/profile'
@@ -316,11 +276,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProgressPhotosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/weekly-reviews': {
-      id: '/api/weekly-reviews'
-      path: '/api/weekly-reviews'
-      fullPath: '/api/weekly-reviews'
-      preLoaderRoute: typeof ApiWeeklyReviewsRouteImport
+    '/api/reports': {
+      id: '/api/reports'
+      path: '/api/reports'
+      fullPath: '/api/reports'
+      preLoaderRoute: typeof ApiReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/agent/context': {
@@ -348,14 +308,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppProgressRoute: typeof AppProgressRoute
-  AppWeeklyReviewRoute: typeof AppWeeklyReviewRoute
+  AppProfileRoute: typeof AppProfileRoute
+  AppReportsRoute: typeof AppReportsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppProgressRoute: AppProgressRoute,
-  AppWeeklyReviewRoute: AppWeeklyReviewRoute,
+  AppProfileRoute: AppProfileRoute,
+  AppReportsRoute: AppReportsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
@@ -374,15 +334,13 @@ const ApiProgressPhotosRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
-  ApiBodyMeasurementsRoute: ApiBodyMeasurementsRoute,
   ApiCheckinsRoute: ApiCheckinsRoute,
   ApiDashboardRoute: ApiDashboardRoute,
   ApiExportRoute: ApiExportRoute,
   ApiHealthRoute: ApiHealthRoute,
-  ApiNutritionRoute: ApiNutritionRoute,
   ApiProfileRoute: ApiProfileRoute,
   ApiProgressPhotosRoute: ApiProgressPhotosRouteWithChildren,
-  ApiWeeklyReviewsRoute: ApiWeeklyReviewsRoute,
+  ApiReportsRoute: ApiReportsRoute,
   ApiAgentContextRoute: ApiAgentContextRoute,
   ApiAgentQueryRoute: ApiAgentQueryRoute,
 }

@@ -7,34 +7,25 @@ export interface DailyCheckin {
   sleep_hours: number | null
   water_liters: number | null
   protein_grams: number | null
+  nutrition_notes: string | null
   notes: string | null
   created_at: string
   updated_at: string
 }
 
-export interface BodyMeasurement {
+export interface Profile {
   id: number
-  date: string
+  height_cm: number | null
   weight_kg: number | null
-  chest_cm: number | null
-  waist_cm: number | null
-  hips_cm: number | null
-  arm_cm: number | null
-  thigh_cm: number | null
-  notes: string | null
-  created_at: string
-}
-
-export interface NutritionLog {
-  id: number
-  date: string
-  meal: string | null
-  protein_grams: number | null
-  water_liters: number | null
-  supplements: string | null
-  consistency: number | null
-  notes: string | null
-  created_at: string
+  age: number | null
+  goals: string | null
+  experience_level: string | null
+  training_style: string | null
+  gym_schedule: string | null
+  equipment: string | null
+  injuries: string | null
+  long_term_vision: string | null
+  updated_at: string
 }
 
 export interface ProgressPhoto {
@@ -42,18 +33,6 @@ export interface ProgressPhoto {
   date: string
   label: string | null
   notes: string | null
-  created_at: string
-}
-
-export interface WeeklyReview {
-  id: number
-  week_start: string
-  body_weight_change: number | null
-  nutrition_consistency: number | null
-  water_consistency: number | null
-  wins: string | null
-  lessons: string | null
-  focus_next_week: string | null
   created_at: string
 }
 

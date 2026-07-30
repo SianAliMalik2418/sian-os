@@ -57,10 +57,11 @@ The production Worker is configured as `sian-os`. Confirm migrations before depl
 - `POST /api/export` writes a timestamped JSON snapshot under `backups/` in R2.
 - Progress-photo metadata is included in exports. Original images are publicly retrievable through the application endpoint.
 
-The JSON format is versioned (`sian-os-export`, version `2`) so a future importer can validate it before writing.
+The JSON format is versioned (`sian-os-export`, version `4`) so a future importer can validate it before writing.
 
 ## External coaching agents
 
+- [`docs/FITNESS_COACHING_CONTEXT.md`](docs/FITNESS_COACHING_CONTEXT.md) — canonical living record of personal coaching context and confirmed decisions.
 - [`docs/COACH_AGENT_HANDOFF.md`](docs/COACH_AGENT_HANDOFF.md) — complete coach and Cloudflare operations handoff.
 - [`docs/AGENT_API.md`](docs/AGENT_API.md) — concise API reference.
 

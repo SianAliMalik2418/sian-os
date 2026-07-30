@@ -1,6 +1,6 @@
 # Sian OS Implementation Plan
 
-Sian OS is a public, single-user wellness operating system built with TanStack Start on Cloudflare Workers, D1, and R2. It focuses on daily consistency, recovery, nutrition, body progress, weekly reflection, and external AI-agent coaching. The web app and API intentionally require no authentication.
+Sian OS is a public, single-user wellness operating system built with TanStack Start on Cloudflare Workers, D1, and R2. It focuses on daily consistency, recovery, nutrition, derived wellness reports, and external AI-agent coaching. The web app and API intentionally require no authentication.
 
 Workout tracking is explicitly outside the product scope.
 
@@ -12,9 +12,9 @@ Workout tracking is explicitly outside the product scope.
 - R2 bucket: `sian-os-files`
 - Public web application and API
 - Mobile-first Coss UI
-- Global daily check-in dialog
-- Body measurements, nutrition logs, and progress photos
-- Weekly reflection system
+- Global daily check-in dialog with nutrition and progress photos
+- Editable owner profile
+- Daily, weekly, and monthly reports with Dither Kit charts
 - External coach-agent context and writes
 - Versioned JSON export and R2 backups
 
@@ -23,36 +23,37 @@ Workout tracking is explicitly outside the product scope.
 Goal: make the app useful every day in under two minutes.
 
 - Check in from any page using the global dialog.
-- Record weight, sleep/wake times, water, protein, and notes.
+- Record weight, sleep/wake times, water, protein, meal notes, general notes, and progress photos.
 - Calculate sleep duration server-side.
 - Upsert by date so today's check-in can be edited.
 - Show streak and weekly completion indicators with checkmarks.
 - Keep mood and readiness out of the product.
 
-## Body progress and nutrition
+## Check-in details
 
-Goal: emphasize sustainable trends over daily noise.
+Goal: keep daily wellness data in one fast workflow.
 
-- Record body weight and circumference measurements.
-- Record nutrition summaries, protein, water, supplements, and consistency.
-- Upload progress photos to R2 with metadata in D1.
-- Improve weekly and monthly trend visualization.
-- Add safe correction/delete flows for append-only records.
+- Capture nutrition in a templated Breakfast/Lunch/Dinner textarea.
+- Upload progress photos to R2 from the check-in dialog.
+- Keep protein and water as reportable numeric signals.
+- Edit or delete daily check-ins from daily reports.
+- Keep body-measurement and separate nutrition-log systems out of the product.
 
-## Weekly reflection
+## Reports
 
-Goal: turn logs into clear decisions.
+Goal: turn logs into clear visual trends.
 
-- Compute body-weight change, nutrition consistency, and water consistency.
-- Capture wins, lessons, and next-week focus.
-- Save permanent weekly snapshots.
-- Keep weekly review context available to the external coach.
+- Show daily, weekly, and monthly reporting intervals.
+- Add preset and custom date ranges.
+- Chart weight, sleep, hydration, and protein with Dither Kit.
+- Show summary averages and detailed reporting tables.
+- Expose bounded report data through `/api/reports`.
 
 ## External coach interface
 
 Goal: support structured coaching without embedding AI in the app.
 
-- Maintain documented profile, dashboard, check-in, body, nutrition, and weekly-review endpoints.
+- Maintain documented profile, dashboard, check-in, photo, and report endpoints.
 - Keep bounded query modes instead of arbitrary SQL.
 - Audit API writes.
 - Require confirmation for destructive actions.
@@ -64,7 +65,7 @@ Goal: support structured coaching without embedding AI in the app.
 - Use Coss components throughout.
 - Use the shared Date Picker instead of native date inputs.
 - Add polished loading, error, and empty states.
-- Keep navigation focused on Today, Check-in, Progress, and Weekly Review.
+- Keep navigation focused on Today, Check-in, Reports, and Profile.
 
 ## Long-term reliability
 

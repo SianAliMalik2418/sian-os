@@ -1,21 +1,28 @@
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
-import { Activity, ClipboardCheck, MoreHorizontal, Scale } from 'lucide-react'
+import { Activity, ChartNoAxesCombined, ClipboardCheck, MoreHorizontal, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { DailyCheckinDialogProvider, useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { Button } from '@/components/ui/button'
 import { Drawer, DrawerDescription, DrawerHeader, DrawerPanel, DrawerPopup, DrawerTitle } from '@/components/ui/drawer'
-import { getTodayCheckin } from '@/lib/app.functions'
+import { getProgressPhotos, getTodayCheckin } from '@/lib/app.functions'
 
-export const Route = createFileRoute('/_app')({ loader: () => getTodayCheckin(), component: AppLayout })
+export const Route = createFileRoute('/_app')({
+  loader: async () => {
+    const [existing, photos] = await Promise.all([getTodayCheckin(), getProgressPhotos()])
+    return { existing, photos }
+  },
+  component: AppLayout,
+})
 
 const navigation = [
   { to: '/', label: 'Today', icon: Activity },
-  { to: '/progress', label: 'Progress', icon: Scale },
-  { to: '/weekly-review', label: 'Weekly review', icon: ClipboardCheck },
+  { to: '/reports', label: 'Reports', icon: ChartNoAxesCombined },
+  { to: '/profile', label: 'Profile', icon: UserRound },
 ] as const
 
 function AppLayout() {
-  return <DailyCheckinDialogProvider existing={Route.useLoaderData()}><AppShell /></DailyCheckinDialogProvider>
+  const data = Route.useLoaderData()
+  return <DailyCheckinDialogProvider existing={data.existing} photos={data.photos}><AppShell /></DailyCheckinDialogProvider>
 }
 
 function AppShell() {
@@ -42,9 +49,8 @@ function AppShell() {
 
       <Drawer open={moreOpen} onOpenChange={setMoreOpen} position="bottom">
         <DrawerPopup showBar showCloseButton className="lg:hidden">
-          <DrawerHeader><DrawerTitle>More</DrawerTitle><DrawerDescription>History, review, and data tools</DrawerDescription></DrawerHeader>
+          <DrawerHeader><DrawerTitle>More</DrawerTitle><DrawerDescription>Data tools</DrawerDescription></DrawerHeader>
           <DrawerPanel className="grid gap-1 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-            <Button render={<Link to="/weekly-review" onClick={() => setMoreOpen(false)} />} variant="ghost" className="h-12 justify-start gap-3 rounded-xl px-3"><ClipboardCheck className="size-5 text-primary" /> Weekly review</Button>
             <Button render={<a href="/api/export" />} variant="ghost" className="h-12 justify-start gap-3 rounded-xl px-3"><Activity className="size-5 text-primary" /> Export all data</Button>
           </DrawerPanel>
         </DrawerPopup>
@@ -53,10 +59,11 @@ function AppShell() {
       <main className="min-h-screen pb-24 lg:pb-0 lg:pl-64"><Outlet /></main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Primary navigation">
-        <div className="mx-auto grid h-18 max-w-md grid-cols-4">
+        <div className="mx-auto grid h-18 max-w-md grid-cols-5">
           <MobileLink to="/" label="Today" icon={Activity} exact />
-          <Button type="button" variant="ghost" onClick={openCheckin} className="h-full min-w-0 flex-col gap-1 rounded-xl px-1 text-[0.65rem] font-medium text-muted-foreground"><ClipboardCheck className="size-5" /><span>Check-in</span></Button>
-          <MobileLink to="/progress" label="Progress" icon={Scale} />
+          <Button type="button" variant="ghost" onClick={() => openCheckin()} className="h-full min-w-0 flex-col gap-1 rounded-xl px-1 text-[0.65rem] font-medium text-muted-foreground"><ClipboardCheck className="size-5" /><span>Check-in</span></Button>
+          <MobileLink to="/reports" label="Reports" icon={ChartNoAxesCombined} />
+          <MobileLink to="/profile" label="Profile" icon={UserRound} />
           <Button type="button" variant="ghost" onClick={() => setMoreOpen((value) => !value)} className={`h-full min-w-0 flex-col gap-1 rounded-xl px-1 text-[0.65rem] font-medium ${moreOpen ? 'text-primary' : 'text-muted-foreground'}`} aria-expanded={moreOpen}>
             <MoreHorizontal className="size-5" /><span>More</span>
           </Button>
@@ -76,6 +83,6 @@ function DesktopNavigation({ onCheckin }: { onCheckin: () => void }) {
   </nav>
 }
 
-function MobileLink({ to, label, icon: Icon, exact = false }: { to: '/' | '/progress'; label: string; icon: typeof Activity; exact?: boolean }) {
+function MobileLink({ to, label, icon: Icon, exact = false }: { to: '/' | '/reports' | '/profile'; label: string; icon: typeof Activity; exact?: boolean }) {
   return <Button render={<Link to={to} activeOptions={{ exact }} activeProps={{ className: 'text-primary' }} />} variant="ghost" className="h-full min-w-0 flex-col gap-1 rounded-xl px-1 text-[0.65rem] font-medium text-muted-foreground"><Icon className="size-5" /><span className="truncate">{label}</span></Button>
 }

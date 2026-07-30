@@ -1,7 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
 import { setResponseHeader } from '@tanstack/react-start/server'
 import { dashboardSummary, db } from './db'
-import type { BodyMeasurement, DailyCheckin, NutritionLog, ProgressPhoto, WeeklyReview } from './types'
+import { buildDailyReports } from './reports'
+import type { DailyCheckin, Profile, ProgressPhoto } from './types'
 
 function disableCaching() {
   setResponseHeader('Cache-Control', 'no-store')
@@ -18,17 +19,19 @@ export const getTodayCheckin = createServerFn({ method: 'GET' }).handler(async (
   return db().prepare('SELECT * FROM daily_checkins WHERE date = ?').bind(today).first<DailyCheckin>()
 })
 
-export const getProgressData = createServerFn({ method: 'GET' }).handler(async () => {
+export const getProfileData = createServerFn({ method: 'GET' }).handler(async () => {
   disableCaching()
-  const [measurements, nutrition, photos] = await Promise.all([
-    db().prepare('SELECT * FROM body_measurements ORDER BY date DESC, id DESC LIMIT 365').all<BodyMeasurement>(),
-    db().prepare('SELECT * FROM nutrition_logs ORDER BY date DESC, id DESC LIMIT 365').all<NutritionLog>(),
-    db().prepare('SELECT id, date, label, notes, created_at FROM progress_photos ORDER BY date DESC, id DESC LIMIT 500').all<ProgressPhoto>(),
-  ])
-  return { measurements: measurements.results, nutrition: nutrition.results, photos: photos.results }
+  return db().prepare('SELECT * FROM profile WHERE id = 1').first<Profile>()
 })
 
-export const getWeeklyReviewData = createServerFn({ method: 'GET' }).handler(async () => {
+export const getProgressPhotos = createServerFn({ method: 'GET' }).handler(async () => {
   disableCaching()
-  return (await db().prepare('SELECT * FROM weekly_reviews ORDER BY week_start DESC LIMIT 104').all<WeeklyReview>()).results
+  const result = await db().prepare('SELECT id, date, label, notes, created_at FROM progress_photos ORDER BY date DESC, id DESC LIMIT 500').all<ProgressPhoto>()
+  return result.results
+})
+
+export const getReportsData = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  const checkins = await db().prepare('SELECT date, weight_kg, sleep_hours, water_liters, protein_grams FROM daily_checkins ORDER BY date').all<DailyCheckin>()
+  return buildDailyReports(checkins.results)
 })
