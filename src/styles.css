@@ -17,9 +17,10 @@
   --radius-xl: 1rem;
 }
 
-html { background: var(--color-background); color: var(--color-foreground); }
-body { margin: 0; font-family: var(--font-sans); }
+html { background: var(--color-background); color: var(--color-foreground); color-scheme: dark; }
+body { margin: 0; min-width: 320px; font-family: var(--font-sans); }
 button, input, textarea, select { font: inherit; }
+::selection { background: color-mix(in srgb, var(--primary) 30%, transparent); }
 
 @theme inline {
   --animate-skeleton: skeleton 2s -1s infinite linear;
@@ -256,6 +257,6 @@ button, input, textarea, select { font: inherit; }
     font-family: var(--font-mono);
   }
   html {
-    @apply font-sans font-mono;
+    @apply font-sans;
   }
 }

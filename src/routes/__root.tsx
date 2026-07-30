@@ -10,8 +10,13 @@ export const Route = createRootRoute({
 
 function Root() {
   return (
-    <html lang="en">
-      <head><HeadContent /></head>
+    <html lang="en" className="dark">
+      <head>
+        <meta charSet="utf-8" />
+        <HeadContent />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#090b0d" />
+      </head>
       <body>
         <Outlet />
         <Scripts />

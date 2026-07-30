@@ -9,24 +9,68 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppCheckInRouteImport } from './routes/_app/check-in'
+import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
+import { Route as AppProgressRouteImport } from './routes/_app/progress'
+import { Route as AppWeeklyReviewRouteImport } from './routes/_app/weekly-review'
+import { Route as AppWorkoutsRouteImport } from './routes/_app/workouts'
+import { Route as ApiBodyMeasurementsRouteImport } from './routes/api/body-measurements'
 import { Route as ApiCheckinsRouteImport } from './routes/api/checkins'
 import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
+import { Route as ApiExercisesRouteImport } from './routes/api/exercises'
+import { Route as ApiExportRouteImport } from './routes/api/export'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiNutritionRouteImport } from './routes/api/nutrition'
+import { Route as ApiProfileRouteImport } from './routes/api/profile'
+import { Route as ApiProgressPhotosRouteImport } from './routes/api/progress-photos'
+import { Route as ApiWeeklyReviewsRouteImport } from './routes/api/weekly-reviews'
 import { Route as ApiWorkoutsRouteImport } from './routes/api/workouts'
+import { Route as AppExercisesExerciseIdRouteImport } from './routes/_app/exercises.$exerciseId'
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
-import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
-import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
+import { Route as ApiExercisesExerciseIdRouteImport } from './routes/api/exercises/$exerciseId'
+import { Route as ApiProgressPhotosPhotoIdRouteImport } from './routes/api/progress-photos/$photoId'
+import { Route as ApiWorkoutsWorkoutIdRouteImport } from './routes/api/workouts/$workoutId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCheckInRoute = AppCheckInRouteImport.update({
+  id: '/check-in',
+  path: '/check-in',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExercisesRoute = AppExercisesRouteImport.update({
+  id: '/exercises',
+  path: '/exercises',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProgressRoute = AppProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWeeklyReviewRoute = AppWeeklyReviewRouteImport.update({
+  id: '/weekly-review',
+  path: '/weekly-review',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWorkoutsRoute = AppWorkoutsRouteImport.update({
+  id: '/workouts',
+  path: '/workouts',
+  getParentRoute: () => AppRoute,
+} as any)
+const ApiBodyMeasurementsRoute = ApiBodyMeasurementsRouteImport.update({
+  id: '/api/body-measurements',
+  path: '/api/body-measurements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCheckinsRoute = ApiCheckinsRouteImport.update({
@@ -39,9 +83,39 @@ const ApiDashboardRoute = ApiDashboardRouteImport.update({
   path: '/api/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExercisesRoute = ApiExercisesRouteImport.update({
+  id: '/api/exercises',
+  path: '/api/exercises',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExportRoute = ApiExportRouteImport.update({
+  id: '/api/export',
+  path: '/api/export',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNutritionRoute = ApiNutritionRouteImport.update({
+  id: '/api/nutrition',
+  path: '/api/nutrition',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProfileRoute = ApiProfileRouteImport.update({
+  id: '/api/profile',
+  path: '/api/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProgressPhotosRoute = ApiProgressPhotosRouteImport.update({
+  id: '/api/progress-photos',
+  path: '/api/progress-photos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWeeklyReviewsRoute = ApiWeeklyReviewsRouteImport.update({
+  id: '/api/weekly-reviews',
+  path: '/api/weekly-reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWorkoutsRoute = ApiWorkoutsRouteImport.update({
@@ -49,118 +123,267 @@ const ApiWorkoutsRoute = ApiWorkoutsRouteImport.update({
   path: '/api/workouts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppExercisesExerciseIdRoute = AppExercisesExerciseIdRouteImport.update({
+  id: '/$exerciseId',
+  path: '/$exerciseId',
+  getParentRoute: () => AppExercisesRoute,
+} as any)
 const ApiAgentContextRoute = ApiAgentContextRouteImport.update({
   id: '/api/agent/context',
   path: '/api/agent/context',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
-  id: '/api/auth/login',
-  path: '/api/auth/login',
+const ApiAgentQueryRoute = ApiAgentQueryRouteImport.update({
+  id: '/api/agent/query',
+  path: '/api/agent/query',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
-  id: '/api/auth/logout',
-  path: '/api/auth/logout',
-  getParentRoute: () => rootRouteImport,
+const ApiExercisesExerciseIdRoute = ApiExercisesExerciseIdRouteImport.update({
+  id: '/$exerciseId',
+  path: '/$exerciseId',
+  getParentRoute: () => ApiExercisesRoute,
+} as any)
+const ApiProgressPhotosPhotoIdRoute =
+  ApiProgressPhotosPhotoIdRouteImport.update({
+    id: '/$photoId',
+    path: '/$photoId',
+    getParentRoute: () => ApiProgressPhotosRoute,
+  } as any)
+const ApiWorkoutsWorkoutIdRoute = ApiWorkoutsWorkoutIdRouteImport.update({
+  id: '/$workoutId',
+  path: '/$workoutId',
+  getParentRoute: () => ApiWorkoutsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/': typeof AppIndexRoute
+  '/check-in': typeof AppCheckInRoute
+  '/exercises': typeof AppExercisesRouteWithChildren
+  '/progress': typeof AppProgressRoute
+  '/weekly-review': typeof AppWeeklyReviewRoute
+  '/workouts': typeof AppWorkoutsRoute
+  '/api/body-measurements': typeof ApiBodyMeasurementsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
+  '/api/exercises': typeof ApiExercisesRouteWithChildren
+  '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
-  '/api/workouts': typeof ApiWorkoutsRoute
+  '/api/nutrition': typeof ApiNutritionRoute
+  '/api/profile': typeof ApiProfileRoute
+  '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
+  '/api/weekly-reviews': typeof ApiWeeklyReviewsRoute
+  '/api/workouts': typeof ApiWorkoutsRouteWithChildren
+  '/exercises/$exerciseId': typeof AppExercisesExerciseIdRoute
   '/api/agent/context': typeof ApiAgentContextRoute
-  '/api/auth/login': typeof ApiAuthLoginRoute
-  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/agent/query': typeof ApiAgentQueryRoute
+  '/api/exercises/$exerciseId': typeof ApiExercisesExerciseIdRoute
+  '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
+  '/api/workouts/$workoutId': typeof ApiWorkoutsWorkoutIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/check-in': typeof AppCheckInRoute
+  '/exercises': typeof AppExercisesRouteWithChildren
+  '/progress': typeof AppProgressRoute
+  '/weekly-review': typeof AppWeeklyReviewRoute
+  '/workouts': typeof AppWorkoutsRoute
+  '/api/body-measurements': typeof ApiBodyMeasurementsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
+  '/api/exercises': typeof ApiExercisesRouteWithChildren
+  '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
-  '/api/workouts': typeof ApiWorkoutsRoute
+  '/api/nutrition': typeof ApiNutritionRoute
+  '/api/profile': typeof ApiProfileRoute
+  '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
+  '/api/weekly-reviews': typeof ApiWeeklyReviewsRoute
+  '/api/workouts': typeof ApiWorkoutsRouteWithChildren
+  '/': typeof AppIndexRoute
+  '/exercises/$exerciseId': typeof AppExercisesExerciseIdRoute
   '/api/agent/context': typeof ApiAgentContextRoute
-  '/api/auth/login': typeof ApiAuthLoginRoute
-  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/agent/query': typeof ApiAgentQueryRoute
+  '/api/exercises/$exerciseId': typeof ApiExercisesExerciseIdRoute
+  '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
+  '/api/workouts/$workoutId': typeof ApiWorkoutsWorkoutIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/check-in': typeof AppCheckInRoute
+  '/_app/exercises': typeof AppExercisesRouteWithChildren
+  '/_app/progress': typeof AppProgressRoute
+  '/_app/weekly-review': typeof AppWeeklyReviewRoute
+  '/_app/workouts': typeof AppWorkoutsRoute
+  '/api/body-measurements': typeof ApiBodyMeasurementsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
+  '/api/exercises': typeof ApiExercisesRouteWithChildren
+  '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
-  '/api/workouts': typeof ApiWorkoutsRoute
+  '/api/nutrition': typeof ApiNutritionRoute
+  '/api/profile': typeof ApiProfileRoute
+  '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
+  '/api/weekly-reviews': typeof ApiWeeklyReviewsRoute
+  '/api/workouts': typeof ApiWorkoutsRouteWithChildren
+  '/_app/': typeof AppIndexRoute
+  '/_app/exercises/$exerciseId': typeof AppExercisesExerciseIdRoute
   '/api/agent/context': typeof ApiAgentContextRoute
-  '/api/auth/login': typeof ApiAuthLoginRoute
-  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/agent/query': typeof ApiAgentQueryRoute
+  '/api/exercises/$exerciseId': typeof ApiExercisesExerciseIdRoute
+  '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
+  '/api/workouts/$workoutId': typeof ApiWorkoutsWorkoutIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/login'
+    | '/check-in'
+    | '/exercises'
+    | '/progress'
+    | '/weekly-review'
+    | '/workouts'
+    | '/api/body-measurements'
     | '/api/checkins'
     | '/api/dashboard'
+    | '/api/exercises'
+    | '/api/export'
     | '/api/health'
+    | '/api/nutrition'
+    | '/api/profile'
+    | '/api/progress-photos'
+    | '/api/weekly-reviews'
     | '/api/workouts'
+    | '/exercises/$exerciseId'
     | '/api/agent/context'
-    | '/api/auth/login'
-    | '/api/auth/logout'
+    | '/api/agent/query'
+    | '/api/exercises/$exerciseId'
+    | '/api/progress-photos/$photoId'
+    | '/api/workouts/$workoutId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/login'
+    | '/check-in'
+    | '/exercises'
+    | '/progress'
+    | '/weekly-review'
+    | '/workouts'
+    | '/api/body-measurements'
     | '/api/checkins'
     | '/api/dashboard'
+    | '/api/exercises'
+    | '/api/export'
     | '/api/health'
+    | '/api/nutrition'
+    | '/api/profile'
+    | '/api/progress-photos'
+    | '/api/weekly-reviews'
     | '/api/workouts'
+    | '/'
+    | '/exercises/$exerciseId'
     | '/api/agent/context'
-    | '/api/auth/login'
-    | '/api/auth/logout'
+    | '/api/agent/query'
+    | '/api/exercises/$exerciseId'
+    | '/api/progress-photos/$photoId'
+    | '/api/workouts/$workoutId'
   id:
     | '__root__'
-    | '/'
-    | '/login'
+    | '/_app'
+    | '/_app/check-in'
+    | '/_app/exercises'
+    | '/_app/progress'
+    | '/_app/weekly-review'
+    | '/_app/workouts'
+    | '/api/body-measurements'
     | '/api/checkins'
     | '/api/dashboard'
+    | '/api/exercises'
+    | '/api/export'
     | '/api/health'
+    | '/api/nutrition'
+    | '/api/profile'
+    | '/api/progress-photos'
+    | '/api/weekly-reviews'
     | '/api/workouts'
+    | '/_app/'
+    | '/_app/exercises/$exerciseId'
     | '/api/agent/context'
-    | '/api/auth/login'
-    | '/api/auth/logout'
+    | '/api/agent/query'
+    | '/api/exercises/$exerciseId'
+    | '/api/progress-photos/$photoId'
+    | '/api/workouts/$workoutId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  LoginRoute: typeof LoginRoute
+  AppRoute: typeof AppRouteWithChildren
+  ApiBodyMeasurementsRoute: typeof ApiBodyMeasurementsRoute
   ApiCheckinsRoute: typeof ApiCheckinsRoute
   ApiDashboardRoute: typeof ApiDashboardRoute
+  ApiExercisesRoute: typeof ApiExercisesRouteWithChildren
+  ApiExportRoute: typeof ApiExportRoute
   ApiHealthRoute: typeof ApiHealthRoute
-  ApiWorkoutsRoute: typeof ApiWorkoutsRoute
+  ApiNutritionRoute: typeof ApiNutritionRoute
+  ApiProfileRoute: typeof ApiProfileRoute
+  ApiProgressPhotosRoute: typeof ApiProgressPhotosRouteWithChildren
+  ApiWeeklyReviewsRoute: typeof ApiWeeklyReviewsRoute
+  ApiWorkoutsRoute: typeof ApiWorkoutsRouteWithChildren
   ApiAgentContextRoute: typeof ApiAgentContextRoute
-  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
-  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAgentQueryRoute: typeof ApiAgentQueryRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/check-in': {
+      id: '/_app/check-in'
+      path: '/check-in'
+      fullPath: '/check-in'
+      preLoaderRoute: typeof AppCheckInRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/exercises': {
+      id: '/_app/exercises'
+      path: '/exercises'
+      fullPath: '/exercises'
+      preLoaderRoute: typeof AppExercisesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/progress': {
+      id: '/_app/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof AppProgressRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/weekly-review': {
+      id: '/_app/weekly-review'
+      path: '/weekly-review'
+      fullPath: '/weekly-review'
+      preLoaderRoute: typeof AppWeeklyReviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/workouts': {
+      id: '/_app/workouts'
+      path: '/workouts'
+      fullPath: '/workouts'
+      preLoaderRoute: typeof AppWorkoutsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/api/body-measurements': {
+      id: '/api/body-measurements'
+      path: '/api/body-measurements'
+      fullPath: '/api/body-measurements'
+      preLoaderRoute: typeof ApiBodyMeasurementsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/checkins': {
@@ -177,11 +400,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/exercises': {
+      id: '/api/exercises'
+      path: '/api/exercises'
+      fullPath: '/api/exercises'
+      preLoaderRoute: typeof ApiExercisesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/export': {
+      id: '/api/export'
+      path: '/api/export'
+      fullPath: '/api/export'
+      preLoaderRoute: typeof ApiExportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/health': {
       id: '/api/health'
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/nutrition': {
+      id: '/api/nutrition'
+      path: '/api/nutrition'
+      fullPath: '/api/nutrition'
+      preLoaderRoute: typeof ApiNutritionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/profile': {
+      id: '/api/profile'
+      path: '/api/profile'
+      fullPath: '/api/profile'
+      preLoaderRoute: typeof ApiProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/progress-photos': {
+      id: '/api/progress-photos'
+      path: '/api/progress-photos'
+      fullPath: '/api/progress-photos'
+      preLoaderRoute: typeof ApiProgressPhotosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/weekly-reviews': {
+      id: '/api/weekly-reviews'
+      path: '/api/weekly-reviews'
+      fullPath: '/api/weekly-reviews'
+      preLoaderRoute: typeof ApiWeeklyReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/workouts': {
@@ -191,6 +456,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWorkoutsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/exercises/$exerciseId': {
+      id: '/_app/exercises/$exerciseId'
+      path: '/$exerciseId'
+      fullPath: '/exercises/$exerciseId'
+      preLoaderRoute: typeof AppExercisesExerciseIdRouteImport
+      parentRoute: typeof AppExercisesRoute
+    }
     '/api/agent/context': {
       id: '/api/agent/context'
       path: '/api/agent/context'
@@ -198,33 +470,119 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgentContextRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/login': {
-      id: '/api/auth/login'
-      path: '/api/auth/login'
-      fullPath: '/api/auth/login'
-      preLoaderRoute: typeof ApiAuthLoginRouteImport
+    '/api/agent/query': {
+      id: '/api/agent/query'
+      path: '/api/agent/query'
+      fullPath: '/api/agent/query'
+      preLoaderRoute: typeof ApiAgentQueryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/logout': {
-      id: '/api/auth/logout'
-      path: '/api/auth/logout'
-      fullPath: '/api/auth/logout'
-      preLoaderRoute: typeof ApiAuthLogoutRouteImport
-      parentRoute: typeof rootRouteImport
+    '/api/exercises/$exerciseId': {
+      id: '/api/exercises/$exerciseId'
+      path: '/$exerciseId'
+      fullPath: '/api/exercises/$exerciseId'
+      preLoaderRoute: typeof ApiExercisesExerciseIdRouteImport
+      parentRoute: typeof ApiExercisesRoute
+    }
+    '/api/progress-photos/$photoId': {
+      id: '/api/progress-photos/$photoId'
+      path: '/$photoId'
+      fullPath: '/api/progress-photos/$photoId'
+      preLoaderRoute: typeof ApiProgressPhotosPhotoIdRouteImport
+      parentRoute: typeof ApiProgressPhotosRoute
+    }
+    '/api/workouts/$workoutId': {
+      id: '/api/workouts/$workoutId'
+      path: '/$workoutId'
+      fullPath: '/api/workouts/$workoutId'
+      preLoaderRoute: typeof ApiWorkoutsWorkoutIdRouteImport
+      parentRoute: typeof ApiWorkoutsRoute
     }
   }
 }
 
+interface AppExercisesRouteChildren {
+  AppExercisesExerciseIdRoute: typeof AppExercisesExerciseIdRoute
+}
+
+const AppExercisesRouteChildren: AppExercisesRouteChildren = {
+  AppExercisesExerciseIdRoute: AppExercisesExerciseIdRoute,
+}
+
+const AppExercisesRouteWithChildren = AppExercisesRoute._addFileChildren(
+  AppExercisesRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppCheckInRoute: typeof AppCheckInRoute
+  AppExercisesRoute: typeof AppExercisesRouteWithChildren
+  AppProgressRoute: typeof AppProgressRoute
+  AppWeeklyReviewRoute: typeof AppWeeklyReviewRoute
+  AppWorkoutsRoute: typeof AppWorkoutsRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppCheckInRoute: AppCheckInRoute,
+  AppExercisesRoute: AppExercisesRouteWithChildren,
+  AppProgressRoute: AppProgressRoute,
+  AppWeeklyReviewRoute: AppWeeklyReviewRoute,
+  AppWorkoutsRoute: AppWorkoutsRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface ApiExercisesRouteChildren {
+  ApiExercisesExerciseIdRoute: typeof ApiExercisesExerciseIdRoute
+}
+
+const ApiExercisesRouteChildren: ApiExercisesRouteChildren = {
+  ApiExercisesExerciseIdRoute: ApiExercisesExerciseIdRoute,
+}
+
+const ApiExercisesRouteWithChildren = ApiExercisesRoute._addFileChildren(
+  ApiExercisesRouteChildren,
+)
+
+interface ApiProgressPhotosRouteChildren {
+  ApiProgressPhotosPhotoIdRoute: typeof ApiProgressPhotosPhotoIdRoute
+}
+
+const ApiProgressPhotosRouteChildren: ApiProgressPhotosRouteChildren = {
+  ApiProgressPhotosPhotoIdRoute: ApiProgressPhotosPhotoIdRoute,
+}
+
+const ApiProgressPhotosRouteWithChildren =
+  ApiProgressPhotosRoute._addFileChildren(ApiProgressPhotosRouteChildren)
+
+interface ApiWorkoutsRouteChildren {
+  ApiWorkoutsWorkoutIdRoute: typeof ApiWorkoutsWorkoutIdRoute
+}
+
+const ApiWorkoutsRouteChildren: ApiWorkoutsRouteChildren = {
+  ApiWorkoutsWorkoutIdRoute: ApiWorkoutsWorkoutIdRoute,
+}
+
+const ApiWorkoutsRouteWithChildren = ApiWorkoutsRoute._addFileChildren(
+  ApiWorkoutsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  LoginRoute: LoginRoute,
+  AppRoute: AppRouteWithChildren,
+  ApiBodyMeasurementsRoute: ApiBodyMeasurementsRoute,
   ApiCheckinsRoute: ApiCheckinsRoute,
   ApiDashboardRoute: ApiDashboardRoute,
+  ApiExercisesRoute: ApiExercisesRouteWithChildren,
+  ApiExportRoute: ApiExportRoute,
   ApiHealthRoute: ApiHealthRoute,
-  ApiWorkoutsRoute: ApiWorkoutsRoute,
+  ApiNutritionRoute: ApiNutritionRoute,
+  ApiProfileRoute: ApiProfileRoute,
+  ApiProgressPhotosRoute: ApiProgressPhotosRouteWithChildren,
+  ApiWeeklyReviewsRoute: ApiWeeklyReviewsRoute,
+  ApiWorkoutsRoute: ApiWorkoutsRouteWithChildren,
   ApiAgentContextRoute: ApiAgentContextRoute,
-  ApiAuthLoginRoute: ApiAuthLoginRoute,
-  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAgentQueryRoute: ApiAgentQueryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

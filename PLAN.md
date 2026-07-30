@@ -1,6 +1,6 @@
 # Sian OS Implementation Plan
 
-Sian OS is a private Personal Fitness OS built with TanStack Start on Cloudflare Workers, D1, and R2. The app is not SaaS; it is a single-user operating system for long-term training, recovery, nutrition, body progress, and external AI-agent coaching.
+Sian OS is a public Personal Fitness OS built with TanStack Start on Cloudflare Workers, D1, and R2. The app is not SaaS; it is a single-user operating system for long-term training, recovery, nutrition, body progress, and external AI-agent coaching. The web app and API intentionally require no authentication.
 
 ## Current Baseline
 
@@ -17,8 +17,8 @@ Implemented:
 - Cloudflare Worker deployment
 - D1 schema migration
 - R2 bucket binding
-- Simple password login route
-- Agent bearer-token auth path
+- Public web application with no login
+- Public external-agent API with no bearer token
 - Core API endpoints:
   - `GET /api/health`
   - `GET /api/dashboard`
@@ -33,20 +33,17 @@ Goal: make the existing foundation safe, understandable, and reliable before add
 
 Tasks:
 
-- Add protected app layout and route guards.
-- Redirect unauthenticated UI visits to `/login`.
-- Keep API auth enforced inside every handler touching private data.
-- Add logout button and session status endpoint.
-- Add `README.md` setup docs for local dev, deploy, D1 migrations, secrets, and agent token usage.
+- Keep the app layout and all product routes directly accessible.
+- Keep every API endpoint public without authentication or authorization middleware.
+- Add `README.md` setup docs for local dev, deploy, D1 migrations, and public API usage.
 - Add API contract docs for external coaching agents.
 - Remove or mark smoke-test seed data clearly.
 - Add consistent API error responses.
-- Add local dev instructions for `.dev.vars` without committing secrets.
+- Keep local development free of required secrets.
 
 Acceptance criteria:
 
-- Private pages cannot be viewed without login.
-- Agent endpoints work with bearer token and reject missing/invalid tokens.
+- Every page and API endpoint works without login or credentials.
 - A future agent can read docs and know how to query/write fitness data.
 - `npm run typecheck`, `npm run build`, and `npm audit --audit-level=high` pass.
 
@@ -84,7 +81,7 @@ Acceptance criteria:
 
 ## Phase 3 — Workout Tracking MVP
 
-Goal: replace basic API-only workout logging with a usable private training log.
+Goal: replace basic API-only workout logging with a usable training log.
 
 Tasks:
 
@@ -230,7 +227,7 @@ Tasks:
 Acceptance criteria:
 
 - External agent can answer coaching questions from structured data.
-- External agent can write approved logs/notes using the bearer token.
+- External agent can write approved logs/notes without credentials.
 - No arbitrary SQL is exposed.
 
 ## Phase 8 — Premium Product Polish
@@ -248,7 +245,7 @@ Tasks:
 - Add deployment polish:
   - production metadata
   - preview URL settings
-  - documented secret rotation
+  - documented public-data exposure
   - optional custom domain later
 
 Acceptance criteria:
