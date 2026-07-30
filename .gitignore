@@ -1,0 +1,7 @@
+node_modules
+dist
+.wrangler
+.tanstack
+.local-secrets
+.dev.vars
+.DS_Store

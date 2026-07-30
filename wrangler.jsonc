@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sian-os",
+  "compatibility_date": "2026-07-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "assets": {
+    "directory": "./dist/client"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sian-os-db",
+      "database_id": "c96ee3c8-9aab-4b6f-8620-771cc3dbd63a"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "sian-os-files"
+    }
+  ],
+  "vars": {
+    "APP_NAME": "Sian OS"
+  }
+}
