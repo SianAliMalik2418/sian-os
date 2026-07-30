@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { getProgressData } from '@/lib/app.functions'
@@ -47,13 +48,13 @@ function ProgressPage() {
     if ((await fetch(`/api/progress-photos/${id}`, { method: 'DELETE' })).ok) await router.invalidate()
   }
 
-  return <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-    <header><p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Progress and recovery</p><h1 className="mt-2 font-heading text-3xl font-semibold">Watch patterns, not noise.</h1><p className="mt-2 text-muted-foreground">Body trends, nutrition consistency, hydration, and private progress photos in one place.</p>{status && <p className="mt-3 text-sm text-primary">{status}</p>}</header>
+  return <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
+    <header><p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Body progress</p><h1 className="mt-2 font-heading text-3xl font-semibold">Watch patterns, not noise.</h1><p className="mt-2 text-muted-foreground">Body trends, nutrition consistency, hydration, and progress photos in one place.</p>{status && <p className="mt-3 text-sm text-primary">{status}</p>}</header>
 
     <section className="grid gap-6 xl:grid-cols-2">
       <Card><CardHeader><CardTitle>Body measurement</CardTitle><CardDescription>Track periodically; weekly and monthly direction matters most</CardDescription><CardAction><Scale className="size-5 text-primary" /></CardAction></CardHeader><CardPanel>
         <form onSubmit={(event) => submitJson(event, '/api/body-measurements')} className="grid gap-4 sm:grid-cols-2">
-          <Field label="Date"><Input nativeInput name="date" type="date" defaultValue={today()} required /></Field>
+          <Field label="Date"><DatePicker name="date" defaultValue={today()} required /></Field>
           {[['weight_kg','Weight (kg)'],['chest_cm','Chest (cm)'],['waist_cm','Waist (cm)'],['hips_cm','Hips (cm)'],['arm_cm','Arm (cm)'],['thigh_cm','Thigh (cm)']].map(([name,label]) => <Field key={name} label={label}><Input nativeInput name={name} type="number" min="0" step="0.1" /></Field>)}
           <div className="sm:col-span-2"><Field label="Notes"><Textarea name="notes" rows={2} /></Field></div><div className="sm:col-span-2 flex justify-end"><Button type="submit" loading={saving}><Plus /> Add measurement</Button></div>
         </form>
@@ -62,14 +63,14 @@ function ProgressPage() {
 
       <Card><CardHeader><CardTitle>Nutrition log</CardTitle><CardDescription>Keep this lightweight: consistency beats precision</CardDescription><CardAction><Utensils className="size-5 text-primary" /></CardAction></CardHeader><CardPanel>
         <form onSubmit={(event) => submitJson(event, '/api/nutrition')} className="grid gap-4 sm:grid-cols-2">
-          <Field label="Date"><Input nativeInput name="date" type="date" defaultValue={today()} required /></Field><Field label="Meal / summary"><Input nativeInput name="meal" placeholder="High-protein breakfast" /></Field><Field label="Protein (g)"><Input nativeInput name="protein_grams" type="number" min="0" /></Field><Field label="Water (L)"><Input nativeInput name="water_liters" type="number" min="0" step="0.1" /></Field><Field label="Consistency (1–10)"><Input nativeInput name="consistency" type="number" min="1" max="10" /></Field><Field label="Supplements"><Input nativeInput name="supplements" /></Field><div className="sm:col-span-2"><Field label="Notes"><Textarea name="notes" rows={2} /></Field></div><div className="sm:col-span-2 flex justify-end"><Button type="submit" loading={saving}><Plus /> Add nutrition log</Button></div>
+          <Field label="Date"><DatePicker name="date" defaultValue={today()} required /></Field><Field label="Meal / summary"><Input nativeInput name="meal" placeholder="High-protein breakfast" /></Field><Field label="Protein (g)"><Input nativeInput name="protein_grams" type="number" min="0" /></Field><Field label="Water (L)"><Input nativeInput name="water_liters" type="number" min="0" step="0.1" /></Field><Field label="Consistency (1–10)"><Input nativeInput name="consistency" type="number" min="1" max="10" /></Field><Field label="Supplements"><Input nativeInput name="supplements" /></Field><div className="sm:col-span-2"><Field label="Notes"><Textarea name="notes" rows={2} /></Field></div><div className="sm:col-span-2 flex justify-end"><Button type="submit" loading={saving}><Plus /> Add nutrition log</Button></div>
         </form>
         <div className="mt-6 space-y-2 border-t pt-4">{data.nutrition.slice(0, 8).map((item) => <div key={String(item.id)} className="flex items-center justify-between rounded-lg bg-secondary px-3 py-2 text-sm"><div><span>{String(item.date)}</span>{item.meal && <span className="ml-2 text-muted-foreground">{String(item.meal)}</span>}</div><div className="flex gap-2">{item.protein_grams && <Badge variant="outline">{String(item.protein_grams)}g protein</Badge>}{item.water_liters && <Badge variant="info"><Droplets />{String(item.water_liters)}L</Badge>}</div></div>)}{!data.nutrition.length && <p className="py-5 text-center text-sm text-muted-foreground">No nutrition logs yet.</p>}</div>
       </CardPanel></Card>
     </section>
 
     <Card><CardHeader><CardTitle>Private progress photos</CardTitle><CardDescription>Original files live in the private R2 bucket; metadata lives in D1</CardDescription><CardAction><Camera className="size-5 text-primary" /></CardAction></CardHeader><CardPanel>
-      <form onSubmit={uploadPhoto} className="grid gap-4 rounded-xl border border-dashed p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"><Field label="Date"><Input nativeInput name="date" type="date" defaultValue={today()} required /></Field><Field label="Label"><Input nativeInput name="label" placeholder="Front, side, month 3…" /></Field><Field label="Photo"><Input nativeInput name="photo" type="file" accept="image/*" required /></Field><Button type="submit" loading={saving}><Camera /> Upload privately</Button></form>
+      <form onSubmit={uploadPhoto} className="grid gap-4 rounded-xl border border-dashed p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"><Field label="Date"><DatePicker name="date" defaultValue={today()} required /></Field><Field label="Label"><Input nativeInput name="label" placeholder="Front, side, month 3…" /></Field><Field label="Photo"><Input nativeInput name="photo" type="file" accept="image/*" required /></Field><Button type="submit" loading={saving}><Camera /> Upload privately</Button></form>
       {data.photos.length ? <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">{data.photos.map((photo) => <figure key={String(photo.id)} className="group relative overflow-hidden rounded-xl border bg-secondary"><img src={`/api/progress-photos/${photo.id}`} alt={String(photo.label || `Progress photo ${photo.date}`)} className="aspect-[3/4] w-full object-cover" loading="lazy" /><figcaption className="p-3"><p className="text-sm font-medium">{String(photo.label || 'Progress')}</p><p className="text-xs text-muted-foreground">{String(photo.date)}</p></figcaption><button type="button" onClick={() => deletePhoto(Number(photo.id))} className="absolute right-2 top-2 rounded-lg bg-background/80 p-2 opacity-0 backdrop-blur transition group-hover:opacity-100" aria-label="Delete photo"><Trash2 className="size-4" /></button></figure>)}</div> : <p className="py-10 text-center text-sm text-muted-foreground">No progress photos yet.</p>}
     </CardPanel></Card>
   </div>

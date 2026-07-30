@@ -22,6 +22,17 @@ export function calculateDailyStreak(rows: Array<{ date: string }>, now = new Da
   return streak
 }
 
+export function calculateSleepHours(sleepTime: string, wakeTime: string) {
+  const toMinutes = (value: string) => {
+    const [hours, minutes] = value.split(':').map(Number)
+    return hours * 60 + minutes
+  }
+  const sleepMinutes = toMinutes(sleepTime)
+  let wakeMinutes = toMinutes(wakeTime)
+  if (wakeMinutes <= sleepMinutes) wakeMinutes += 24 * 60
+  return Math.round(((wakeMinutes - sleepMinutes) / 60) * 100) / 100
+}
+
 export function estimatedOneRepMax(weightKg: number, reps: number) {
   if (weightKg <= 0 || reps <= 0) return null
   return Math.round(weightKg * (1 + reps / 30) * 10) / 10
@@ -29,7 +40,7 @@ export function estimatedOneRepMax(weightKg: number, reps: number) {
 
 export function progressionSuggestion(lastSet?: { reps: number | null; rpe: number | null }) {
   if (!lastSet) return 'Log your first working set to establish a baseline.'
-  if (lastSet.rpe !== null && lastSet.rpe >= 9) return 'Maintain the load and improve readiness or execution before progressing.'
+  if (lastSet.rpe !== null && lastSet.rpe >= 9) return 'Maintain the load and improve execution before progressing.'
   if (lastSet.reps !== null && lastSet.reps >= 10) return 'You reached the top of a common rep range. Consider a small load increase.'
   return 'Keep the load and aim to add one clean rep next time.'
 }

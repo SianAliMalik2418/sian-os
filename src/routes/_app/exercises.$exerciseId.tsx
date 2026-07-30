@@ -16,7 +16,7 @@ function ExerciseDetailPage() {
   const suggestion = progressionSuggestion(recent)
   const recentSessions = new Set(history.slice(0, 15).map((set) => set.workout_id)).size
 
-  return <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+  return <div className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
     <header><Link to="/exercises" className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Exercise library</Link><p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Exercise history</p><h1 className="mt-2 font-heading text-3xl font-semibold">{exercise.name}</h1><p className="mt-2 text-muted-foreground">{exercise.muscle_group || 'Uncategorized'}{exercise.equipment ? ` · ${exercise.equipment}` : ''}</p></header>
     <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <RecordCard icon={Trophy} label="Max weight" value={records?.max_weight ? `${records.max_weight} kg` : '—'} />

@@ -61,4 +61,7 @@ The JSON format is versioned (`sian-os-export`, version `1`) so a future importe
 
 ## External coaching agents
 
-See [`docs/AGENT_API.md`](docs/AGENT_API.md). Agents call the public API without credentials. Writes are recorded in `agent_audit_log`; no arbitrary SQL endpoint exists.
+- [`docs/COACH_AGENT_HANDOFF.md`](docs/COACH_AGENT_HANDOFF.md) — complete coach and Cloudflare operations handoff.
+- [`docs/AGENT_API.md`](docs/AGENT_API.md) — concise API reference.
+
+Agents call the public API without credentials. Writes are recorded in `agent_audit_log`; no arbitrary SQL endpoint exists.

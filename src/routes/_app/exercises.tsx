@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_app/exercises')({ loader: () => getExerc
 
 function ExercisesPage() {
   const exercises = Route.useLoaderData()
-  return <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+  return <div className="mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
     <header className="mb-6"><p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Exercise library</p><h1 className="mt-2 font-heading text-3xl font-semibold">Know what is moving.</h1><p className="mt-2 text-muted-foreground">History, records, and training frequency for every movement you log.</p></header>
     {exercises.length ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{exercises.map((exercise) => <Card key={exercise.id}>
       <CardHeader><CardTitle>{exercise.name}</CardTitle><CardDescription>{exercise.muscle_group || 'Uncategorized'}{exercise.equipment ? ` · ${exercise.equipment}` : ''}</CardDescription><CardAction><Badge variant="outline">{exercise.workout_count} sessions</Badge></CardAction></CardHeader>

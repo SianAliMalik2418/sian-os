@@ -7,22 +7,21 @@ const date = z.string()
     return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
   }, 'Use a real calendar date')
 const optionalText = z.string().trim().max(2000).optional()
+const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use HH:mm')
 const rating = z.number().int().min(1).max(10).optional()
 
 export const checkinSchema = z.object({
   date,
   weight_kg: z.number().positive().max(500).optional(),
-  sleep_hours: z.number().min(0).max(24).optional(),
-  sleep_quality: rating,
+  sleep_time: time.optional(),
+  wake_time: time.optional(),
   water_liters: z.number().min(0).max(30).optional(),
   protein_grams: z.number().int().min(0).max(2000).optional(),
-  energy: rating,
-  motivation: rating,
-  recovery: rating,
-  mood: z.string().trim().max(80).optional(),
-  soreness: rating,
-  stress: rating,
   notes: optionalText,
+}).strict().superRefine((input, context) => {
+  if (Boolean(input.sleep_time) !== Boolean(input.wake_time)) {
+    context.addIssue({ code: 'custom', message: 'Sleep and wake time must be provided together', path: [input.sleep_time ? 'wake_time' : 'sleep_time'] })
+  }
 })
 
 export const workoutSetSchema = z.object({

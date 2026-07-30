@@ -32,7 +32,7 @@ Errors use an HTTP error status and a stable shape:
 }
 ```
 
-Dates use `YYYY-MM-DD`. Weights are kilograms, measurements are centimeters, water is liters, durations are minutes unless named `*_seconds`, and subjective scores are generally integers from 1–10. Omit unknown optional fields; do not invent data.
+Dates use `YYYY-MM-DD` and sleep/wake times use 24-hour `HH:mm`. Sleep duration is calculated by the server. Weights are kilograms, measurements are centimeters, water is liters, and durations are minutes unless named `*_seconds`. Omit unknown optional fields; do not invent data.
 
 ## Read endpoints
 
@@ -71,16 +71,10 @@ curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
   --data '{
     "date": "2026-08-01",
     "weight_kg": 72.4,
-    "sleep_hours": 7.5,
-    "sleep_quality": 8,
+    "sleep_time": "23:30",
+    "wake_time": "07:00",
     "water_liters": 2.5,
     "protein_grams": 145,
-    "energy": 8,
-    "motivation": 9,
-    "recovery": 8,
-    "mood": "focused",
-    "soreness": 3,
-    "stress": 4,
     "notes": "Ready to train"
   }'
 ```

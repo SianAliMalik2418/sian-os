@@ -2,16 +2,11 @@ export interface DailyCheckin {
   id: number
   date: string
   weight_kg: number | null
+  sleep_time: string | null
+  wake_time: string | null
   sleep_hours: number | null
-  sleep_quality: number | null
   water_liters: number | null
   protein_grams: number | null
-  energy: number | null
-  motivation: number | null
-  recovery: number | null
-  mood: string | null
-  soreness: number | null
-  stress: number | null
   notes: string | null
   created_at: string
   updated_at: string
@@ -92,7 +87,6 @@ export interface WeeklyReview {
   body_weight_change: number | null
   nutrition_consistency: number | null
   water_consistency: number | null
-  recovery_quality: number | null
   best_workout: string | null
   weakest_area: string | null
   wins: string | null

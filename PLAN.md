@@ -54,18 +54,11 @@ Goal: make the app useful every day in under two minutes.
 Tasks:
 
 - Wire dashboard cards to live D1 data.
-- Build daily check-in form:
+- Build a Coss UI daily check-in dialog:
   - weight
-  - sleep duration
-  - sleep quality
+  - sleep time and wake time with calculated duration
   - water intake
   - protein estimate
-  - energy
-  - motivation
-  - recovery
-  - mood
-  - soreness
-  - stress
   - notes
 - Add today/edit-existing behavior using `date` uniqueness.
 - Add streak calculation.
@@ -126,7 +119,7 @@ Tasks:
 - Add progressive overload suggestions:
   - increase reps first
   - increase weight when top of rep range is reached
-  - maintain load when RPE/recovery says not ready
+  - maintain load when RPE says not ready
 
 Acceptance criteria:
 
@@ -134,7 +127,7 @@ Acceptance criteria:
 - The app clearly shows PRs and trends.
 - The app can flag stalled lifts.
 
-## Phase 5 — Body Progress, Nutrition, and Recovery
+## Phase 5 — Body Progress and Nutrition
 
 Goal: connect physical progress and lifestyle inputs to performance.
 
@@ -154,19 +147,12 @@ Tasks:
   - water
   - supplements
   - consistency
-- Add recovery UI:
-  - sleep
-  - energy
-  - soreness
-  - stress
-  - recovery score
-- Add dashboard correlations between recovery and workout performance.
 
 Acceptance criteria:
 
 - Progress photos upload to R2 and metadata persists in D1.
 - Trends emphasize weekly/monthly patterns over daily noise.
-- Recovery and nutrition data appear in agent context.
+- Nutrition data appears in agent context.
 
 ## Phase 6 — Weekly Review System
 
@@ -182,7 +168,6 @@ Tasks:
   - body weight change
   - nutrition consistency
   - water consistency
-  - recovery quality
   - best workout
   - weak area
 - Add editable subjective fields:
@@ -217,7 +202,6 @@ Tasks:
   - workout
   - body measurement
   - nutrition log
-  - recovery note
   - weekly review fields
 - Add query endpoint with explicit modes, not arbitrary SQL.
 - Add examples using `curl`.
@@ -240,7 +224,7 @@ Tasks:
 - Add responsive sidebar/navigation.
 - Add loading and empty states.
 - Add keyboard-friendly forms.
-- Add mobile-first check-in flow.
+- Keep the check-in flow mobile-first in a scrollable dialog.
 - Add visual hierarchy for today/this week/long-term.
 - Add deployment polish:
   - production metadata

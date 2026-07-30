@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppCheckInRouteImport } from './routes/_app/check-in'
 import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
 import { Route as AppProgressRouteImport } from './routes/_app/progress'
 import { Route as AppWeeklyReviewRouteImport } from './routes/_app/weekly-review'
@@ -41,11 +40,6 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCheckInRoute = AppCheckInRouteImport.update({
-  id: '/check-in',
-  path: '/check-in',
   getParentRoute: () => AppRoute,
 } as any)
 const AppExercisesRoute = AppExercisesRouteImport.update({
@@ -157,7 +151,6 @@ const ApiWorkoutsWorkoutIdRoute = ApiWorkoutsWorkoutIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
-  '/check-in': typeof AppCheckInRoute
   '/exercises': typeof AppExercisesRouteWithChildren
   '/progress': typeof AppProgressRoute
   '/weekly-review': typeof AppWeeklyReviewRoute
@@ -181,7 +174,6 @@ export interface FileRoutesByFullPath {
   '/api/workouts/$workoutId': typeof ApiWorkoutsWorkoutIdRoute
 }
 export interface FileRoutesByTo {
-  '/check-in': typeof AppCheckInRoute
   '/exercises': typeof AppExercisesRouteWithChildren
   '/progress': typeof AppProgressRoute
   '/weekly-review': typeof AppWeeklyReviewRoute
@@ -208,7 +200,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
-  '/_app/check-in': typeof AppCheckInRoute
   '/_app/exercises': typeof AppExercisesRouteWithChildren
   '/_app/progress': typeof AppProgressRoute
   '/_app/weekly-review': typeof AppWeeklyReviewRoute
@@ -236,7 +227,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/check-in'
     | '/exercises'
     | '/progress'
     | '/weekly-review'
@@ -260,7 +250,6 @@ export interface FileRouteTypes {
     | '/api/workouts/$workoutId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/check-in'
     | '/exercises'
     | '/progress'
     | '/weekly-review'
@@ -286,7 +275,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
-    | '/_app/check-in'
     | '/_app/exercises'
     | '/_app/progress'
     | '/_app/weekly-review'
@@ -342,13 +330,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/check-in': {
-      id: '/_app/check-in'
-      path: '/check-in'
-      fullPath: '/check-in'
-      preLoaderRoute: typeof AppCheckInRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/exercises': {
@@ -514,7 +495,6 @@ const AppExercisesRouteWithChildren = AppExercisesRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
-  AppCheckInRoute: typeof AppCheckInRoute
   AppExercisesRoute: typeof AppExercisesRouteWithChildren
   AppProgressRoute: typeof AppProgressRoute
   AppWeeklyReviewRoute: typeof AppWeeklyReviewRoute
@@ -523,7 +503,6 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppCheckInRoute: AppCheckInRoute,
   AppExercisesRoute: AppExercisesRouteWithChildren,
   AppProgressRoute: AppProgressRoute,
   AppWeeklyReviewRoute: AppWeeklyReviewRoute,

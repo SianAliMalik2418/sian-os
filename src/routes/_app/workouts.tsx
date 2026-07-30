@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { getWorkoutData } from '@/lib/app.functions'
@@ -89,14 +90,14 @@ function WorkoutsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+    <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
       <header><p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Training log</p><h1 className="mt-2 font-heading text-3xl font-semibold">{editingId ? 'Edit workout' : 'Log a workout'}</h1><p className="mt-2 text-muted-foreground">Record the work. Previous performance stays visible while you build the next session.</p></header>
 
       <form onSubmit={submit} className="space-y-5">
         <Card>
           <CardHeader><CardTitle>Session</CardTitle><CardDescription>The frame around today’s work</CardDescription>{editingId && <CardAction><Button variant="ghost" size="sm" onClick={reset}><X /> Cancel edit</Button></CardAction>}</CardHeader>
           <CardPanel className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Field label="Date"><Input nativeInput type="date" value={date} onChange={(event) => setDate(event.target.value)} required /></Field>
+            <Field label="Date"><DatePicker value={date} onValueChange={setDate} required /></Field>
             <Field label="Title"><Input nativeInput value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Push strength" required /></Field>
             <Field label="Program"><Input nativeInput value={program} onChange={(event) => setProgram(event.target.value)} placeholder="Optional block" /></Field>
             <Field label="Duration (minutes)"><Input nativeInput type="number" min="0" value={duration} onChange={(event) => setDuration(event.target.value)} /></Field>

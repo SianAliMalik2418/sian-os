@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { db, recordApiWrite } from '@/lib/db'
 import { handleApi, json, readJson } from '@/lib/http'
+import { calculateSleepHours } from '@/lib/metrics'
 import { checkinSchema } from '@/lib/schemas'
 import { nullable } from '@/lib/sql'
 import type { DailyCheckin } from '@/lib/types'
@@ -22,12 +23,13 @@ export const Route = createFileRoute('/api/checkins')({
       }),
       POST: async ({ request }) => handleApi(async () => {
         const input = checkinSchema.parse(await readJson(request))
+        const sleepHours = input.sleep_time && input.wake_time ? calculateSleepHours(input.sleep_time, input.wake_time) : undefined
         const result = await db().prepare(`
-          INSERT INTO daily_checkins (date, weight_kg, sleep_hours, sleep_quality, water_liters, protein_grams, energy, motivation, recovery, mood, soreness, stress, notes, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-          ON CONFLICT(date) DO UPDATE SET weight_kg=excluded.weight_kg, sleep_hours=excluded.sleep_hours, sleep_quality=excluded.sleep_quality, water_liters=excluded.water_liters, protein_grams=excluded.protein_grams, energy=excluded.energy, motivation=excluded.motivation, recovery=excluded.recovery, mood=excluded.mood, soreness=excluded.soreness, stress=excluded.stress, notes=excluded.notes, updated_at=CURRENT_TIMESTAMP
+          INSERT INTO daily_checkins (date, weight_kg, sleep_time, wake_time, sleep_hours, water_liters, protein_grams, notes, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ON CONFLICT(date) DO UPDATE SET weight_kg=excluded.weight_kg, sleep_time=excluded.sleep_time, wake_time=excluded.wake_time, sleep_hours=excluded.sleep_hours, water_liters=excluded.water_liters, protein_grams=excluded.protein_grams, notes=excluded.notes, updated_at=CURRENT_TIMESTAMP
           RETURNING *
-        `).bind(input.date, nullable(input.weight_kg), nullable(input.sleep_hours), nullable(input.sleep_quality), nullable(input.water_liters), nullable(input.protein_grams), nullable(input.energy), nullable(input.motivation), nullable(input.recovery), nullable(input.mood), nullable(input.soreness), nullable(input.stress), nullable(input.notes)).first<DailyCheckin>()
+        `).bind(input.date, nullable(input.weight_kg), nullable(input.sleep_time), nullable(input.wake_time), nullable(sleepHours), nullable(input.water_liters), nullable(input.protein_grams), nullable(input.notes)).first<DailyCheckin>()
         await recordApiWrite('upsert', 'daily_checkin', result?.id, input)
         return json({ ok: true, data: result }, { status: 201 })
       }),
