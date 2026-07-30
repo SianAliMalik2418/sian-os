@@ -12,7 +12,9 @@ export class HttpError extends Error {
 }
 
 export function json(data: unknown, init?: ResponseInit) {
-  return Response.json(data, init)
+  const headers = new Headers(init?.headers)
+  if (!headers.has('Cache-Control')) headers.set('Cache-Control', 'no-store')
+  return Response.json(data, { ...init, headers })
 }
 
 export function apiError(status: number, code: string, message: string, details?: unknown) {

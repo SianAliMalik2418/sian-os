@@ -17,7 +17,7 @@ export const Route = createFileRoute('/api/progress-photos/$photoId')({
         if (!photo) throw new HttpError(404, 'NOT_FOUND', 'Photo not found')
         const object = await env.FILES.get(photo.r2_key)
         if (!object) throw new HttpError(404, 'OBJECT_NOT_FOUND', 'Photo object not found')
-        const headers = new Headers({ 'Cache-Control': 'private, max-age=3600', ETag: object.httpEtag })
+        const headers = new Headers({ 'Cache-Control': 'public, max-age=3600', ETag: object.httpEtag })
         object.writeHttpMetadata(headers)
         return new Response(object.body, { headers })
       }),
