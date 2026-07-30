@@ -187,7 +187,7 @@ Reports are derived read-only views; they are not saved as separate records. `GE
 - `progress_photos`: D1 metadata and private R2 object key.
 - `agent_audit_log`: API write history with action, entity type, entity ID, payload, and timestamp.
 
-Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both are local-only until explicitly approved for production.
+Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval.
 
 ## Calculated metrics
 
