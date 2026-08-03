@@ -39,17 +39,35 @@ npm run db:remote
 
 Migrations are append-only files in `migrations/`. Do not modify an applied migration. Add the next numbered migration and document destructive/manual rollback steps. D1 migrations are forward-oriented; take a JSON/R2 backup from **Export all data** before risky schema changes.
 
-## Checks and deployment
+## Push and deployment
+
+Follow the complete [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) runbook for backups, migrations, pushing, deployment, verification, and failure handling.
+
+**Run checks and build:**
 
 ```bash
 npm run typecheck
 npm test
 npm run build
 npm audit --audit-level=high
+```
+
+**Commit and push `main`:**
+
+```bash
+git add -A
+git commit -m "Describe the change"
+git push origin main
+```
+
+**Apply new approved production migrations, then deploy:**
+
+```bash
+npm run db:remote
 npm run deploy
 ```
 
-The production Worker is configured as `sian-os`. Confirm migrations before deployment.
+Skip `npm run db:remote` when no new migration exists. The production Worker is `sian-os`; record its version ID and smoke-test production after deployment.
 
 ## Backups and exports
 
@@ -64,5 +82,6 @@ The JSON format is versioned (`sian-os-export`, version `4`) so a future importe
 - [`docs/FITNESS_COACHING_CONTEXT.md`](docs/FITNESS_COACHING_CONTEXT.md) — canonical living record of personal coaching context and confirmed decisions.
 - [`docs/COACH_AGENT_HANDOFF.md`](docs/COACH_AGENT_HANDOFF.md) — complete coach and Cloudflare operations handoff.
 - [`docs/AGENT_API.md`](docs/AGENT_API.md) — concise API reference.
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Git push and Cloudflare deployment runbook.
 
 Agents call the public API without credentials. Writes are recorded in `agent_audit_log`; no arbitrary SQL endpoint exists.

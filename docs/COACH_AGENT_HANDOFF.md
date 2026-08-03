@@ -278,7 +278,9 @@ Use exactly:
 npm run dev
 ```
 
-Checks:
+The canonical push/deployment procedure is [`docs/DEPLOYMENT.md`](./DEPLOYMENT.md). It covers Git synchronization, checks, backups, migrations, deployment, verification, and failure recovery.
+
+**Run checks and build:**
 
 ```bash
 npm run typecheck
@@ -287,12 +289,22 @@ npm run build
 npm audit --audit-level=high
 ```
 
-Deployment:
+**Commit and push:**
+
+```bash
+git add -A
+git commit -m "Describe the change"
+git push origin main
+```
+
+**After backing up, apply any new approved migration and deploy:**
 
 ```bash
 npm run db:remote
 npm run deploy
 ```
+
+Skip the migration command when none is pending. Always build after the final code change because Wrangler deploys the existing `dist/` output.
 
 ## Product invariants
 
