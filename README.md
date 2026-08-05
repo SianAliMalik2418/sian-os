@@ -80,6 +80,8 @@ The JSON format is versioned (`sian-os-export`, version `4`) so a future importe
 ## External coaching agents
 
 - [`docs/FITNESS_COACHING_CONTEXT.md`](docs/FITNESS_COACHING_CONTEXT.md) — canonical living record of personal coaching context and confirmed decisions.
+- [`docs/agents/COACH_AGENT.md`](docs/agents/COACH_AGENT.md) — daily judgment, guidance, accountability, and progress-analysis role.
+- [`docs/agents/DATA_STEWARD_AGENT.md`](docs/agents/DATA_STEWARD_AGENT.md) — confirmed-data recording and verification role.
 - [`docs/COACH_AGENT_HANDOFF.md`](docs/COACH_AGENT_HANDOFF.md) — complete coach and Cloudflare operations handoff.
 - [`docs/AGENT_API.md`](docs/AGENT_API.md) — concise API reference.
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Git push and Cloudflare deployment runbook.

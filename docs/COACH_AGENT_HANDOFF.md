@@ -6,6 +6,8 @@ This is the operating guide for an external wellness coach that can use the Sian
 
 For the owner's personal profile, goals, coaching rules, current training phase, Hevy decision, and dated decision history, read the canonical [`FITNESS_COACHING_CONTEXT.md`](./FITNESS_COACHING_CONTEXT.md) first.
 
+Fitness operations are split between [`agents/COACH_AGENT.md`](./agents/COACH_AGENT.md) and [`agents/DATA_STEWARD_AGENT.md`](./agents/DATA_STEWARD_AGENT.md). The Coach reads and judges records but does not write them; the Data Steward writes and verifies records but does not coach. Neither role inspects source code during a fitness operation.
+
 ## Purpose
 
 Sian OS is a single-user wellness operating system for:
@@ -47,17 +49,20 @@ Treat all body and photo data as sensitive despite the intentionally public conf
 | Worker compatibility date | `2026-07-29` |
 | Worker compatibility flag | `nodejs_compat` |
 
-Supply Cloudflare credentials through the coach's secure environment, normally as `CLOUDFLARE_API_TOKEN`. Never add the value to this repository.
+Supply Cloudflare credentials only through an authorized administrative environment, normally as `CLOUDFLARE_API_TOKEN`. Never add the value to this repository.
 
-## Normal coaching workflow
+## Normal data-access workflow
 
-At the beginning of a session:
+At the beginning of a fitness session:
 
 1. Fetch `/api/health`.
 2. Fetch `/api/agent/context`.
 3. Check `generatedAt`, recent dates, and whether today's check-in exists.
 4. Base observations on recorded facts.
 5. Ask for missing measurements or subjective information.
+
+The Coach Agent stops at read/analysis and never writes records. When recording is requested, the Data Steward Agent continues:
+
 6. Ask before destructive operations.
 7. Write only confirmed information.
 8. Re-read the affected endpoint after writing.

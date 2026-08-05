@@ -4,7 +4,7 @@
 >
 > Owner: Sian Malik
 >
-> Last updated: 2026-07-30
+> Last updated: 2026-08-05
 >
 > Status: Active
 
@@ -271,26 +271,55 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Progress photos | Sian OS check-in dialog/R2 |
 | Derived daily/weekly/monthly wellness reports | Sian OS Reports page |
 | Coaching rules, platform decisions, exceptions, and long-term context | This document |
-| Subjective explanation for the current day | Coaching conversation, then confirmed summary in Sian OS when appropriate |
+| Subjective explanation for the current day | Coaching conversation, then Data Steward records a confirmed summary in Sian OS when appropriate |
 
 Do not duplicate individual workouts into Sian OS.
 
-## Coach operating procedure
+## Two-agent coaching workflow
 
-At the start of a coaching session:
+Fitness operations use two separate roles with no routine overlap.
 
-1. Read this document.
-2. Fetch Sian OS `/api/health`.
-3. Fetch Sian OS `/api/agent/context`.
-4. Check Hevy for completed workout evidence when training data is relevant.
-5. Compare the recorded facts with Sian's report.
-6. Ask for missing or ambiguous information.
-7. Write only confirmed data.
-8. Re-read and verify every Sian OS write.
-9. Use the normal API for routine writes so validation and audit logging are preserved.
-10. Use direct Cloudflare D1 only for inspection, backups, migrations, or owner-approved repair.
-11. Obtain explicit approval immediately before destructive operations.
-12. If a new decision is reached, update this document and its decision log in the same work session.
+### Coach Agent
+
+The Coach Agent:
+
+- judges daily execution;
+- guides Sian and challenges excuses;
+- analyzes daily, weekly, and longer-term progress;
+- reads Sian OS wellness records and Hevy workout records;
+- gives one evidence-based daily verdict and the next non-negotiable action;
+- does not inspect application code or debug Sian OS;
+- does not write, edit, or delete operational records;
+- may update this canonical document only after a coaching decision is explicitly confirmed.
+
+The detailed role contract is [`agents/COACH_AGENT.md`](./agents/COACH_AGENT.md).
+
+### Data Steward Agent
+
+The Data Steward Agent:
+
+- records only facts Sian explicitly confirms;
+- reads the existing record before an update;
+- writes routine wellness data through the validated Sian OS API;
+- verifies every stored result;
+- reports what was written, preserved, and left unknown;
+- does not coach, judge, change the plan, or inspect application code;
+- never copies Hevy workouts into Sian OS.
+
+The detailed role contract is [`agents/DATA_STEWARD_AGENT.md`](./agents/DATA_STEWARD_AGENT.md).
+
+### Daily sequence
+
+When Sian submits daily facts and asks for coaching in one message:
+
+1. The Data Steward records and verifies the confirmed facts.
+2. The Coach rereads the fresh records.
+3. The Coach checks relevant Hevy workout evidence.
+4. The Coach compares the day with the currently applicable rules and recent trends.
+5. The Coach gives one verdict: `On Track`, `Needs Correction`, `Off Plan`, or `Insufficient Data`.
+6. The Coach states the evidence, progress, main correction, and next required action.
+
+This sequence runs when Sian initiates a daily check-in. No autonomous background schedule is currently configured.
 
 Never infer a workout from a scheduled day. Never infer that no workout occurred merely because Sian OS has no workout record; Hevy is the workout source of truth.
 
@@ -395,3 +424,4 @@ These references support the standing targets but do not replace individualized 
 | 2026-07-30 | Retire the standalone Progress flow and consolidate daily data entry. | Body-measurement and separate nutrition-log systems are removed; meal text and progress photos move into Check-in, Profile gets its own page, and daily reports can edit/delete check-ins. |
 | 2026-07-30 | The coach may use Sian's authenticated shared-browser Hevy session for read-only coaching review. | Sian logs in personally; credentials are never shared or recorded. |
 | 2026-07-30 | The earlier 9:30 pm bedtime target is too late for a 4:25 am wake time. | Active target is 8:45 pm lights out, with 9:00 pm as the normal hard ceiling. |
+| 2026-08-05 | Split fitness operations into a Coach Agent and a Data Steward Agent. | The Data Steward records and verifies confirmed facts first; the Coach then rereads the records, checks Hevy, judges the day, analyzes progress, and guides Sian. Neither role inspects application code during fitness operations. |
