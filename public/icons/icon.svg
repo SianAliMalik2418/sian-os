@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sian OS dumbbell">
+  <rect width="512" height="512" rx="112" fill="#090b0d"/>
+  <g transform="rotate(-18 256 256)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M176 256h160" stroke="#eef3f6" stroke-width="36"/>
+    <path d="M123 198v116M158 184v144M354 184v144M389 198v116" stroke="#7dd3a8" stroke-width="38"/>
+    <path d="M91 224v64M421 224v64" stroke="#eef3f6" stroke-width="38"/>
+  </g>
+</svg>
