@@ -1,5 +1,6 @@
-const CACHE_VERSION = 'sian-os-v2'
+const CACHE_VERSION = 'sian-os-v3'
 const STATIC_CACHE = `${CACHE_VERSION}-static`
+const PAGE_CACHE = `${CACHE_VERSION}-pages`
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon.svg',
@@ -92,7 +93,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => offlineResponse()))
+    event.respondWith(networkFirstPage(request))
     return
   }
 
@@ -103,6 +104,23 @@ self.addEventListener('fetch', (event) => {
 
 function isStaticAsset(url) {
   return url.pathname.startsWith('/assets/') || url.pathname.startsWith('/icons/') || STATIC_ASSETS.includes(url.pathname)
+}
+
+async function networkFirstPage(request) {
+  const cache = await caches.open(PAGE_CACHE)
+
+  try {
+    const response = await fetch(request)
+    if (response.ok) {
+      cache.put(request, response.clone())
+      if (new URL(request.url).pathname === '/') {
+        cache.put('/', response.clone())
+      }
+    }
+    return response
+  } catch {
+    return (await cache.match(request)) || (await cache.match('/')) || offlineResponse()
+  }
 }
 
 function offlineResponse() {

@@ -1,9 +1,7 @@
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
-import { Activity, ChartNoAxesCombined, ClipboardCheck, MoreHorizontal, UserRound } from 'lucide-react'
-import { useState } from 'react'
-import { DailyCheckinDialogProvider, useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
+import { Activity, ChartNoAxesCombined, UserRound } from 'lucide-react'
+import { DailyCheckinDialogProvider } from '@/components/daily-checkin-dialog'
 import { Button } from '@/components/ui/button'
-import { Drawer, DrawerDescription, DrawerHeader, DrawerPanel, DrawerPopup, DrawerTitle } from '@/components/ui/drawer'
 import { getProgressPhotos, getTodayCheckin } from '@/lib/app.functions'
 
 export const Route = createFileRoute('/_app')({
@@ -26,9 +24,6 @@ function AppLayout() {
 }
 
 function AppShell() {
-  const { openCheckin } = useDailyCheckinDialog()
-  const [moreOpen, setMoreOpen] = useState(false)
-
   return (
     <div className="dark min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 flex h-14 items-center border-b bg-background/90 px-4 backdrop-blur lg:hidden">
@@ -47,26 +42,13 @@ function AppShell() {
         </div>
       </aside>
 
-      <Drawer open={moreOpen} onOpenChange={setMoreOpen} position="bottom">
-        <DrawerPopup showBar showCloseButton className="lg:hidden">
-          <DrawerHeader><DrawerTitle>More</DrawerTitle><DrawerDescription>Data tools</DrawerDescription></DrawerHeader>
-          <DrawerPanel className="grid gap-1 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-            <Button render={<a href="/api/export" />} variant="ghost" className="h-12 justify-start gap-3 rounded-xl px-3"><Activity className="size-5 text-primary" /> Export all data</Button>
-          </DrawerPanel>
-        </DrawerPopup>
-      </Drawer>
-
       <main className="min-h-screen pb-24 lg:pb-0 lg:pl-64"><Outlet /></main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Primary navigation">
-        <div className="mx-auto grid h-18 max-w-md grid-cols-5">
+        <div className="mx-auto grid h-18 max-w-md grid-cols-3">
           <MobileLink to="/" label="Today" icon={Activity} exact />
-          <Button type="button" variant="ghost" onClick={() => openCheckin()} className="h-full min-w-0 flex-col gap-1 rounded-xl px-1 text-[0.65rem] font-medium text-muted-foreground"><ClipboardCheck className="size-5" /><span>Check-in</span></Button>
           <MobileLink to="/reports" label="Reports" icon={ChartNoAxesCombined} />
           <MobileLink to="/profile" label="Profile" icon={UserRound} />
-          <Button type="button" variant="ghost" onClick={() => setMoreOpen((value) => !value)} className={`h-full min-w-0 flex-col gap-1 rounded-xl px-1 text-[0.65rem] font-medium ${moreOpen ? 'text-primary' : 'text-muted-foreground'}`} aria-expanded={moreOpen}>
-            <MoreHorizontal className="size-5" /><span>More</span>
-          </Button>
         </div>
       </nav>
     </div>

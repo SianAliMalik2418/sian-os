@@ -1,6 +1,6 @@
 import { useRouter } from '@tanstack/react-router'
 import { Camera, Check, Clock3, Save, Trash2 } from 'lucide-react'
-import { createContext, useContext, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
@@ -10,6 +10,8 @@ import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { calculateSleepHours } from '@/lib/metrics'
+import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offline-checkins'
+import type { CheckinInput } from '@/lib/schemas'
 import type { DailyCheckin, ProgressPhoto } from '@/lib/types'
 
 const numericFields = ['weight_kg', 'water_liters', 'protein_grams', 'calories'] as const
@@ -35,7 +37,41 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
   const [photoLabel, setPhotoLabel] = useState('')
   const [photoDeleteId, setPhotoDeleteId] = useState<number>()
   const [error, setError] = useState<string>()
+  const [syncMessage, setSyncMessage] = useState<string>()
+  const [pendingCount, setPendingCount] = useState(0)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const refreshPendingCount = useCallback(() => {
+    setPendingCount(readQueuedCheckins().length)
+  }, [])
+
+  const syncPendingCheckins = useCallback(async () => {
+    const result = await syncQueuedCheckins()
+    setPendingCount(result.pending)
+
+    if (result.synced > 0) {
+      setSyncMessage(`${result.synced} offline check-in${result.synced === 1 ? '' : 's'} synced`)
+      await router.invalidate()
+    }
+
+    if (result.failed) {
+      setSyncMessage(`Offline sync blocked: ${result.failed.lastError}`)
+    }
+  }, [router])
+
+  useEffect(() => {
+    refreshPendingCount()
+    void syncPendingCheckins()
+    window.addEventListener('online', syncPendingCheckins)
+    return () => window.removeEventListener('online', syncPendingCheckins)
+  }, [refreshPendingCount, syncPendingCheckins])
+
+  useEffect(() => {
+    if (!syncMessage || pendingCount > 0) return
+
+    const timeout = window.setTimeout(() => setSyncMessage(undefined), 5000)
+    return () => window.clearTimeout(timeout)
+  }, [pendingCount, syncMessage])
 
   const sleepHours = useMemo(() => {
     if (!/^\d{2}:\d{2}$/.test(values.sleep_time || '') || !/^\d{2}:\d{2}$/.test(values.wake_time || '')) return null
@@ -50,8 +86,17 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
   async function openCheckin(date = today()) {
     setOpen(true)
     setError(undefined)
+    setSyncMessage(undefined)
     setPhotoLabel('')
     if (fileRef.current) fileRef.current.value = ''
+
+    const queued = readQueuedCheckins().find((item) => item.payload.date === date)
+    if (queued) {
+      setEditing(null)
+      setValues(valuesFromQueuedCheckin(queued.payload))
+      setSyncMessage('This check-in is saved offline and will sync when you are online.')
+      return
+    }
 
     if (existing?.date === date) {
       setEditing(existing)
@@ -89,7 +134,7 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
     const payload = Object.fromEntries(Object.entries(values).flatMap(([key, value]) => {
       if (value === '') return []
       return [[key, numeric.has(key) ? Number(value) : value]]
-    }))
+    })) as CheckinInput
 
     try {
       const response = await fetch('/api/checkins', {
@@ -102,6 +147,14 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
       setOpen(false)
       await router.invalidate()
     } catch (caught) {
+      if (isOfflineSave(caught)) {
+        queueCheckin(payload)
+        refreshPendingCount()
+        setOpen(false)
+        setSyncMessage('Check-in saved offline. It will sync when the app is online.')
+        return
+      }
+
       setError(caught instanceof Error ? caught.message : 'Could not save check-in')
     } finally {
       setSaving(false)
@@ -150,6 +203,7 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
   return (
     <DailyCheckinDialogContext.Provider value={{ openCheckin }}>
       {children}
+      <OfflineSyncStatus pendingCount={pendingCount} message={syncMessage} />
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogPopup className="h-[min(52rem,calc(100dvh-2rem))] max-w-2xl max-sm:h-[calc(100dvh-3rem)]">
           <Form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
@@ -157,6 +211,7 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
               <div className="flex items-center gap-2">
                 <DialogTitle>{editing ? 'Edit daily check-in' : 'Daily check-in'}</DialogTitle>
                 {editing && <Badge variant="success"><Check /> Saved</Badge>}
+                {pendingCount > 0 && <Badge variant="warning">{pendingCount} offline</Badge>}
               </div>
               <DialogDescription>Log wellness, meals, and progress photos for one day.</DialogDescription>
             </DialogHeader>
@@ -223,6 +278,7 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
               </section>
 
               {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
+              {syncMessage && <p role="status" className="rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary">{syncMessage}</p>}
             </DialogPanel>
 
             <DialogFooter className="pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4">
@@ -244,6 +300,10 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
   )
 }
 
+function isOfflineSave(error: unknown) {
+  return (typeof navigator !== 'undefined' && !navigator.onLine) || error instanceof TypeError
+}
+
 function valuesFromCheckin(existing: DailyCheckin | null, date = today()) {
   const values: Record<string, string> = { date, nutrition_notes: nutritionTemplate }
   if (!existing) return values
@@ -253,6 +313,20 @@ function valuesFromCheckin(existing: DailyCheckin | null, date = today()) {
   return values
 }
 
+function valuesFromQueuedCheckin(payload: CheckinInput) {
+  return Object.fromEntries(Object.entries(payload).map(([key, value]) => [key, String(value)]))
+}
+
 function CheckinField({ label, description, children }: { label: string; description?: string; children: ReactNode }) {
   return <Field><FieldLabel>{label}</FieldLabel>{children}{description && <FieldDescription>{description}</FieldDescription>}</Field>
+}
+
+function OfflineSyncStatus({ pendingCount, message }: { pendingCount: number; message?: string }) {
+  if (!message && pendingCount === 0) return null
+
+  return (
+    <div className="fixed inset-x-3 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-md rounded-lg border bg-popover px-3 py-2 text-sm text-popover-foreground shadow-lg lg:bottom-4 lg:left-auto lg:right-4 lg:mx-0">
+      <p>{message || `${pendingCount} check-in${pendingCount === 1 ? '' : 's'} waiting to sync`}</p>
+    </div>
+  )
 }
