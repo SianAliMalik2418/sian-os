@@ -284,9 +284,9 @@ Do not duplicate detailed individual workouts into Sian OS. A short workout stat
 
 Fitness operations use two separate roles with no routine overlap.
 
-The current owner-initiated ChatGPT loop is:
+The current owner-initiated agent loop is:
 
-1. Sian opens ChatGPT and gives a fast natural-language daily log.
+1. Sian opens an agent session and gives a fast natural-language daily log.
 2. The Data Steward parses confirmed facts and writes one Sian OS daily check-in.
 3. The Data Steward verifies the stored record and reports what was written, preserved, and still unknown.
 4. When Sian says `Analyze yesterday`, the Coach reads Sian OS records and gives the daily verdict.

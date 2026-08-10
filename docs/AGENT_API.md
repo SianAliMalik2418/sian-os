@@ -110,7 +110,7 @@ curl -sS -X PUT "$SIAN_OS_URL/api/agent/state" \
 
 This state is for cadence only. Do not store daily logs, coaching advice, credentials, or private notes in `agent_state`.
 
-## ChatGPT daily loop
+## Agent daily loop
 
 For daily logging, parse natural language into one `/api/checkins` upsert, then verify by date. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
 

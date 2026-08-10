@@ -73,7 +73,7 @@ For Data Steward Sian OS writes:
 - obtain explicit owner approval before destructive changes;
 - back up before approved direct database repair.
 
-For the current ChatGPT daily loop:
+For the current owner-initiated agent loop:
 
 - natural-language daily logs are parsed by the Data Steward into Sian OS check-ins;
 - `nutrition_notes` holds formatted meals, snacks, drinks, and practical portions;

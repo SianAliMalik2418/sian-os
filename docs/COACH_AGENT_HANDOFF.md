@@ -76,7 +76,7 @@ curl -sS "$SIAN_OS_URL/api/agent/context"
 
 Do not invent body weight, food intake, sleep times, symptoms, or subjective scores. Omit unknown optional fields rather than sending guesses or zeroes.
 
-## Owner-initiated ChatGPT loop
+## Owner-initiated agent loop
 
 Sian wants a simple, fast loop with no automatic pings:
 
