@@ -267,13 +267,15 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Sleep and wake time | Sian OS daily check-in |
 | Daily body weight when measured | Sian OS daily check-in |
 | Water and protein | Sian OS daily check-in |
+| Estimated calories | Sian OS daily check-in |
 | Breakfast, lunch, dinner, and food summary | Sian OS daily check-in nutrition textarea |
+| Brief daily workout status or summary | Sian OS daily check-in workout textarea |
 | Progress photos | Sian OS check-in dialog/R2 |
 | Derived daily/weekly/monthly wellness reports | Sian OS Reports page |
 | Coaching rules, platform decisions, exceptions, and long-term context | This document |
 | Subjective explanation for the current day | Coaching conversation, then Data Steward records a confirmed summary in Sian OS when appropriate |
 
-Do not duplicate individual workouts into Sian OS.
+Do not duplicate detailed individual workouts into Sian OS. A short workout status or summary may be stored in the daily check-in for coaching context, but Hevy remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, and progression.
 
 ## Two-agent coaching workflow
 
@@ -304,7 +306,7 @@ The Data Steward Agent:
 - verifies every stored result;
 - reports what was written, preserved, and left unknown;
 - does not coach, judge, change the plan, or inspect application code;
-- never copies Hevy workouts into Sian OS.
+- never copies detailed Hevy workouts into Sian OS.
 
 The detailed role contract is [`agents/DATA_STEWARD_AGENT.md`](./agents/DATA_STEWARD_AGENT.md).
 
@@ -321,7 +323,7 @@ When Sian submits daily facts and asks for coaching in one message:
 
 This sequence runs when Sian initiates a daily check-in. No autonomous background schedule is currently configured.
 
-Never infer a workout from a scheduled day. Never infer that no workout occurred merely because Sian OS has no workout record; Hevy is the workout source of truth.
+Never infer a workout from a scheduled day. Never infer that no workout occurred merely because Sian OS has no workout note; Hevy is the detailed workout source of truth.
 
 ## Daily reporting format
 
@@ -340,6 +342,7 @@ Lunch:
 Dinner:
 Snacks and drinks:
 Estimated protein:
+Estimated calories:
 Water:
 Creatine:
 Biggest deviation:
@@ -356,6 +359,7 @@ During the approved exam break, the workout field should be recorded as `approve
 - body weight when measured;
 - water;
 - protein;
+- calories when estimated;
 - food summary;
 - creatine;
 - workout status when training is active;
@@ -419,9 +423,10 @@ These references support the standing targets but do not replace individualized 
 | 2026-07-30 | The false API smoke-test check-in may be removed. | It was backed up, deleted, audited, and verified absent. |
 | 2026-07-30 | Exams justify a planned gym break through 2026-08-06. | No gym sessions in that period count as missed. |
 | 2026-07-30 | Gym training restarts on Friday, 2026-08-07. | Re-entry begins at 60–70% loads, 3–4 RIR, no failure, for the first ten completed sessions. |
-| 2026-07-30 | Hevy is the workout source of truth. | Workouts are logged in Hevy, not duplicated in Sian OS; Sian OS workout tracking has been removed. |
+| 2026-07-30 | Hevy is the workout source of truth. | Detailed workouts are logged in Hevy, not duplicated in Sian OS; Sian OS structured workout tracking has been removed. |
 | 2026-07-30 | Replace Sian OS weekly-review journaling with derived reports. | One Reports page provides daily, weekly, and monthly intervals, preset/custom date ranges, Dither Kit charts, summaries, and detail tables without storing separate report records. |
 | 2026-07-30 | Retire the standalone Progress flow and consolidate daily data entry. | Body-measurement and separate nutrition-log systems are removed; meal text and progress photos move into Check-in, Profile gets its own page, and daily reports can edit/delete check-ins. |
 | 2026-07-30 | The coach may use Sian's authenticated shared-browser Hevy session for read-only coaching review. | Sian logs in personally; credentials are never shared or recorded. |
 | 2026-07-30 | The earlier 9:30 pm bedtime target is too late for a 4:25 am wake time. | Active target is 8:45 pm lights out, with 9:00 pm as the normal hard ceiling. |
 | 2026-08-05 | Split fitness operations into a Coach Agent and a Data Steward Agent. | The Data Steward records and verifies confirmed facts first; the Coach then rereads the records, checks Hevy, judges the day, analyzes progress, and guides Sian. Neither role inspects application code during fitness operations. |
+| 2026-08-10 | Sian OS daily check-ins may include estimated calories and brief workout-summary text. | Calories become a structured check-in field; workout text is allowed only as a short daily status/summary, while Hevy remains authoritative for detailed workout records and progression. |

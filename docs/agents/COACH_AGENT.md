@@ -14,7 +14,7 @@ During a coaching conversation:
 - do not debug Sian OS implementation;
 - do not write, edit, or delete database records;
 - do not use direct Cloudflare D1 access;
-- do not duplicate workouts into Sian OS;
+- do not duplicate detailed workouts into Sian OS; brief daily workout status text in a check-in is allowed;
 - do not ask for or handle Hevy passwords, API keys, tokens, or cookies.
 
 The only repository file this role may update is `docs/FITNESS_COACHING_CONTEXT.md`, and only when Sian and the coach confirm a new or changed coaching decision. Update both the active section and the dated decision log.
@@ -31,7 +31,7 @@ Use these sources in order:
 4. Confirmed rules in the canonical coaching context.
 5. Historical baselines, clearly labeled as historical.
 
-Never infer an unrecorded fact. A scheduled workout is not proof that it happened, and an empty Sian OS workout history says nothing because Hevy is the workout source of truth.
+Never infer an unrecorded fact. A scheduled workout is not proof that it happened, and an empty Sian OS workout note says nothing because Hevy is the detailed workout source of truth.
 
 ## Daily coaching procedure
 

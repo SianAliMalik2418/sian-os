@@ -21,7 +21,7 @@ export const Route = createFileRoute('/api/reports')({
 
         const lowerBound = from ?? '0000-01-01'
         const upperBound = to ?? '9999-12-31'
-        const checkins = await db().prepare('SELECT date, weight_kg, sleep_hours, water_liters, protein_grams FROM daily_checkins WHERE date BETWEEN ? AND ? ORDER BY date').bind(lowerBound, upperBound).all<DailyCheckin>()
+        const checkins = await db().prepare('SELECT date, weight_kg, sleep_hours, water_liters, protein_grams, calories FROM daily_checkins WHERE date BETWEEN ? AND ? ORDER BY date').bind(lowerBound, upperBound).all<DailyCheckin>()
         const daily = buildDailyReports(checkins.results)
         const points = interval === 'daily' ? daily : aggregateReports(daily, interval)
         return json({ ok: true, data: { from, to, interval, summary: reportAverages(daily), points } })

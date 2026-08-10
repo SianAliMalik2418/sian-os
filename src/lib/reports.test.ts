@@ -2,15 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { aggregateReports, buildDailyReports, reportAverages } from './reports'
 
 const daily = buildDailyReports([
-  { date: '2026-07-27', weight_kg: 70, sleep_hours: 7, water_liters: 2, protein_grams: 120 },
-  { date: '2026-07-28', weight_kg: 71, sleep_hours: 8, water_liters: null, protein_grams: null },
-  { date: '2026-08-02', weight_kg: 72, sleep_hours: 6, water_liters: 3, protein_grams: 140 },
+  { date: '2026-07-27', weight_kg: 70, sleep_hours: 7, water_liters: 2, protein_grams: 120, calories: 2200 },
+  { date: '2026-07-28', weight_kg: 71, sleep_hours: 8, water_liters: null, protein_grams: null, calories: null },
+  { date: '2026-08-02', weight_kg: 72, sleep_hours: 6, water_liters: 3, protein_grams: 140, calories: 2600 },
 ])
 
 describe('reports', () => {
   it('builds one daily point per check-in', () => {
     expect(daily).toHaveLength(3)
-    expect(daily[1]).toMatchObject({ period: '2026-07-28', weight_kg: 71, water_liters: null, protein_grams: null, checkins: 1 })
+    expect(daily[1]).toMatchObject({ period: '2026-07-28', weight_kg: 71, water_liters: null, protein_grams: null, calories: null, checkins: 1 })
   })
 
   it('aggregates calendar weeks using Monday boundaries', () => {
@@ -27,6 +27,6 @@ describe('reports', () => {
   })
 
   it('calculates summary averages without treating missing values as zero', () => {
-    expect(reportAverages(daily)).toMatchObject({ weight_kg: 71, sleep_hours: 7, checkins: 3 })
+    expect(reportAverages(daily)).toMatchObject({ weight_kg: 71, sleep_hours: 7, calories: 2400, checkins: 3 })
   })
 })

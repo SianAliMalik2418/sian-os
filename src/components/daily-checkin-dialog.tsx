@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { calculateSleepHours } from '@/lib/metrics'
 import type { DailyCheckin, ProgressPhoto } from '@/lib/types'
 
-const numericFields = ['weight_kg', 'water_liters', 'protein_grams'] as const
+const numericFields = ['weight_kg', 'water_liters', 'protein_grams', 'calories'] as const
 const nutritionTemplate = 'Breakfast:\nLunch:\nDinner:'
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -195,10 +195,17 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
                 <CheckinField label="Protein" description="Estimated grams">
                   <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="140" value={values.protein_grams || ''} onChange={(event) => update('protein_grams', event.target.value)} />
                 </CheckinField>
+                <CheckinField label="Calories" description="Estimated kcal">
+                  <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="2400" value={values.calories || ''} onChange={(event) => update('calories', event.target.value)} />
+                </CheckinField>
               </div>
 
               <CheckinField label="Nutrition" description="Add meals or a simple food summary">
                 <Textarea value={values.nutrition_notes || ''} onChange={(event) => update('nutrition_notes', event.target.value)} rows={6} />
+              </CheckinField>
+
+              <CheckinField label="Workout" description="Optional free-text summary; detailed workouts stay in Hevy">
+                <Textarea value={values.workout_text || ''} onChange={(event) => update('workout_text', event.target.value)} placeholder="Status, Hevy workout name, or brief summary…" rows={4} />
               </CheckinField>
 
               <CheckinField label="Notes" description="Optional context for appetite, aches, energy, or schedule changes">

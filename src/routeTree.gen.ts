@@ -22,6 +22,7 @@ import { Route as ApiProgressPhotosRouteImport } from './routes/api/progress-pho
 import { Route as ApiReportsRouteImport } from './routes/api/reports'
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
 import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
+import { Route as ApiAgentStateRouteImport } from './routes/api/agent/state'
 import { Route as ApiProgressPhotosPhotoIdRouteImport } from './routes/api/progress-photos/$photoId'
 
 const AppRoute = AppRouteImport.update({
@@ -88,6 +89,11 @@ const ApiAgentQueryRoute = ApiAgentQueryRouteImport.update({
   path: '/api/agent/query',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentStateRoute = ApiAgentStateRouteImport.update({
+  id: '/api/agent/state',
+  path: '/api/agent/state',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiProgressPhotosPhotoIdRoute =
   ApiProgressPhotosPhotoIdRouteImport.update({
     id: '/$photoId',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/api/reports': typeof ApiReportsRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
+  '/api/agent/state': typeof ApiAgentStateRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
 }
 export interface FileRoutesByTo {
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
+  '/api/agent/state': typeof ApiAgentStateRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
 }
 export interface FileRoutesById {
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
+  '/api/agent/state': typeof ApiAgentStateRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
 }
 export interface FileRouteTypes {
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/api/reports'
     | '/api/agent/context'
     | '/api/agent/query'
+    | '/api/agent/state'
     | '/api/progress-photos/$photoId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/agent/context'
     | '/api/agent/query'
+    | '/api/agent/state'
     | '/api/progress-photos/$photoId'
   id:
     | '__root__'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/api/agent/context'
     | '/api/agent/query'
+    | '/api/agent/state'
     | '/api/progress-photos/$photoId'
   fileRoutesById: FileRoutesById
 }
@@ -202,6 +214,7 @@ export interface RootRouteChildren {
   ApiReportsRoute: typeof ApiReportsRoute
   ApiAgentContextRoute: typeof ApiAgentContextRoute
   ApiAgentQueryRoute: typeof ApiAgentQueryRoute
+  ApiAgentStateRoute: typeof ApiAgentStateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgentQueryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agent/state': {
+      id: '/api/agent/state'
+      path: '/api/agent/state'
+      fullPath: '/api/agent/state'
+      preLoaderRoute: typeof ApiAgentStateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/progress-photos/$photoId': {
       id: '/api/progress-photos/$photoId'
       path: '/$photoId'
@@ -343,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReportsRoute: ApiReportsRoute,
   ApiAgentContextRoute: ApiAgentContextRoute,
   ApiAgentQueryRoute: ApiAgentQueryRoute,
+  ApiAgentStateRoute: ApiAgentStateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

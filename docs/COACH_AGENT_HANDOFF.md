@@ -13,12 +13,12 @@ Fitness operations are split between [`agents/COACH_AGENT.md`](./agents/COACH_AG
 Sian OS is a single-user wellness operating system for:
 
 - daily check-ins;
-- sleep, hydration, protein, body-weight, and meal tracking;
+- sleep, hydration, protein, calories, body-weight, meal notes, and brief workout-summary text;
 - progress photos inside the daily check-in flow;
 - daily, weekly, and monthly reports with charts and date ranges;
 - structured context for an external coaching agent.
 
-Sian OS does **not** track workouts, exercises, sets, or strength records.
+Sian OS does **not** track workouts, exercises, sets, loads, RPE/RIR, routines, or strength records. It may store a brief free-text workout status or summary inside a daily check-in.
 
 ## Access and privacy
 
@@ -104,6 +104,7 @@ Formats and units:
 - weight: kilograms;
 - water: liters;
 - protein: grams;
+- calories: estimated kcal;
 - optional text: generally limited to 2,000 characters.
 
 ## Read endpoints
@@ -112,6 +113,7 @@ Formats and units:
 | --- | --- | --- |
 | `GET` | `/api/health` | Application health |
 | `GET` | `/api/agent/context` | Preferred full coaching context |
+| `GET` | `/api/agent/state?key=last_weekly_report_date` | Weekly-report cadence state |
 | `GET` | `/api/dashboard` | Latest check-in, streak, week completion, and weight trend |
 | `GET` | `/api/profile` | Owner profile and goals |
 | `GET` | `/api/checkins?limit=30` | Recent check-ins; limit 1–365 |
@@ -143,7 +145,9 @@ There is deliberately no public arbitrary-SQL endpoint.
   "wake_time": "07:00",
   "water_liters": 2.5,
   "protein_grams": 145,
+  "calories": 2400,
   "nutrition_notes": "Breakfast: eggs\nLunch: daal\nDinner: chicken",
+  "workout_text": "Lower session completed in Hevy; brief summary only.",
   "notes": "Normal day"
 }
 ```
@@ -157,7 +161,9 @@ Rules:
 - `23:30` to `07:00` becomes `7.5` hours;
 - `water_liters` is 0–30;
 - `protein_grams` is an integer from 0–2000;
+- `calories` is an optional integer from 0–20000;
 - `nutrition_notes` is optional text, normally organized under Breakfast, Lunch, and Dinner;
+- `workout_text` is optional free text for daily workout status or a short summary; Hevy remains the detailed workout source of truth;
 - there are no readiness or mood fields;
 - `DELETE /api/checkins?date=YYYY-MM-DD` permanently removes one check-in but keeps photos for that date.
 
@@ -167,9 +173,19 @@ Rules:
 
 Supported fields: `height_cm`, `weight_kg`, `age`, `goals`, `experience_level`, `training_style`, `gym_schedule`, `equipment`, `injuries`, and `long_term_vision`.
 
+### Agent state
+
+`PUT /api/agent/state` upserts limited agent-owned state. It currently accepts only:
+
+```json
+{ "key": "last_weekly_report_date", "value": "2026-08-10" }
+```
+
+Use `null` for `value` to clear it. Read this key before weekly analysis and update it after giving a weekly report so `Analyze yesterday` does not repeat the weekly summary until seven newer logged days exist.
+
 ### Reports
 
-Reports are derived read-only views; they are not saved as separate records. `GET /api/reports` accepts optional `from` and `to` dates plus `interval=daily|weekly|monthly`. It returns summary averages and aggregated points for weight, sleep, water, protein, and check-in coverage.
+Reports are derived read-only views; they are not saved as separate records. `GET /api/reports` accepts optional `from` and `to` dates plus `interval=daily|weekly|monthly`. It returns summary averages and aggregated points for weight, sleep, water, protein, calories, and check-in coverage.
 
 ### Progress photo
 
@@ -181,15 +197,16 @@ Reports are derived read-only views; they are not saved as separate records. `GE
 
 ### Export and backup
 
-- `GET /api/export` downloads `sian-os-export`, version `4`.
+- `GET /api/export` downloads `sian-os-export`, version `5`.
 - `POST /api/export` writes a timestamped JSON snapshot under `backups/` in R2.
 - Exported progress-photo records do not include original image bytes.
 
 ## Data model
 
 - `profile`: singleton owner profile where `id = 1`.
-- `daily_checkins`: one row per date with weight, sleep times, calculated duration, water, protein, nutrition text, and general notes.
+- `daily_checkins`: one row per date with weight, sleep times, calculated duration, water, protein, calories, nutrition text, brief workout text, and general notes.
 - `progress_photos`: D1 metadata and private R2 object key.
+- `agent_state`: limited agent-owned state, currently the last weekly report date.
 - `agent_audit_log`: API write history with action, entity type, entity ID, payload, and timestamp.
 
 Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval.
@@ -319,7 +336,7 @@ Skip the migration command when none is pending. Always build after the final co
 4. Use Coss UI and the shared Date Picker instead of native date inputs.
 5. Mood and readiness do not belong in the UI, API, types, or database.
 6. Sleep duration is calculated from sleep and wake times.
-7. Workout tracking, body-measurement tracking, separate nutrition logs, and weekly-review journaling do not belong in the product.
+7. Structured workout tracking, body-measurement tracking, separate nutrition logs, and weekly-review journaling do not belong in the product.
 8. Nutrition text and progress-photo management remain inside the daily check-in dialog.
 9. Reports remain derived from source records and use Dither Kit charts.
 10. API inputs remain strict and validated.

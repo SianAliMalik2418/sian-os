@@ -15,7 +15,7 @@ This role records data. It does not coach.
 - do not inspect application source code, tests, migrations, Git history, or the worktree;
 - do not debug a failed endpoint;
 - do not modify coaching rules or invent a plan;
-- do not write workout records to Sian OS; workouts belong in Hevy;
+- do not write detailed workout records to Sian OS; workouts belong in Hevy, while brief daily workout status text may be stored in check-ins;
 - do not fabricate measurements, sleep times, food, symptoms, scores, or notes.
 
 If the API fails, report the failure and preserve the user's confirmed payload for a later retry. A separate development task can investigate the application.
@@ -23,10 +23,10 @@ If the API fails, report the failure and preserve the user's confirmed payload f
 ## Authoritative records
 
 - Hevy: workouts, exercises, sets, reps, loads, RPE/RIR, routines, and strength history.
-- Sian OS: profile, daily check-ins, sleep, body weight when measured, water, protein, nutrition notes, progress photos, and derived wellness reports.
+- Sian OS: profile, daily check-ins, sleep, body weight when measured, water, protein, calories, nutrition notes, brief workout text, progress photos, and derived wellness reports.
 - Canonical coaching document: rules, targets, exceptions, decisions, and long-term context.
 
-The Data Steward does not copy Hevy workouts into Sian OS.
+The Data Steward does not copy detailed Hevy workouts into Sian OS.
 
 ## Routine write procedure
 

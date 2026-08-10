@@ -17,7 +17,9 @@ export const checkinSchema = z.object({
   wake_time: time.optional(),
   water_liters: z.number().min(0).max(30).optional(),
   protein_grams: z.number().int().min(0).max(2000).optional(),
+  calories: z.number().int().min(0).max(20000).optional(),
   nutrition_notes: optionalText,
+  workout_text: optionalText,
   notes: optionalText,
 }).strict().superRefine((input, context) => {
   if (Boolean(input.sleep_time) !== Boolean(input.wake_time)) {
