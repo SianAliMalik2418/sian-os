@@ -4,7 +4,7 @@
 >
 > Owner: Sian Malik
 >
-> Last updated: 2026-08-05
+> Last updated: 2026-08-10
 >
 > Status: Active
 
@@ -138,7 +138,9 @@ Hevy is the authoritative source for:
 - routines;
 - exercise history and strength progression.
 
-Sian OS is not the workout tracker. Workout features have been removed from Sian OS and must not be reintroduced or used to duplicate Hevy data unless Sian explicitly reverses this decision.
+Sian OS is not the detailed workout tracker. Structured workout features have been removed from Sian OS and must not be reintroduced or used to duplicate Hevy data unless Sian explicitly reverses this decision.
+
+Sian OS may store brief workout status or summary text in a daily check-in. That text exists for coaching context only and never replaces Hevy as the record for exercises, sets, reps, loads, RPE/RIR, routines, or strength progression.
 
 The coach currently has access to an authenticated Hevy session in the shared browser. That session may expire or be cleared. If it does, Sian must log in personally again; Sian must never send the coach a password.
 
@@ -201,6 +203,7 @@ Machine stacks, bar weights, equipment setup, and technique can differ. Hevy his
 ### Active targets
 
 - Protein: approximately 95–110 g per day.
+- Calories: optional estimate when Sian reports enough food context; do not pretend estimates are exact.
 - Water: at least 2 L per day, with more considered on hot or high-sweat days.
 - Creatine: 5 g daily unless a qualified clinician has advised otherwise.
 - Controlled lean gain: adequate food without an uncontrolled bulk.
@@ -280,6 +283,15 @@ Do not duplicate detailed individual workouts into Sian OS. A short workout stat
 ## Two-agent coaching workflow
 
 Fitness operations use two separate roles with no routine overlap.
+
+The current owner-initiated ChatGPT loop is:
+
+1. Sian opens ChatGPT and gives a fast natural-language daily log.
+2. The Data Steward parses confirmed facts and writes one Sian OS daily check-in.
+3. The Data Steward verifies the stored record and reports what was written, preserved, and still unknown.
+4. When Sian says `Analyze yesterday`, the Coach reads Sian OS records and gives the daily verdict.
+5. When seven newer logged days exist since the last weekly report, the same `Analyze yesterday` response also includes a weekly summary, trends, and next-week recommendations.
+6. No agent sends proactive pings; Sian initiates all logging and analysis.
 
 ### Coach Agent
 
@@ -371,6 +383,7 @@ During the approved exam break, the workout field should be recorded as `approve
 - completed versus scheduled Hevy workouts;
 - exercise progression and execution;
 - protein consistency;
+- calorie direction when enough estimates exist;
 - hydration consistency;
 - sleep consistency;
 - the main obstacle and one focus for the next week.

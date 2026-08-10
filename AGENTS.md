@@ -8,7 +8,7 @@ Before performing fitness coaching, changing coaching-related product behavior, 
 
 1. Read the canonical coaching document.
 2. Read [`docs/COACH_AGENT_HANDOFF.md`](docs/COACH_AGENT_HANDOFF.md) for the current Sian OS API, Cloudflare, privacy, and data-safety contract.
-3. Treat Hevy as the workout source of truth and Sian OS as the wellness source of truth unless the owner explicitly reverses that decision.
+3. Treat Hevy as the detailed workout source of truth and Sian OS as the wellness source of truth unless the owner explicitly reverses that decision.
 
 ## Fitness agent routing
 
@@ -40,7 +40,7 @@ In Data Steward mode:
 - do not inspect or modify application source code, tests, migrations, Git state, or implementation details;
 - do not coach, judge, or change the plan;
 - read current records first, write only confirmed facts through the validated API, and verify the stored result;
-- keep workouts in Hevy and wellness records in Sian OS;
+- keep detailed workouts in Hevy and wellness records in Sian OS; brief daily workout status text may be stored in Sian OS check-ins;
 - require explicit approval before destructive actions.
 
 ### Combined daily report
@@ -72,3 +72,12 @@ For Data Steward Sian OS writes:
 - re-read after writing;
 - obtain explicit owner approval before destructive changes;
 - back up before approved direct database repair.
+
+For the current ChatGPT daily loop:
+
+- natural-language daily logs are parsed by the Data Steward into Sian OS check-ins;
+- `nutrition_notes` holds formatted meals, snacks, drinks, and practical portions;
+- `workout_text` holds only brief workout status or summary text, never detailed Hevy workout duplication;
+- `calories` is an optional estimated kcal field and must be omitted when not stated;
+- `Analyze yesterday` runs Coach workflow after verified data exists;
+- weekly analysis uses `last_weekly_report_date` in `/api/agent/state` and should appear only after seven newer logged days.

@@ -141,6 +141,8 @@ curl -fsS -o /dev/null -w "/profile %{http_code}\n" "$base/profile"
 curl -fsS -o /dev/null -w "/reports %{http_code}\n" "$base/reports"
 curl -fsS -o /dev/null -w "/api/health %{http_code}\n" "$base/api/health"
 curl -fsS -o /dev/null -w "/api/reports %{http_code}\n" "$base/api/reports"
+curl -fsS -o /dev/null -w "/api/agent/context %{http_code}\n" "$base/api/agent/context"
+curl -fsS -o /dev/null -w "/api/agent/state %{http_code}\n" "$base/api/agent/state?key=last_weekly_report_date"
 ```
 
 Current routes should return `200`.

@@ -50,6 +50,28 @@ Whenever Sian starts a daily coaching check-in:
 
 This workflow runs when Sian initiates a daily conversation. It is not an autonomous background scheduler.
 
+## Analyze yesterday
+
+When Sian says `Analyze yesterday`:
+
+1. Fetch `/api/health`.
+2. Fetch `/api/agent/context`.
+3. Fetch `/api/checkins?limit=30`.
+4. Analyze the most recent completed/logged day unless Sian specifies another date.
+5. If the relevant day has not been recorded, return `Insufficient Data` and ask for the missing log instead of guessing.
+6. Give the normal daily verdict format.
+7. Check `/api/agent/state?key=last_weekly_report_date`.
+8. If at least seven logged days are newer than `last_weekly_report_date`, include a weekly report based on the latest seven logged days.
+9. After giving the weekly report, update `/api/agent/state` with the latest date covered.
+
+Weekly report format:
+
+```text
+Weekly summary:
+Key trends:
+Recommendations for next week:
+```
+
 ## Daily verdicts
 
 Use exactly one:

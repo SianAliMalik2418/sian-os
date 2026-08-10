@@ -42,6 +42,22 @@ The Data Steward does not copy detailed Hevy workouts into Sian OS.
 
 For append-only or file operations, check whether the write already succeeded before retrying.
 
+## Natural-language daily logs
+
+When Sian gives a fast daily log, parse only explicit facts into the daily check-in contract:
+
+- `date`: exact logged day; resolve `yesterday` relative to the current date unless Sian gives a date.
+- `weight_kg`: morning/body weight in kg when stated.
+- `sleep_time` and `wake_time`: send both or neither; never send `sleep_hours`.
+- `water_liters`: liters of water.
+- `protein_grams`: estimated grams of protein.
+- `calories`: optional estimated kcal; omit if Sian does not provide calories or enough confirmed basis.
+- `nutrition_notes`: formatted meals, snacks, drinks, and practical portions.
+- `workout_text`: brief workout status, Hevy workout name/link, or short summary only.
+- `notes`: energy, appetite, soreness, joint pain, schedule pressure, deviations, creatine, and tomorrow preparation.
+
+Do not write detailed exercises, sets, reps, loads, RPE/RIR, routines, or progression into Sian OS. Those stay in Hevy.
+
 ## Destructive and administrative operations
 
 - Obtain explicit owner approval immediately before deletion or replacement.

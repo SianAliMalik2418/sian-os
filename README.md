@@ -75,7 +75,7 @@ Skip `npm run db:remote` when no new migration exists. The production Worker is 
 - `POST /api/export` writes a timestamped JSON snapshot under `backups/` in R2.
 - Progress-photo metadata is included in exports. Original images are publicly retrievable through the application endpoint.
 
-The JSON format is versioned (`sian-os-export`, version `4`) so a future importer can validate it before writing.
+The JSON format is versioned (`sian-os-export`, version `5`) so a future importer can validate it before writing.
 
 ## External coaching agents
 
@@ -87,3 +87,5 @@ The JSON format is versioned (`sian-os-export`, version `4`) so a future importe
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Git push and Cloudflare deployment runbook.
 
 Agents call the public API without credentials. Writes are recorded in `agent_audit_log`; no arbitrary SQL endpoint exists.
+
+Current agent check-ins support estimated `calories`, formatted `nutrition_notes`, and brief `workout_text`. Detailed workout history remains in Hevy.

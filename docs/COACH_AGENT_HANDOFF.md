@@ -1,6 +1,6 @@
 # Sian OS — Coach Agent Handoff
 
-> Last updated: 2026-07-30
+> Last updated: 2026-08-10
 
 This is the operating guide for an external wellness coach that can use the Sian OS HTTP API and the owner's Cloudflare account.
 
@@ -75,6 +75,19 @@ curl -sS "$SIAN_OS_URL/api/agent/context"
 ```
 
 Do not invent body weight, food intake, sleep times, symptoms, or subjective scores. Omit unknown optional fields rather than sending guesses or zeroes.
+
+## Owner-initiated ChatGPT loop
+
+Sian wants a simple, fast loop with no automatic pings:
+
+1. Sian sends a natural-language daily log.
+2. The Data Steward writes confirmed facts to `POST /api/checkins`.
+3. The Data Steward verifies the record with `GET /api/checkins?date=YYYY-MM-DD`.
+4. Sian says `Analyze yesterday`.
+5. The Coach gives the daily verdict from Sian OS records and Hevy workout evidence when relevant.
+6. If seven newer logged days exist since `last_weekly_report_date`, the Coach adds a weekly report and updates `/api/agent/state`.
+
+The same public APIs support this flow. No scheduler or proactive message system is configured.
 
 ## API conventions
 
