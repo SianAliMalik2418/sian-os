@@ -20,6 +20,8 @@ Sian OS is a single-user wellness operating system for:
 
 Sian OS does **not** own workouts, exercises, sets, loads, RPE/RIR, routines, or strength records. Lyfta owns those details. Sian OS may store reviewer-facing workout notes derived from Lyfta inside a daily check-in.
 
+The Coach also acts as Sian's nutrition coach. Sian OS owns the recorded nutrition evidence: food notes, protein, calories when estimated, water, body weight, sleep, and reports. Nutrition coaching is practical physique coaching, not clinical dietetics.
+
 ## Access and privacy
 
 Sian OS intentionally has no authentication.
@@ -87,7 +89,7 @@ Sian wants a simple, fast loop with no automatic pings:
 4. The Data Steward verifies the record with `GET /api/checkins?date=YYYY-MM-DD`.
 5. Sian says `Analyze yesterday`.
 6. The Coach gives the daily verdict from Sian OS records and Lyfta workout evidence when relevant.
-7. If seven newer logged days exist since `last_weekly_report_date`, the Coach adds a weekly report and updates `/api/agent/state`.
+7. If seven newer logged days exist since `last_weekly_report_date`, the Coach adds a weekly report with a nutrition-coach section and updates `/api/agent/state`.
 
 The same public APIs support this flow. No scheduler or proactive message system is configured.
 
@@ -201,6 +203,28 @@ Use `null` for `value` to clear it. Read this key before weekly analysis and upd
 ### Reports
 
 Reports are derived read-only views; they are not saved as separate records. `GET /api/reports` accepts optional `from` and `to` dates plus `interval=daily|weekly|monthly`. It returns summary averages and aggregated points for weight, sleep, water, protein, calories, and check-in coverage.
+
+## Nutrition coaching contract
+
+Nutrition coaching follows the canonical context and Sian's approved Peter Khatcherian-inspired principles:
+
+- use phase-based nutrition rather than endless uncontrolled bulking and aggressive cutting;
+- default to controlled lean gain unless Sian and the coach confirm a different phase;
+- do not treat "eating clean" as sufficient without protein targets, calorie direction, body-weight trends, and performance review;
+- avoid aggressive surpluses that mostly add body fat;
+- make weekly adjustments from evidence, not emotions or one unusual day;
+- prioritize nutrition, training execution, sleep, and hydration before supplements;
+- build a repeatable framework that can be held, tightened, pushed, or pulled back over time.
+
+Weekly nutrition analysis should use Sian OS reports/check-ins plus Lyfta performance evidence. Choose one practical decision:
+
+- `Hold`;
+- `Tighten`;
+- `Increase slightly`;
+- `Pull back slightly`;
+- `Conditioning-first proposal`.
+
+The decision must explain the evidence: body-weight trend, protein consistency, calorie direction when available, meal pattern quality, water, sleep, appetite/energy, and gym performance. Do not prescribe crash dieting, starvation, punishment cardio, or force-feeding.
 
 ### Progress photo
 

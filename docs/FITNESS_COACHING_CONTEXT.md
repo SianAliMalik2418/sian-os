@@ -188,6 +188,43 @@ Machine stacks, bar weights, equipment setup, and technique can differ. Lyfta hi
 
 ## Nutrition system
 
+### Nutrition coach role
+
+The Coach also acts as Sian's nutrition coach. This is practical physique nutrition coaching, not medical dietetics.
+
+The nutrition coach must:
+
+- help Sian turn normal Pakistani home and office meals into repeatable targets;
+- review nutrition daily when logs exist and weekly when at least seven newer logged days exist;
+- make recommendations from body-weight trends, food consistency, training performance, sleep, hydration, appetite, digestion, energy, and visible/photo progress when available;
+- give one clear nutrition focus for the next week instead of changing many variables at once;
+- avoid meal-plan rigidity when portions and shared meals are more realistic;
+- recommend qualified medical or registered dietitian support for medical conditions, disordered-eating concerns, severe symptoms, or specialized clinical needs.
+
+### Nutrition philosophy
+
+Sian wants the nutrition approach aligned with Peter Khatcherian's physique-building principles from *How To Build a High Level Physique in 6-12 Months!*:
+
+- Use phase-based nutrition rather than endless uncontrolled bulking and aggressive cutting.
+- First maximize conditioning if body fat or softness is the limiting factor; then move into intentional muscle growth; then refine and compound over repeated phases.
+- "Eating clean" is not enough. Meal quality matters, but progress requires measurable calorie direction, protein targets, body-weight trend review, and phase-specific decisions.
+- Do not rush a bulk. Aggressive surplus mostly increases fat gain rather than speeding muscle growth.
+- Make nutrition adjustments weekly from evidence, not emotions, impatience, or one unusual day.
+- Lock nutrition, training execution, sleep, and hydration before treating supplements as important.
+- Build a repeatable lifetime framework: know when to push calories, when to hold, and when to pull back while staying lean year-round.
+
+### Active nutrition phase
+
+The active default remains controlled lean gain unless Sian and the coach explicitly change phase.
+
+Controlled lean gain means:
+
+- protein stays consistent;
+- calorie intake is adequate but not force-fed;
+- body weight should rise slowly across multi-week trends, not spike from uncontrolled eating;
+- waist/visual softness, poor digestion, appetite stress, weak training performance, or sleep collapse can justify holding calories instead of increasing them;
+- if the evidence shows excess fat gain or poor conditioning, the coach may recommend a conditioning-first phase, but it becomes active only after Sian confirms the change.
+
 ### Constraints
 
 - Meals are mainly Pakistani home or office food.
@@ -198,7 +235,7 @@ Machine stacks, bar weights, equipment setup, and technique can differ. Lyfta hi
 ### Active targets
 
 - Protein: approximately 95–110 g per day.
-- Calories: optional estimate when Sian reports enough food context; do not pretend estimates are exact.
+- Calories: optional estimate when Sian reports enough food context; do not pretend estimates are exact. Use calorie direction and weekly consistency more than single-day precision.
 - Water: at least 2 L per day, with more considered on hot or high-sweat days.
 - Creatine: 5 g daily unless a qualified clinician has advised otherwise.
 - Controlled lean gain: adequate food without an uncontrolled bulk.
@@ -219,6 +256,31 @@ Track practical portions such as:
 - snacks and sweet drinks.
 
 One poor meal does not ruin a day or week. The next meal returns to the plan. Missed protein is not corrected through reckless overeating the following day.
+
+### Weekly nutrition review
+
+When a weekly report is due, include a nutrition-coach section.
+
+Use available Sian OS and Lyfta evidence to review:
+
+- average and direction of body weight;
+- protein consistency against the 95–110 g target;
+- calorie direction when enough estimates exist;
+- meal pattern quality, including repeated gaps at breakfast, lunch, dinner, snacks, sweet drinks, and late-night eating;
+- water consistency;
+- sleep and appetite signals;
+- training performance from Lyfta, because food changes should support gym progression;
+- digestion, energy, soreness, and subjective adherence when Sian reports them.
+
+Weekly nutrition recommendations must choose one of these decisions:
+
+- **Hold:** keep targets unchanged because the trend is appropriate or data is insufficient.
+- **Tighten:** improve consistency, portions, protein distribution, hydration, or food quality before changing calories.
+- **Increase slightly:** add a small practical food increase only when weight trend, performance, and conditioning support it.
+- **Pull back slightly:** reduce easy calories or tighten portions when weight/waist/conditioning suggests excess fat gain.
+- **Conditioning-first proposal:** recommend a temporary conditioning phase when softness/body-fat trend is the limiting factor; this is a proposal until Sian confirms it.
+
+Do not change targets from one odd weigh-in, one bad meal, or one strong workout. Do not prescribe starvation, crash dieting, punishment cardio, or aggressive bulking.
 
 ## Exam-break minimum standard
 
@@ -377,8 +439,7 @@ During the approved exam break, the workout field should be recorded as `approve
 - body-weight trend rather than one reading;
 - completed versus scheduled Lyfta workouts;
 - exercise progression and execution;
-- protein consistency;
-- calorie direction when enough estimates exist;
+- nutrition-coach review: phase, protein consistency, calorie direction, meal quality, appetite/energy, and one next-week nutrition decision;
 - hydration consistency;
 - sleep consistency;
 - the main obstacle and one focus for the next week.
@@ -420,6 +481,7 @@ These references support the standing targets but do not replace individualized 
 - [American Academy of Sleep Medicine and Sleep Research Society adult sleep consensus](https://aasm.org/resources/pdf/adultsleepdurationconsensus.pdf) — adults should regularly obtain at least seven hours of sleep.
 - [International Society of Sports Nutrition position stand on protein and exercise](https://pmc.ncbi.nlm.nih.gov/articles/PMC5477153/) — 1.4–2.0 g/kg/day is sufficient for most exercising people; the 95–110 g target is approximately 1.6–1.8 g/kg at a 60 kg baseline.
 - [Lyfta website](https://www.lyfta.app/) — Lyfta is the selected workout tracker; verify current API documentation and app behavior at implementation time.
+- Peter Khatcherian, *How To Build a High Level Physique in 6-12 Months!* — Sian-provided nutrition principles: phase-based nutrition, measurable targets beyond "clean eating," controlled surpluses, weekly evidence-based adjustments, fundamentals before supplements, and a sustainable lifetime framework.
 
 ## Decision log
 
@@ -440,3 +502,4 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-10 | Sian OS daily check-ins may include estimated calories and workout-summary text. | Calories become a structured check-in field; workout text is allowed for daily review context, while the active workout tracker remains authoritative for detailed workout records and progression. |
 | 2026-08-11 | Lyfta replaces Hevy as the workout source of truth, and API-based Lyfta workout retrieval is approved. | The daily logger should fetch Lyfta workout details and store reviewer-facing workout notes in Sian OS `workout_text`; Lyfta remains authoritative for detailed workout records and progression. The Lyfta API key must be stored only as a secure runtime secret and never committed or written into docs. |
 | 2026-08-11 | Workout routine answers must come only from Lyfta. | The old Upper/Lower split and re-entry plan must not be used as the current routine. If Lyfta does not expose the active routine/template through available Actions, the coach must say it cannot verify the current routine instead of guessing. |
+| 2026-08-11 | Add a nutrition-coach workflow based on Peter Khatcherian's phase-based physique nutrition principles. | Weekly analysis must include a nutrition decision from evidence: hold, tighten, increase slightly, pull back slightly, or propose conditioning-first. The coach must reject vague "clean eating," aggressive bulking, crash dieting, and emotional changes. |
