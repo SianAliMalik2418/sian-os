@@ -12,7 +12,7 @@ describe('daily check-in schema', () => {
       protein_grams: 150,
       calories: 2400,
       nutrition_notes: 'Breakfast: eggs\nLunch: daal\nDinner: chicken',
-      workout_text: 'Lower re-entry session logged in Hevy',
+      workout_text: 'Lower re-entry session logged in Lyfta',
       notes: 'Good day',
     })).toMatchObject({ date: '2026-07-30', sleep_time: '23:30', wake_time: '07:00' })
   })

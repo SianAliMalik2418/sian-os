@@ -8,7 +8,7 @@ Before performing fitness coaching, changing coaching-related product behavior, 
 
 1. Read the canonical coaching document.
 2. Read [`docs/COACH_AGENT_HANDOFF.md`](docs/COACH_AGENT_HANDOFF.md) for the current Sian OS API, Cloudflare, privacy, and data-safety contract.
-3. Treat Hevy as the detailed workout source of truth and Sian OS as the wellness source of truth unless the owner explicitly reverses that decision.
+3. Treat Lyfta as the detailed workout source of truth and Sian OS as the wellness source of truth unless the owner explicitly reverses that decision.
 
 ## Fitness agent routing
 
@@ -27,7 +27,7 @@ In Coach mode:
 
 - do not inspect or modify application source code, tests, migrations, Git state, or implementation details;
 - do not write, edit, or delete Sian OS records;
-- read wellness evidence through production Sian OS APIs and workout evidence through Hevy;
+- read wellness evidence through production Sian OS APIs and workout evidence through Lyfta;
 - give a daily evidence-based verdict and next action;
 - update only the canonical coaching document when a new coaching decision is explicitly confirmed.
 
@@ -40,7 +40,7 @@ In Data Steward mode:
 - do not inspect or modify application source code, tests, migrations, Git state, or implementation details;
 - do not coach, judge, or change the plan;
 - read current records first, write only confirmed facts through the validated API, and verify the stored result;
-- keep detailed workouts in Hevy and wellness records in Sian OS; brief daily workout status text may be stored in Sian OS check-ins;
+- keep detailed workouts in Lyfta and wellness records in Sian OS; reviewer-facing Lyfta workout notes may be stored in Sian OS check-ins;
 - require explicit approval before destructive actions.
 
 ### Combined daily report
@@ -62,7 +62,7 @@ Whenever the owner and coach agree to any new or changed goal, rule, target, sch
 3. Remove or clearly mark superseded active guidance so the document contains no unresolved contradiction.
 4. Record only confirmed decisions. Label proposals and open questions as such.
 
-Do not put daily operational data into the living document when it belongs in Sian OS or Hevy. Do not put passwords, API keys, tokens, session cookies, private credentials, or fabricated/assumed health data in any repository file.
+Do not put daily operational data into the living document when it belongs in Sian OS or Lyfta. Do not put passwords, API keys, tokens, session cookies, private credentials, or fabricated/assumed health data in any repository file.
 
 For Data Steward Sian OS writes:
 
@@ -77,7 +77,7 @@ For the current owner-initiated agent loop:
 
 - natural-language daily logs are parsed by the Data Steward into Sian OS check-ins;
 - `nutrition_notes` holds formatted meals, snacks, drinks, and practical portions;
-- `workout_text` holds only brief workout status or summary text, never detailed Hevy workout duplication;
+- `workout_text` holds reviewer-facing workout notes derived from Lyfta, while Lyfta remains authoritative for full workout history and progression;
 - `calories` is an optional estimated kcal field and must be omitted when not stated;
 - `Analyze yesterday` runs Coach workflow after verified data exists;
 - weekly analysis uses `last_weekly_report_date` in `/api/agent/state` and should appear only after seven newer logged days.

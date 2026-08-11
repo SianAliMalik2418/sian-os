@@ -1,10 +1,10 @@
 # Sian OS — Coach Agent Handoff
 
-> Last updated: 2026-08-10
+> Last updated: 2026-08-11
 
 This is the operating guide for an external wellness coach that can use the Sian OS HTTP API and the owner's Cloudflare account.
 
-For the owner's personal profile, goals, coaching rules, current training phase, Hevy decision, and dated decision history, read the canonical [`FITNESS_COACHING_CONTEXT.md`](./FITNESS_COACHING_CONTEXT.md) first.
+For the owner's personal profile, goals, coaching rules, current training phase, Lyfta decision, and dated decision history, read the canonical [`FITNESS_COACHING_CONTEXT.md`](./FITNESS_COACHING_CONTEXT.md) first.
 
 Fitness operations are split between [`agents/COACH_AGENT.md`](./agents/COACH_AGENT.md) and [`agents/DATA_STEWARD_AGENT.md`](./agents/DATA_STEWARD_AGENT.md). The Coach reads and judges records but does not write them; the Data Steward writes and verifies records but does not coach. Neither role inspects source code during a fitness operation.
 
@@ -18,7 +18,7 @@ Sian OS is a single-user wellness operating system for:
 - daily, weekly, and monthly reports with charts and date ranges;
 - structured context for an external coaching agent.
 
-Sian OS does **not** track workouts, exercises, sets, loads, RPE/RIR, routines, or strength records. It may store a brief free-text workout status or summary inside a daily check-in.
+Sian OS does **not** own workouts, exercises, sets, loads, RPE/RIR, routines, or strength records. Lyfta owns those details. Sian OS may store reviewer-facing workout notes derived from Lyfta inside a daily check-in.
 
 ## Access and privacy
 
@@ -29,6 +29,7 @@ Sian OS intentionally has no authentication.
 - Do not send an authorization header to the Sian OS API.
 - Never put credentials, tokens, or unnecessary private medical information in payloads.
 - Cloudflare credentials are separate administrative credentials. Never print, commit, or send them to Sian OS.
+- Lyfta API credentials are separate workout-source credentials. Store them only as secure runtime secrets, such as `LYFTA_API_KEY`; never commit, print, or write them into Sian OS records.
 
 Treat all body and photo data as sensitive despite the intentionally public configuration.
 
@@ -81,11 +82,12 @@ Do not invent body weight, food intake, sleep times, symptoms, or subjective sco
 Sian wants a simple, fast loop with no automatic pings:
 
 1. Sian sends a natural-language daily log.
-2. The Data Steward writes confirmed facts to `POST /api/checkins`.
-3. The Data Steward verifies the record with `GET /api/checkins?date=YYYY-MM-DD`.
-4. Sian says `Analyze yesterday`.
-5. The Coach gives the daily verdict from Sian OS records and Hevy workout evidence when relevant.
-6. If seven newer logged days exist since `last_weekly_report_date`, the Coach adds a weekly report and updates `/api/agent/state`.
+2. The Data Steward fetches relevant Lyfta workout details when a workout may exist for the logged date.
+3. The Data Steward writes confirmed facts and reviewer-facing Lyfta workout notes to `POST /api/checkins`.
+4. The Data Steward verifies the record with `GET /api/checkins?date=YYYY-MM-DD`.
+5. Sian says `Analyze yesterday`.
+6. The Coach gives the daily verdict from Sian OS records and Lyfta workout evidence when relevant.
+7. If seven newer logged days exist since `last_weekly_report_date`, the Coach adds a weekly report and updates `/api/agent/state`.
 
 The same public APIs support this flow. No scheduler or proactive message system is configured.
 
@@ -160,7 +162,7 @@ There is deliberately no public arbitrary-SQL endpoint.
   "protein_grams": 145,
   "calories": 2400,
   "nutrition_notes": "Breakfast: eggs\nLunch: daal\nDinner: chicken",
-  "workout_text": "Lower session completed in Hevy; brief summary only.",
+  "workout_text": "Lower session completed in Lyfta. Exercises: Smith squat 3x8 at controlled load; leg extension 2x12. Notes: no joint pain.",
   "notes": "Normal day"
 }
 ```
@@ -176,7 +178,7 @@ Rules:
 - `protein_grams` is an integer from 0–2000;
 - `calories` is an optional integer from 0–20000;
 - `nutrition_notes` is optional text, normally organized under Breakfast, Lunch, and Dinner;
-- `workout_text` is optional free text for daily workout status or a short summary; Hevy remains the detailed workout source of truth;
+- `workout_text` is optional free text for reviewer-facing workout notes derived from Lyfta; Lyfta remains the detailed workout source of truth;
 - there are no readiness or mood fields;
 - `DELETE /api/checkins?date=YYYY-MM-DD` permanently removes one check-in but keeps photos for that date.
 

@@ -17,7 +17,7 @@ const checkinWriteContract = {
     protein_grams: { type: 'integer', required: false, unit: 'grams' },
     calories: { type: 'integer', required: false, unit: 'kcal' },
     nutrition_notes: { type: 'string', required: false, maxLength: 2000 },
-    workout_text: { type: 'string', required: false, maxLength: 2000, note: 'Free-text summary only; Hevy remains authoritative for workout details.' },
+    workout_text: { type: 'string', required: false, maxLength: 2000, note: 'Reviewer-facing workout notes derived from Lyfta; Lyfta remains authoritative for workout details.' },
     notes: { type: 'string', required: false, maxLength: 2000 },
   },
 }

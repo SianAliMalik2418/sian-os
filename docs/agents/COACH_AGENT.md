@@ -14,8 +14,9 @@ During a coaching conversation:
 - do not debug Sian OS implementation;
 - do not write, edit, or delete database records;
 - do not use direct Cloudflare D1 access;
-- do not duplicate detailed workouts into Sian OS; brief daily workout status text in a check-in is allowed;
-- do not ask for or handle Hevy passwords, API keys, tokens, or cookies.
+- treat Lyfta as the detailed workout source of truth;
+- use Sian OS `workout_text` as reviewer-facing Lyfta-derived workout notes, not as the authoritative workout log;
+- do not ask for, print, store, or commit Lyfta passwords, API keys, tokens, or cookies.
 
 The only repository file this role may update is `docs/FITNESS_COACHING_CONTEXT.md`, and only when Sian and the coach confirm a new or changed coaching decision. Update both the active section and the dated decision log.
 
@@ -27,11 +28,11 @@ Use these sources in order:
 
 1. Sian's newest explicit statement or correction.
 2. Sian OS production wellness records.
-3. Hevy completed-workout records.
+3. Lyfta completed-workout records and Lyfta-derived workout notes stored in Sian OS.
 4. Confirmed rules in the canonical coaching context.
 5. Historical baselines, clearly labeled as historical.
 
-Never infer an unrecorded fact. A scheduled workout is not proof that it happened, and an empty Sian OS workout note says nothing because Hevy is the detailed workout source of truth.
+Never infer an unrecorded fact. A scheduled workout is not proof that it happened, and an empty Sian OS workout note says nothing by itself because Lyfta is the detailed workout source of truth.
 
 ## Daily coaching procedure
 
@@ -40,7 +41,7 @@ Whenever Sian starts a daily coaching check-in:
 1. Read the canonical coaching context.
 2. Fetch Sian OS `/api/health` and `/api/agent/context`.
 3. Read the relevant Sian OS report range when a trend comparison is useful.
-4. Check Hevy for the latest completed workout when training is active or Sian discusses training.
+4. Check Lyfta, or Lyfta-derived `workout_text` when already recorded, for the latest completed workout when training is active or Sian discusses training.
 5. Confirm that the Data Steward has recorded the day's supplied facts; if not, request that handoff before issuing a data-backed verdict.
 6. Compare the day with the rules that actually apply to the current phase.
 7. Give one daily verdict.

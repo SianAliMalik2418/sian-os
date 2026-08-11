@@ -121,7 +121,7 @@ function ProfileOverview({ profile, onEdit }: { profile: Profile | null; onEdit:
 
     <Card>
       <CardHeader>
-        <div><CardTitle>Training and environment</CardTitle><CardDescription>Context for recommendations; workouts remain tracked in Hevy</CardDescription></div>
+        <div><CardTitle>Training and environment</CardTitle><CardDescription>Context for recommendations; workouts remain tracked in Lyfta</CardDescription></div>
         <CardAction><HeartPulse className="size-5 text-primary" /></CardAction>
       </CardHeader>
       <CardPanel className="grid gap-5 sm:grid-cols-2">
@@ -169,7 +169,7 @@ function ProfileEditor({ values, saving, onUpdate, onSubmit, onCancel, error }: 
 
     <Card>
       <CardHeader>
-        <div><CardTitle>Edit training and environment</CardTitle><CardDescription>Context for recommendations; workouts remain tracked in Hevy</CardDescription></div>
+        <div><CardTitle>Edit training and environment</CardTitle><CardDescription>Context for recommendations; workouts remain tracked in Lyfta</CardDescription></div>
         <CardAction><HeartPulse className="size-5 text-primary" /></CardAction>
       </CardHeader>
       <CardPanel className="grid gap-4 sm:grid-cols-2">

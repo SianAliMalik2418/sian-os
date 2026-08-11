@@ -69,7 +69,7 @@ curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
     "protein_grams": 145,
     "calories": 2400,
     "nutrition_notes": "Breakfast: eggs\nLunch: daal\nDinner: chicken",
-    "workout_text": "Lower session completed in Hevy; brief summary only.",
+    "workout_text": "Lower session completed in Lyfta. Exercises: Smith squat 3x8; leg extension 2x12. Notes: no joint pain.",
     "notes": "Normal day"
   }'
 ```
@@ -77,7 +77,7 @@ curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
 Field notes:
 
 - `nutrition_notes` is free text for formatted meals, snacks, drinks, and practical portion notes.
-- `workout_text` is free text for daily workout status or a brief summary. Hevy remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, and progression.
+- `workout_text` is free text for reviewer-facing workout notes derived from Lyfta. Lyfta remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, notes, and progression.
 - `calories` is an optional integer estimate in kcal.
 
 `DELETE /api/checkins?date=YYYY-MM-DD` permanently removes one daily check-in. Progress photos on that date are retained.

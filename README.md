@@ -88,4 +88,4 @@ The JSON format is versioned (`sian-os-export`, version `5`) so a future importe
 
 Agents call the public API without credentials. Writes are recorded in `agent_audit_log`; no arbitrary SQL endpoint exists.
 
-Current agent check-ins support estimated `calories`, formatted `nutrition_notes`, and brief `workout_text`. Detailed workout history remains in Hevy.
+Current agent check-ins support estimated `calories`, formatted `nutrition_notes`, and reviewer-facing Lyfta-derived `workout_text`. Detailed workout history remains in Lyfta.

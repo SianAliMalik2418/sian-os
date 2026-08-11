@@ -259,8 +259,8 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
                 <Textarea value={values.nutrition_notes || ''} onChange={(event) => update('nutrition_notes', event.target.value)} rows={6} />
               </CheckinField>
 
-              <CheckinField label="Workout" description="Optional free-text summary; detailed workouts stay in Hevy">
-                <Textarea value={values.workout_text || ''} onChange={(event) => update('workout_text', event.target.value)} placeholder="Status, Hevy workout name, or brief summary…" rows={4} />
+              <CheckinField label="Workout" description="Reviewer-facing notes; detailed workouts stay in Lyfta">
+                <Textarea value={values.workout_text || ''} onChange={(event) => update('workout_text', event.target.value)} placeholder="Lyfta workout name, exercises, sets, notes…" rows={4} />
               </CheckinField>
 
               <CheckinField label="Notes" description="Optional context for appetite, aches, energy, or schedule changes">

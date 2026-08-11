@@ -1,0 +1,536 @@
+openapi: 3.1.0
+
+info:
+  title: Sian OS Health API
+  version: 1.0.0
+  description: |
+    Public single-owner wellness API for Sian OS.
+
+    Use Lyfta as the detailed workout source of truth. Use Sian OS for daily wellness
+    check-ins, body weight, sleep, hydration, protein, calories, meal notes, brief
+    workout status text, reports, profile context, and agent cadence state.
+
+    Important write rule: POST /api/checkins and PUT /api/profile are full upserts.
+    Omitted optional fields are cleared, so read the existing record first and preserve
+    confirmed existing values when updating.
+
+servers:
+  - url: https://sian-os.sianalimalik2418.workers.dev
+
+paths:
+  /api/health:
+    get:
+      operationId: checkHealth
+      summary: Check whether the Sian OS API is available.
+      responses:
+        "200":
+          description: API health response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  app:
+                    type: string
+
+  /api/agent/context:
+    get:
+      operationId: getAgentContext
+      summary: Get the preferred full coaching context.
+      description: Returns profile, dashboard summary, recent check-ins, and agent workflow guidance.
+      responses:
+        "200":
+          description: Agent context.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /api/agent/query:
+    get:
+      operationId: runBoundedAgentQuery
+      summary: Run a bounded agent query.
+      description: Only the dashboard mode is supported. Arbitrary SQL is not available.
+      parameters:
+        - name: mode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - dashboard
+      responses:
+        "200":
+          description: Query result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /api/agent/state:
+    get:
+      operationId: getAgentState
+      summary: Get limited agent-owned cadence state.
+      parameters:
+        - name: key
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - last_weekly_report_date
+            default: last_weekly_report_date
+      responses:
+        "200":
+          description: Agent state value.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AgentState"
+
+    put:
+      operationId: saveAgentState
+      summary: Save limited agent-owned cadence state.
+      description: Use only for last_weekly_report_date after giving a weekly report. Use null to clear it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentStateInput"
+      responses:
+        "200":
+          description: Saved agent state.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AgentState"
+
+  /api/checkins:
+    get:
+      operationId: getCheckins
+      summary: Get daily health check-ins.
+      description: Use date for a single record, otherwise use limit for recent records.
+      parameters:
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Date in YYYY-MM-DD format. Returns one check-in or null.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 365
+            default: 90
+          description: Number of recent check-ins to return when date is omitted.
+      responses:
+        "200":
+          description: One check-in, null, or a list of recent check-ins.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                      - type: object
+                        properties:
+                          data:
+                            $ref: "#/components/schemas/DailyCheckin"
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                      - type: object
+                        properties:
+                          data:
+                            type:
+                              - "null"
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                      - type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/DailyCheckin"
+
+    post:
+      operationId: saveCheckin
+      summary: Create or update a daily health check-in.
+      description: |
+        Upserts by date. Read GET /api/checkins?date=YYYY-MM-DD before updating
+        because omitted optional fields are cleared. Do not send sleep_hours; the
+        server calculates it from sleep_time and wake_time.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckinInput"
+      responses:
+        "201":
+          description: Check-in saved.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/DailyCheckin"
+
+  /api/dashboard:
+    get:
+      operationId: getDashboard
+      summary: Get dashboard summary.
+      description: Returns latest check-in, streak, current week completion, and weight trend.
+      responses:
+        "200":
+          description: Dashboard summary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /api/profile:
+    get:
+      operationId: getProfile
+      summary: Get owner profile and goals.
+      responses:
+        "200":
+          description: Profile record.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Profile"
+
+    put:
+      operationId: saveProfile
+      summary: Create or update owner profile and goals.
+      description: Read GET /api/profile first because omitted fields become null.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileInput"
+      responses:
+        "200":
+          description: Profile saved.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Profile"
+
+  /api/reports:
+    get:
+      operationId: getReports
+      summary: Get wellness report summary and points.
+      description: Returns derived daily, weekly, or monthly report data. Reports are read-only views.
+      parameters:
+        - name: interval
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - daily
+              - weekly
+              - monthly
+            default: daily
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Inclusive start date in YYYY-MM-DD format.
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Inclusive end date in YYYY-MM-DD format.
+      responses:
+        "200":
+          description: Report summary and points.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ReportResult"
+
+components:
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+        - ok
+
+    ErrorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          enum:
+            - false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+          required:
+            - code
+            - message
+      required:
+        - ok
+        - error
+
+    CheckinInput:
+      type: object
+      additionalProperties: false
+      properties:
+        date:
+          type: string
+          format: date
+          description: Required unique check-in date in YYYY-MM-DD format.
+        weight_kg:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 500
+        sleep_time:
+          type: string
+          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+          description: HH:mm 24-hour time. Must be supplied with wake_time.
+        wake_time:
+          type: string
+          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+          description: HH:mm 24-hour time. Must be supplied with sleep_time.
+        water_liters:
+          type: number
+          minimum: 0
+          maximum: 30
+        protein_grams:
+          type: integer
+          minimum: 0
+          maximum: 2000
+        calories:
+          type: integer
+          minimum: 0
+          maximum: 20000
+          description: Optional estimated kcal. Omit if not stated.
+        nutrition_notes:
+          type: string
+          maxLength: 2000
+          description: Formatted meals, snacks, drinks, and practical portion notes.
+        workout_text:
+          type: string
+          maxLength: 2000
+          description: Reviewer-facing workout notes derived from Lyfta. Keep detailed workout records in Lyfta.
+        notes:
+          type: string
+          maxLength: 2000
+      required:
+        - date
+
+    DailyCheckin:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        weight_kg:
+          type:
+            - number
+            - "null"
+        sleep_time:
+          type:
+            - string
+            - "null"
+        wake_time:
+          type:
+            - string
+            - "null"
+        sleep_hours:
+          type:
+            - number
+            - "null"
+        water_liters:
+          type:
+            - number
+            - "null"
+        protein_grams:
+          type:
+            - integer
+            - "null"
+        calories:
+          type:
+            - integer
+            - "null"
+        nutrition_notes:
+          type:
+            - string
+            - "null"
+        workout_text:
+          type:
+            - string
+            - "null"
+        notes:
+          type:
+            - string
+            - "null"
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    ProfileInput:
+      type: object
+      additionalProperties: false
+      properties:
+        height_cm:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 300
+        weight_kg:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 500
+        age:
+          type: integer
+          minimum: 1
+          maximum: 130
+        goals:
+          type: string
+          maxLength: 2000
+        experience_level:
+          type: string
+          maxLength: 100
+        training_style:
+          type: string
+          maxLength: 500
+        gym_schedule:
+          type: string
+          maxLength: 500
+        equipment:
+          type: string
+          maxLength: 2000
+        injuries:
+          type: string
+          maxLength: 2000
+        long_term_vision:
+          type: string
+          maxLength: 2000
+
+    Profile:
+      allOf:
+        - $ref: "#/components/schemas/ProfileInput"
+        - type: object
+          properties:
+            id:
+              type: integer
+            updated_at:
+              type: string
+
+    AgentStateInput:
+      type: object
+      additionalProperties: false
+      properties:
+        key:
+          type: string
+          enum:
+            - last_weekly_report_date
+        value:
+          type:
+            - string
+            - "null"
+          format: date
+      required:
+        - key
+        - value
+
+    AgentState:
+      type: object
+      properties:
+        key:
+          type: string
+          enum:
+            - last_weekly_report_date
+        value:
+          type:
+            - string
+            - "null"
+          format: date
+        updated_at:
+          type:
+            - string
+            - "null"
+
+    ReportResult:
+      type: object
+      properties:
+        from:
+          type:
+            - string
+            - "null"
+          format: date
+        to:
+          type:
+            - string
+            - "null"
+          format: date
+        interval:
+          type: string
+          enum:
+            - daily
+            - weekly
+            - monthly
+        summary:
+          type: object
+          additionalProperties: true
+        points:
+          type: array
+          items:
+            type: object
+            additionalProperties: true

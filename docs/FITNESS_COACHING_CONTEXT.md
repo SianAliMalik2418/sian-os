@@ -4,7 +4,7 @@
 >
 > Owner: Sian Malik
 >
-> Last updated: 2026-08-10
+> Last updated: 2026-08-11
 >
 > Status: Active
 
@@ -18,7 +18,7 @@ Use the following precedence when information conflicts:
 
 1. Sian's newest explicit statement or correction.
 2. Confirmed decisions recorded in this document.
-3. Current measured data in Sian OS or completed workout data in Hevy.
+3. Current measured data in Sian OS or completed workout data in Lyfta.
 4. Historical baselines in this document.
 5. Coach suggestions, which are not decisions until Sian agrees.
 
@@ -30,7 +30,7 @@ When Sian and the coach agree to a new plan, exception, target, schedule, tool, 
 4. Separate confirmed facts from proposals and open questions.
 5. Never record passwords, API keys, authentication tokens, session cookies, or guessed health data here.
 
-Routine measurements and daily logs belong in Sian OS or Hevy, not in this document. This document records the rules and meaning of those systems.
+Routine measurements and daily logs belong in Sian OS or Lyfta, not in this document. This document records the rules and meaning of those systems.
 
 ## Personal context
 
@@ -92,12 +92,9 @@ Strict coaching means clear standards and honest consequences. It does not mean 
 ### Gym restart
 
 - Confirmed restart date: Friday, 2026-08-07.
-- The normal weekly split makes Friday a Lower session.
-- The first ten completed gym sessions form the re-entry phase.
-- Re-entry sessions use approximately 60–70% of previous working loads.
-- Re-entry sets should normally finish with about 3–4 reps in reserve.
-- No training to failure and no ego lifting during re-entry.
-- Sessions remain 30–45 minutes.
+- The former weekly split and re-entry prescription are superseded as active guidance.
+- The current workout routine, exercises, sets, reps, loads, and progression must be read from Lyfta.
+- If Lyfta does not expose the active planned routine through the available API, the coach must say that clearly instead of using the historical split.
 
 On 2026-08-06, gym clothes, shoes, bag, water bottle, and alarm must be prepared before bed.
 
@@ -129,32 +126,30 @@ Anime or optional entertainment belongs before Isha/evening shutdown and may not
 
 ### Source of truth
 
-Hevy is the authoritative source for:
+Lyfta is the authoritative source for:
 
 - completed workouts;
 - exercises;
 - sets, repetitions, and loads;
 - RPE/RIR when recorded;
 - routines;
+- workout notes recorded in Lyfta;
 - exercise history and strength progression.
 
-Sian OS is not the detailed workout tracker. Structured workout features have been removed from Sian OS and must not be reintroduced or used to duplicate Hevy data unless Sian explicitly reverses this decision.
+Sian OS is not the authoritative detailed workout tracker. Structured workout features have been removed from Sian OS and must not be reintroduced as a competing workout log unless Sian explicitly reverses this decision.
 
-Sian OS may store brief workout status or summary text in a daily check-in. That text exists for coaching context only and never replaces Hevy as the record for exercises, sets, reps, loads, RPE/RIR, routines, or strength progression.
+Sian OS may store reviewer-facing workout notes in a daily check-in `workout_text` field. The daily logger should fetch the relevant Lyfta workout, summarize the useful workout details into `workout_text`, and preserve Lyfta as the authoritative record if there is any conflict.
 
-The coach currently has access to an authenticated Hevy session in the shared browser. That session may expire or be cleared. If it does, Sian must log in personally again; Sian must never send the coach a password.
+The workout-note summary in Sian OS should be concise enough for daily review and may include workout name, date, completion status, exercises, working sets or top sets, loads, reps, RPE/RIR when present, and relevant Lyfta notes. Do not store secrets, API keys, session cookies, or unnecessary private data in `workout_text`.
 
-An automatic Hevy API integration has not been approved or implemented. If considered later, verify current Hevy API availability and subscription requirements, and store any API key only as a secure secret—not in chat, source control, Sian OS payloads, or this document.
+Lyfta API access has been approved for workout retrieval. Store any Lyfta API key only as a secure runtime secret, such as `LYFTA_API_KEY`. Do not commit it, print it, put it in Sian OS payloads, or record it in this document. Verify the current Lyfta API route and response shape before implementation.
 
-### Weekly structure
+### Routine source
 
-- Monday: Upper.
-- Tuesday: Lower.
-- Wednesday: light/accessory/recovery.
-- Thursday: Upper.
-- Friday: Lower.
-- Saturday: rest.
-- Sunday: rest.
+- The active workout routine lives only in Lyfta.
+- Do not answer routine questions from this document, historical notes, or memory.
+- Use Lyfta for current split, exercises, sets, reps, loads, and progression.
+- If Lyfta data is unavailable or only shows completed workouts rather than the active planned routine, say so directly.
 - Normal session window: 8:15–9:00 am.
 - Normal duration: 30–45 minutes.
 - 9:00 am is the workout cutoff unless Sian and the coach explicitly agree to a schedule change.
@@ -189,7 +184,7 @@ These are re-entry references, not mandatory targets:
 | Shoulder press machine | 2.5 kg per side |
 | Biceps curl | 5 kg each |
 
-Machine stacks, bar weights, equipment setup, and technique can differ. Hevy history plus current execution determine progression; these historical numbers do not justify forcing a load.
+Machine stacks, bar weights, equipment setup, and technique can differ. Lyfta history plus current execution determine progression; these historical numbers do not justify forcing a load.
 
 ## Nutrition system
 
@@ -247,7 +242,7 @@ Through 2026-08-06:
 5. Continue with the next scheduled workout unless the coach explicitly changes the plan.
 6. No ego lifting.
 7. Sleep is part of training.
-8. Compliance is evaluated from evidence: completed Hevy workouts, Sian OS wellness records, and honest reports.
+8. Compliance is evaluated from evidence: completed Lyfta workouts, Sian OS wellness records, and honest reports.
 9. A planned exam break is not non-compliance.
 10. Failing the minimum standards during the exam break is still non-compliance.
 
@@ -266,19 +261,19 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 
 | Information | Authoritative location |
 | --- | --- |
-| Workout sessions, exercises, sets, reps, load, RPE/RIR | Hevy |
+| Workout sessions, exercises, sets, reps, load, RPE/RIR | Lyfta |
 | Sleep and wake time | Sian OS daily check-in |
 | Daily body weight when measured | Sian OS daily check-in |
 | Water and protein | Sian OS daily check-in |
 | Estimated calories | Sian OS daily check-in |
 | Breakfast, lunch, dinner, and food summary | Sian OS daily check-in nutrition textarea |
-| Brief daily workout status or summary | Sian OS daily check-in workout textarea |
+| Reviewer-facing workout notes derived from Lyfta | Sian OS daily check-in workout textarea |
 | Progress photos | Sian OS check-in dialog/R2 |
 | Derived daily/weekly/monthly wellness reports | Sian OS Reports page |
 | Coaching rules, platform decisions, exceptions, and long-term context | This document |
 | Subjective explanation for the current day | Coaching conversation, then Data Steward records a confirmed summary in Sian OS when appropriate |
 
-Do not duplicate detailed individual workouts into Sian OS. A short workout status or summary may be stored in the daily check-in for coaching context, but Hevy remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, and progression.
+Do not make Sian OS a competing workout log. The daily logger should copy a useful review summary from Lyfta into the daily check-in, but Lyfta remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, notes, and progression.
 
 ## Two-agent coaching workflow
 
@@ -300,7 +295,7 @@ The Coach Agent:
 - judges daily execution;
 - guides Sian and challenges excuses;
 - analyzes daily, weekly, and longer-term progress;
-- reads Sian OS wellness records and Hevy workout records;
+- reads Sian OS wellness records and Lyfta workout records;
 - gives one evidence-based daily verdict and the next non-negotiable action;
 - does not inspect application code or debug Sian OS;
 - does not write, edit, or delete operational records;
@@ -318,7 +313,7 @@ The Data Steward Agent:
 - verifies every stored result;
 - reports what was written, preserved, and left unknown;
 - does not coach, judge, change the plan, or inspect application code;
-- never copies detailed Hevy workouts into Sian OS.
+- writes only reviewer-facing workout notes from Lyfta into Sian OS and preserves Lyfta as the detailed source of truth.
 
 The detailed role contract is [`agents/DATA_STEWARD_AGENT.md`](./agents/DATA_STEWARD_AGENT.md).
 
@@ -328,14 +323,14 @@ When Sian submits daily facts and asks for coaching in one message:
 
 1. The Data Steward records and verifies the confirmed facts.
 2. The Coach rereads the fresh records.
-3. The Coach checks relevant Hevy workout evidence.
+3. The Coach checks relevant Lyfta workout evidence and the Lyfta-derived `workout_text` stored in Sian OS.
 4. The Coach compares the day with the currently applicable rules and recent trends.
 5. The Coach gives one verdict: `On Track`, `Needs Correction`, `Off Plan`, or `Insufficient Data`.
 6. The Coach states the evidence, progress, main correction, and next required action.
 
 This sequence runs when Sian initiates a daily check-in. No autonomous background schedule is currently configured.
 
-Never infer a workout from a scheduled day. Never infer that no workout occurred merely because Sian OS has no workout note; Hevy is the detailed workout source of truth.
+Never infer a workout from a scheduled day. Never infer that no workout occurred merely because Sian OS has no workout note; Lyfta is the detailed workout source of truth.
 
 ## Daily reporting format
 
@@ -346,7 +341,7 @@ Date:
 Sleep time / wake time:
 Morning weight, if measured:
 Workout: completed / scheduled rest / approved break / missed
-Hevy workout name or link, if applicable:
+Lyfta workout name or link, if applicable:
 Muscle soreness:
 Any joint pain:
 Breakfast:
@@ -380,7 +375,7 @@ During the approved exam break, the workout field should be recorded as `approve
 ### Weekly
 
 - body-weight trend rather than one reading;
-- completed versus scheduled Hevy workouts;
+- completed versus scheduled Lyfta workouts;
 - exercise progression and execution;
 - protein consistency;
 - calorie direction when enough estimates exist;
@@ -391,7 +386,7 @@ During the approved exam break, the workout field should be recorded as `approve
 ### Monthly
 
 - progress photos;
-- strength trends from Hevy;
+- strength trends from Lyfta;
 - body-weight direction;
 - whether the lean-gain rate remains controlled;
 - whether the current plan remains compatible with university and work.
@@ -406,16 +401,16 @@ As last verified on 2026-07-30:
 - an R2 JSON backup was created before that deletion;
 - the direct repair and profile update were audit logged;
 - after cleanup, Sian OS contained no real daily check-ins or workouts;
-- Hevy was selected as the workout source of truth;
-- Sian personally logged in to Hevy in the shared coaching browser, and the authenticated session persisted when reopened.
+- Hevy was selected as the workout source of truth at that time. This is superseded by the 2026-08-11 Lyfta decision.
+- Sian personally logged in to Hevy in the shared coaching browser at that time. This is no longer the active workout-source workflow.
 
-Operational data changes over time. Verify current Sian OS and Hevy state rather than treating this section as a live dashboard.
+Operational data changes over time. Verify current Sian OS and Lyfta state rather than treating this section as a live dashboard.
 
 ## Open questions
 
-- The exact exercise selection and set scheme for the 2026-08-07 Lower re-entry workout has not yet been finalized.
+- Lyfta API access currently supports workout evidence; verify whether the configured API exposes active planned routines/templates before answering routine questions from automation.
 - The approximate 60 kg baseline still needs a current morning weigh-in when Sian chooses to measure.
-- Browser-based Hevy access is active, but automatic API integration has not been approved.
+- Lyfta API route and response details need implementation-time verification before automatic workout import is built.
 - Targets may need adjustment after several weeks of real sleep, weight, food, and workout data.
 
 ## Evidence anchors
@@ -424,7 +419,7 @@ These references support the standing targets but do not replace individualized 
 
 - [American Academy of Sleep Medicine and Sleep Research Society adult sleep consensus](https://aasm.org/resources/pdf/adultsleepdurationconsensus.pdf) — adults should regularly obtain at least seven hours of sleep.
 - [International Society of Sports Nutrition position stand on protein and exercise](https://pmc.ncbi.nlm.nih.gov/articles/PMC5477153/) — 1.4–2.0 g/kg/day is sufficient for most exercising people; the 95–110 g target is approximately 1.6–1.8 g/kg at a 60 kg baseline.
-- [Hevy public API documentation](https://api.hevyapp.com/docs/) — consult this at implementation time if automatic workout retrieval is later approved.
+- [Lyfta website](https://www.lyfta.app/) — Lyfta is the selected workout tracker; verify current API documentation and app behavior at implementation time.
 
 ## Decision log
 
@@ -435,11 +430,13 @@ These references support the standing targets but do not replace individualized 
 | 2026-07-30 | Sian OS remains the wellness source of truth. | Confirmed sleep, weight, water, protein, meal notes, and photos are recorded there; reports are derived from daily check-ins. |
 | 2026-07-30 | The false API smoke-test check-in may be removed. | It was backed up, deleted, audited, and verified absent. |
 | 2026-07-30 | Exams justify a planned gym break through 2026-08-06. | No gym sessions in that period count as missed. |
-| 2026-07-30 | Gym training restarts on Friday, 2026-08-07. | Re-entry begins at 60–70% loads, 3–4 RIR, no failure, for the first ten completed sessions. |
-| 2026-07-30 | Hevy is the workout source of truth. | Detailed workouts are logged in Hevy, not duplicated in Sian OS; Sian OS structured workout tracking has been removed. |
+| 2026-07-30 | Gym training restarts on Friday, 2026-08-07. | Superseded as active routine guidance on 2026-08-11; current routine and progression must come from Lyfta. |
+| 2026-07-30 | Hevy is the workout source of truth. | Superseded on 2026-08-11 by the Lyfta decision. Sian OS structured workout tracking remains removed. |
 | 2026-07-30 | Replace Sian OS weekly-review journaling with derived reports. | One Reports page provides daily, weekly, and monthly intervals, preset/custom date ranges, Dither Kit charts, summaries, and detail tables without storing separate report records. |
 | 2026-07-30 | Retire the standalone Progress flow and consolidate daily data entry. | Body-measurement and separate nutrition-log systems are removed; meal text and progress photos move into Check-in, Profile gets its own page, and daily reports can edit/delete check-ins. |
-| 2026-07-30 | The coach may use Sian's authenticated shared-browser Hevy session for read-only coaching review. | Sian logs in personally; credentials are never shared or recorded. |
+| 2026-07-30 | The coach may use Sian's authenticated shared-browser Hevy session for read-only coaching review. | Superseded on 2026-08-11 by API-based Lyfta retrieval. Credentials and secrets are still never shared or recorded in repo files. |
 | 2026-07-30 | The earlier 9:30 pm bedtime target is too late for a 4:25 am wake time. | Active target is 8:45 pm lights out, with 9:00 pm as the normal hard ceiling. |
-| 2026-08-05 | Split fitness operations into a Coach Agent and a Data Steward Agent. | The Data Steward records and verifies confirmed facts first; the Coach then rereads the records, checks Hevy, judges the day, analyzes progress, and guides Sian. Neither role inspects application code during fitness operations. |
-| 2026-08-10 | Sian OS daily check-ins may include estimated calories and brief workout-summary text. | Calories become a structured check-in field; workout text is allowed only as a short daily status/summary, while Hevy remains authoritative for detailed workout records and progression. |
+| 2026-08-05 | Split fitness operations into a Coach Agent and a Data Steward Agent. | The Data Steward records and verifies confirmed facts first; the Coach then rereads the records, checks the active workout source, judges the day, analyzes progress, and guides Sian. Neither role inspects application code during fitness operations. |
+| 2026-08-10 | Sian OS daily check-ins may include estimated calories and workout-summary text. | Calories become a structured check-in field; workout text is allowed for daily review context, while the active workout tracker remains authoritative for detailed workout records and progression. |
+| 2026-08-11 | Lyfta replaces Hevy as the workout source of truth, and API-based Lyfta workout retrieval is approved. | The daily logger should fetch Lyfta workout details and store reviewer-facing workout notes in Sian OS `workout_text`; Lyfta remains authoritative for detailed workout records and progression. The Lyfta API key must be stored only as a secure runtime secret and never committed or written into docs. |
+| 2026-08-11 | Workout routine answers must come only from Lyfta. | The old Upper/Lower split and re-entry plan must not be used as the current routine. If Lyfta does not expose the active routine/template through available Actions, the coach must say it cannot verify the current routine instead of guessing. |
