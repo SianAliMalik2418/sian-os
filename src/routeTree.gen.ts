@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AppRecipesRouteImport } from './routes/_app/recipes'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as ApiCheckinsRouteImport } from './routes/api/checkins'
 import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
@@ -19,11 +20,14 @@ import { Route as ApiExportRouteImport } from './routes/api/export'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiProfileRouteImport } from './routes/api/profile'
 import { Route as ApiProgressPhotosRouteImport } from './routes/api/progress-photos'
+import { Route as ApiRecipesRouteImport } from './routes/api/recipes'
 import { Route as ApiReportsRouteImport } from './routes/api/reports'
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
 import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
 import { Route as ApiAgentStateRouteImport } from './routes/api/agent/state'
 import { Route as ApiProgressPhotosPhotoIdRouteImport } from './routes/api/progress-photos/$photoId'
+import { Route as ApiRecipesRecipeIdRouteImport } from './routes/api/recipes/$recipeId'
+import { Route as ApiRecipesRecipeIdPhotoRouteImport } from './routes/api/recipes/$recipeId/photo'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -37,6 +41,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecipesRoute = AppRecipesRouteImport.update({
+  id: '/recipes',
+  path: '/recipes',
   getParentRoute: () => AppRoute,
 } as any)
 const AppReportsRoute = AppReportsRouteImport.update({
@@ -74,6 +83,11 @@ const ApiProgressPhotosRoute = ApiProgressPhotosRouteImport.update({
   path: '/api/progress-photos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRecipesRoute = ApiRecipesRouteImport.update({
+  id: '/api/recipes',
+  path: '/api/recipes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiReportsRoute = ApiReportsRouteImport.update({
   id: '/api/reports',
   path: '/api/reports',
@@ -100,10 +114,21 @@ const ApiProgressPhotosPhotoIdRoute =
     path: '/$photoId',
     getParentRoute: () => ApiProgressPhotosRoute,
   } as any)
+const ApiRecipesRecipeIdRoute = ApiRecipesRecipeIdRouteImport.update({
+  id: '/$recipeId',
+  path: '/$recipeId',
+  getParentRoute: () => ApiRecipesRoute,
+} as any)
+const ApiRecipesRecipeIdPhotoRoute = ApiRecipesRecipeIdPhotoRouteImport.update({
+  id: '/photo',
+  path: '/photo',
+  getParentRoute: () => ApiRecipesRecipeIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/profile': typeof AppProfileRoute
+  '/recipes': typeof AppRecipesRoute
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
@@ -111,14 +136,18 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/api/profile': typeof ApiProfileRoute
   '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
+  '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
+  '/api/recipes/$recipeId': typeof ApiRecipesRecipeIdRouteWithChildren
+  '/api/recipes/$recipeId/photo': typeof ApiRecipesRecipeIdPhotoRoute
 }
 export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
+  '/recipes': typeof AppRecipesRoute
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
@@ -126,17 +155,21 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/api/profile': typeof ApiProfileRoute
   '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
+  '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
   '/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
+  '/api/recipes/$recipeId': typeof ApiRecipesRecipeIdRouteWithChildren
+  '/api/recipes/$recipeId/photo': typeof ApiRecipesRecipeIdPhotoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/profile': typeof AppProfileRoute
+  '/_app/recipes': typeof AppRecipesRoute
   '/_app/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
@@ -144,18 +177,22 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/api/profile': typeof ApiProfileRoute
   '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
+  '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
   '/_app/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
+  '/api/recipes/$recipeId': typeof ApiRecipesRecipeIdRouteWithChildren
+  '/api/recipes/$recipeId/photo': typeof ApiRecipesRecipeIdPhotoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/profile'
+    | '/recipes'
     | '/reports'
     | '/api/checkins'
     | '/api/dashboard'
@@ -163,14 +200,18 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/profile'
     | '/api/progress-photos'
+    | '/api/recipes'
     | '/api/reports'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
     | '/api/progress-photos/$photoId'
+    | '/api/recipes/$recipeId'
+    | '/api/recipes/$recipeId/photo'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/profile'
+    | '/recipes'
     | '/reports'
     | '/api/checkins'
     | '/api/dashboard'
@@ -178,16 +219,20 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/profile'
     | '/api/progress-photos'
+    | '/api/recipes'
     | '/api/reports'
     | '/'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
     | '/api/progress-photos/$photoId'
+    | '/api/recipes/$recipeId'
+    | '/api/recipes/$recipeId/photo'
   id:
     | '__root__'
     | '/_app'
     | '/_app/profile'
+    | '/_app/recipes'
     | '/_app/reports'
     | '/api/checkins'
     | '/api/dashboard'
@@ -195,12 +240,15 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/profile'
     | '/api/progress-photos'
+    | '/api/recipes'
     | '/api/reports'
     | '/_app/'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
     | '/api/progress-photos/$photoId'
+    | '/api/recipes/$recipeId'
+    | '/api/recipes/$recipeId/photo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -211,6 +259,7 @@ export interface RootRouteChildren {
   ApiHealthRoute: typeof ApiHealthRoute
   ApiProfileRoute: typeof ApiProfileRoute
   ApiProgressPhotosRoute: typeof ApiProgressPhotosRouteWithChildren
+  ApiRecipesRoute: typeof ApiRecipesRouteWithChildren
   ApiReportsRoute: typeof ApiReportsRoute
   ApiAgentContextRoute: typeof ApiAgentContextRoute
   ApiAgentQueryRoute: typeof ApiAgentQueryRoute
@@ -238,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/recipes': {
+      id: '/_app/recipes'
+      path: '/recipes'
+      fullPath: '/recipes'
+      preLoaderRoute: typeof AppRecipesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/reports': {
@@ -289,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProgressPhotosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/recipes': {
+      id: '/api/recipes'
+      path: '/api/recipes'
+      fullPath: '/api/recipes'
+      preLoaderRoute: typeof ApiRecipesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/reports': {
       id: '/api/reports'
       path: '/api/reports'
@@ -324,17 +387,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProgressPhotosPhotoIdRouteImport
       parentRoute: typeof ApiProgressPhotosRoute
     }
+    '/api/recipes/$recipeId': {
+      id: '/api/recipes/$recipeId'
+      path: '/$recipeId'
+      fullPath: '/api/recipes/$recipeId'
+      preLoaderRoute: typeof ApiRecipesRecipeIdRouteImport
+      parentRoute: typeof ApiRecipesRoute
+    }
+    '/api/recipes/$recipeId/photo': {
+      id: '/api/recipes/$recipeId/photo'
+      path: '/photo'
+      fullPath: '/api/recipes/$recipeId/photo'
+      preLoaderRoute: typeof ApiRecipesRecipeIdPhotoRouteImport
+      parentRoute: typeof ApiRecipesRecipeIdRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppProfileRoute: typeof AppProfileRoute
+  AppRecipesRoute: typeof AppRecipesRoute
   AppReportsRoute: typeof AppReportsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppProfileRoute: AppProfileRoute,
+  AppRecipesRoute: AppRecipesRoute,
   AppReportsRoute: AppReportsRoute,
   AppIndexRoute: AppIndexRoute,
 }
@@ -352,6 +431,29 @@ const ApiProgressPhotosRouteChildren: ApiProgressPhotosRouteChildren = {
 const ApiProgressPhotosRouteWithChildren =
   ApiProgressPhotosRoute._addFileChildren(ApiProgressPhotosRouteChildren)
 
+interface ApiRecipesRecipeIdRouteChildren {
+  ApiRecipesRecipeIdPhotoRoute: typeof ApiRecipesRecipeIdPhotoRoute
+}
+
+const ApiRecipesRecipeIdRouteChildren: ApiRecipesRecipeIdRouteChildren = {
+  ApiRecipesRecipeIdPhotoRoute: ApiRecipesRecipeIdPhotoRoute,
+}
+
+const ApiRecipesRecipeIdRouteWithChildren =
+  ApiRecipesRecipeIdRoute._addFileChildren(ApiRecipesRecipeIdRouteChildren)
+
+interface ApiRecipesRouteChildren {
+  ApiRecipesRecipeIdRoute: typeof ApiRecipesRecipeIdRouteWithChildren
+}
+
+const ApiRecipesRouteChildren: ApiRecipesRouteChildren = {
+  ApiRecipesRecipeIdRoute: ApiRecipesRecipeIdRouteWithChildren,
+}
+
+const ApiRecipesRouteWithChildren = ApiRecipesRoute._addFileChildren(
+  ApiRecipesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ApiCheckinsRoute: ApiCheckinsRoute,
@@ -360,6 +462,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthRoute: ApiHealthRoute,
   ApiProfileRoute: ApiProfileRoute,
   ApiProgressPhotosRoute: ApiProgressPhotosRouteWithChildren,
+  ApiRecipesRoute: ApiRecipesRouteWithChildren,
   ApiReportsRoute: ApiReportsRoute,
   ApiAgentContextRoute: ApiAgentContextRoute,
   ApiAgentQueryRoute: ApiAgentQueryRoute,

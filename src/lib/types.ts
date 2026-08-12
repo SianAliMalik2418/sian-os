@@ -38,6 +38,22 @@ export interface ProgressPhoto {
   created_at: string
 }
 
+export interface Recipe {
+  id: number
+  name: string
+  aliases: string | null
+  category: string | null
+  serving_description: string | null
+  calories: number
+  protein_grams: number
+  ingredients: string | null
+  notes: string | null
+  photo_r2_key: string | null
+  photo_content_type: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface DashboardSummary {
   checkin: DailyCheckin | null
   weightTrend: Array<{ date: string; weight_kg: number }>

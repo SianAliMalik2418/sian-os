@@ -22,6 +22,13 @@ const checkinWriteContract = {
   },
 }
 
+const recipeGuidance = {
+  source: 'GET /api/recipes',
+  rule: 'Before estimating nutrition from meal text, check savedRecipes by name and aliases. If a logged food clearly matches a saved recipe and serving, use that recipe calories and protein instead of estimating. Estimate only missing foods or unmatched recipes.',
+  servingRule: 'Saved recipe calories and protein represent one normal serving unless serving_description says otherwise. If the owner logs multiple servings, multiply the saved values.',
+  uncertaintyRule: 'If a match is ambiguous, state the assumption or ask for the serving instead of silently guessing.',
+}
+
 const weeklyReportGuidance = {
   source: 'GET /api/checkins?limit=30',
   state: 'GET /api/agent/state?key=last_weekly_report_date',
@@ -35,10 +42,11 @@ export const Route = createFileRoute('/api/agent/context')({
     handlers: {
       GET: async () => handleApi(async () => {
         const database = db()
-        const [profile, dashboard, checkins] = await Promise.all([
+        const [profile, dashboard, checkins, recipes] = await Promise.all([
           database.prepare('SELECT * FROM profile WHERE id = 1').first(),
           dashboardSummary(),
           database.prepare('SELECT * FROM daily_checkins ORDER BY date DESC LIMIT 30').all(),
+          database.prepare('SELECT id, name, aliases, category, serving_description, calories, protein_grams, ingredients, notes, updated_at FROM recipes ORDER BY name COLLATE NOCASE LIMIT 500').all(),
         ])
         return json({
           ok: true,
@@ -47,9 +55,11 @@ export const Route = createFileRoute('/api/agent/context')({
             profile,
             dashboard,
             recentCheckins: checkins.results,
+            savedRecipes: recipes.results,
             agent: {
               checkinWriteContract,
               weeklyReportGuidance,
+              recipeGuidance,
             },
           },
         })

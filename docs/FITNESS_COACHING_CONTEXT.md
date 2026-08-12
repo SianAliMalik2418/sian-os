@@ -232,6 +232,18 @@ Controlled lean gain means:
 - Food generally cannot be weighed reliably.
 - Coaching must use portions and meal descriptions rather than pretending calorie estimates are exact.
 
+### Recipe source of truth
+
+Sian OS owns a saved recipe library for repeat foods, dishes, snacks, and drinks. Each saved recipe may include a photo, ingredients, aliases, serving description, calories, and protein for one normal serving.
+
+When logging nutrition:
+
+- first check Sian OS saved recipes by name and aliases;
+- if a logged food clearly matches a saved recipe, use the saved calories and protein instead of estimating;
+- multiply saved values when Sian states multiple servings;
+- estimate only foods or servings that are not covered by saved recipes;
+- if the match or serving is ambiguous, state the assumption or ask for clarification instead of silently guessing.
+
 ### Active targets
 
 - Protein: approximately 95–110 g per day.
@@ -502,4 +514,5 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-10 | Sian OS daily check-ins may include estimated calories and workout-summary text. | Calories become a structured check-in field; workout text is allowed for daily review context, while the active workout tracker remains authoritative for detailed workout records and progression. |
 | 2026-08-11 | Lyfta replaces Hevy as the workout source of truth, and API-based Lyfta workout retrieval is approved. | The daily logger should fetch Lyfta workout details and store reviewer-facing workout notes in Sian OS `workout_text`; Lyfta remains authoritative for detailed workout records and progression. The Lyfta API key must be stored only as a secure runtime secret and never committed or written into docs. |
 | 2026-08-11 | Workout routine answers must come only from Lyfta. | The old Upper/Lower split and re-entry plan must not be used as the current routine. If Lyfta does not expose the active routine/template through available Actions, the coach must say it cannot verify the current routine instead of guessing. |
+| 2026-08-12 | Sian OS adds a saved recipe library for repeat nutrition items. | The Data Steward must check saved recipes before estimating calories and protein from nutrition notes; saved recipe values override estimates when the logged food clearly matches. |
 | 2026-08-11 | Add a nutrition-coach workflow based on Peter Khatcherian's phase-based physique nutrition principles. | Weekly analysis must include a nutrition decision from evidence: hold, tighten, increase slightly, pull back slightly, or propose conditioning-first. The coach must reject vague "clean eating," aggressive bulking, crash dieting, and emotional changes. |

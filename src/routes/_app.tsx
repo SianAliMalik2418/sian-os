@@ -1,5 +1,5 @@
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
-import { Activity, ChartNoAxesCombined, UserRound } from 'lucide-react'
+import { Activity, ChartNoAxesCombined, NotebookTabs, UserRound } from 'lucide-react'
 import { DailyCheckinDialogProvider } from '@/components/daily-checkin-dialog'
 import { Button } from '@/components/ui/button'
 import { getProgressPhotos, getTodayCheckin } from '@/lib/app.functions'
@@ -14,6 +14,7 @@ export const Route = createFileRoute('/_app')({
 
 const navigation = [
   { to: '/', label: 'Today', icon: Activity },
+  { to: '/recipes', label: 'Recipes', icon: NotebookTabs },
   { to: '/reports', label: 'Reports', icon: ChartNoAxesCombined },
   { to: '/profile', label: 'Profile', icon: UserRound },
 ] as const
@@ -45,8 +46,9 @@ function AppShell() {
       <main className="min-h-screen pb-24 lg:pb-0 lg:pl-64"><Outlet /></main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Primary navigation">
-        <div className="mx-auto grid h-18 max-w-md grid-cols-3">
+        <div className="mx-auto grid h-18 max-w-md grid-cols-4">
           <MobileLink to="/" label="Today" icon={Activity} exact />
+          <MobileLink to="/recipes" label="Recipes" icon={NotebookTabs} />
           <MobileLink to="/reports" label="Reports" icon={ChartNoAxesCombined} />
           <MobileLink to="/profile" label="Profile" icon={UserRound} />
         </div>
@@ -64,6 +66,6 @@ function DesktopNavigation() {
   </nav>
 }
 
-function MobileLink({ to, label, icon: Icon, exact = false }: { to: '/' | '/reports' | '/profile'; label: string; icon: typeof Activity; exact?: boolean }) {
+function MobileLink({ to, label, icon: Icon, exact = false }: { to: '/' | '/recipes' | '/reports' | '/profile'; label: string; icon: typeof Activity; exact?: boolean }) {
   return <Button render={<Link to={to} activeOptions={{ exact }} activeProps={{ className: 'text-primary' }} />} variant="ghost" className="h-full min-w-0 flex-col gap-1 rounded-xl px-1 text-[0.65rem] font-medium text-muted-foreground"><Icon className="size-5" /><span className="truncate">{label}</span></Button>
 }

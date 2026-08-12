@@ -14,6 +14,7 @@ Sian OS is a single-user wellness operating system for:
 
 - daily check-ins;
 - sleep, hydration, protein, calories, body-weight, meal notes, and brief workout-summary text;
+- saved repeat recipes with ingredients, photos, calories, and protein;
 - progress photos inside the daily check-in flow;
 - daily, weekly, and monthly reports with charts and date ranges;
 - structured context for an external coaching agent.
@@ -133,6 +134,7 @@ Formats and units:
 | `GET` | `/api/agent/state?key=last_weekly_report_date` | Weekly-report cadence state |
 | `GET` | `/api/dashboard` | Latest check-in, streak, week completion, and weight trend |
 | `GET` | `/api/profile` | Owner profile and goals |
+| `GET` | `/api/recipes` | Saved repeat recipes for nutrition lookup |
 | `GET` | `/api/checkins?limit=30` | Recent check-ins; limit 1–365 |
 | `GET` | `/api/checkins?date=YYYY-MM-DD` | One check-in or `null` |
 | `GET` | `/api/reports?interval=monthly&from=2026-01-01&to=2026-12-31` | Report summary and daily, weekly, or monthly points |
@@ -200,6 +202,14 @@ Supported fields: `height_cm`, `weight_kg`, `age`, `goals`, `experience_level`, 
 
 Use `null` for `value` to clear it. Read this key before weekly analysis and update it after giving a weekly report so `Analyze yesterday` does not repeat the weekly summary until seven newer logged days exist.
 
+### Recipes
+
+Recipes are Sian OS's source for repeat-food nutrition values. The app exposes them in `/api/agent/context` as `savedRecipes`, and through `GET /api/recipes`.
+
+Saved recipe fields include `name`, `aliases`, `category`, `serving_description`, `calories`, `protein_grams`, `ingredients`, `notes`, and photo metadata. Calories and protein represent one normal serving unless the serving description says otherwise.
+
+When recording a daily check-in from natural-language nutrition notes, check saved recipes by name and aliases before estimating. If a logged item clearly matches a saved recipe, use its saved calories and protein. Estimate only unmatched foods or unclear amounts. If the serving or match is ambiguous, preserve the uncertainty in the notes or ask the owner instead of silently guessing.
+
 ### Reports
 
 Reports are derived read-only views; they are not saved as separate records. `GET /api/reports` accepts optional `from` and `to` dates plus `interval=daily|weekly|monthly`. It returns summary averages and aggregated points for weight, sleep, water, protein, calories, and check-in coverage.
@@ -236,7 +246,7 @@ The decision must explain the evidence: body-weight trend, protein consistency, 
 
 ### Export and backup
 
-- `GET /api/export` downloads `sian-os-export`, version `5`.
+- `GET /api/export` downloads `sian-os-export`, version `6`.
 - `POST /api/export` writes a timestamped JSON snapshot under `backups/` in R2.
 - Exported progress-photo records do not include original image bytes.
 
@@ -244,11 +254,12 @@ The decision must explain the evidence: body-weight trend, protein consistency, 
 
 - `profile`: singleton owner profile where `id = 1`.
 - `daily_checkins`: one row per date with weight, sleep times, calculated duration, water, protein, calories, nutrition text, brief workout text, and general notes.
+- `recipes`: saved repeat foods with calories, protein, serving notes, ingredients, optional aliases, and private R2 photo object keys.
 - `progress_photos`: D1 metadata and private R2 object key.
 - `agent_state`: limited agent-owned state, currently the last weekly report date.
 - `agent_audit_log`: API write history with action, entity type, entity ID, payload, and timestamp.
 
-Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval.
+Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval. Migration `0009_recipes.sql` adds the recipe library.
 
 ## Calculated metrics
 

@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { setResponseHeader } from '@tanstack/react-start/server'
 import { dashboardSummary, db } from './db'
+import { listRecipes } from './recipes'
 import { buildDailyReports } from './reports'
 import type { DailyCheckin, Profile, ProgressPhoto } from './types'
 
@@ -34,4 +35,9 @@ export const getReportsData = createServerFn({ method: 'GET' }).handler(async ()
   disableCaching()
   const checkins = await db().prepare('SELECT date, weight_kg, sleep_hours, water_liters, protein_grams, calories FROM daily_checkins ORDER BY date').all<DailyCheckin>()
   return buildDailyReports(checkins.results)
+})
+
+export const getRecipesData = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  return listRecipes()
 })

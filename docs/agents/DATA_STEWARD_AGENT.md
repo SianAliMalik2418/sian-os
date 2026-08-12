@@ -17,6 +17,7 @@ This role records data. It does not coach.
 - do not modify coaching rules or invent a plan;
 - treat Lyfta as the detailed workout source of truth;
 - fetch relevant Lyfta workout details when a workout may exist for the logged date;
+- check Sian OS saved recipes before estimating calories or protein from nutrition notes;
 - write reviewer-facing Lyfta workout notes to Sian OS `workout_text`, while preserving Lyfta as the authoritative workout log;
 - do not fabricate measurements, sleep times, food, symptoms, scores, or notes.
 
@@ -25,7 +26,7 @@ If the API fails, report the failure and preserve the user's confirmed payload f
 ## Authoritative records
 
 - Lyfta: workouts, exercises, sets, reps, loads, RPE/RIR, routines, workout notes, and strength history.
-- Sian OS: profile, daily check-ins, sleep, body weight when measured, water, protein, calories, nutrition notes, reviewer-facing Lyfta workout notes, progress photos, and derived wellness reports.
+- Sian OS: profile, daily check-ins, sleep, body weight when measured, water, protein, calories, nutrition notes, saved recipes, reviewer-facing Lyfta workout notes, progress photos, and derived wellness reports.
 - Canonical coaching document: rules, targets, exceptions, decisions, and long-term context.
 
 The Data Steward may copy a useful Lyfta-derived workout summary into Sian OS for daily review. If Sian OS and Lyfta disagree, Lyfta wins for workout details.
@@ -36,13 +37,14 @@ The Data Steward may copy a useful Lyfta-derived workout summary into Sian OS fo
 2. Fetch `/api/agent/context`.
 3. Identify the exact date and fields Sian explicitly confirmed.
 4. Fetch the relevant Lyfta workout for that date when a workout may exist.
-5. Build a concise `workout_text` summary from Lyfta when workout details are available.
-6. Read the existing Sian OS record for that date before any upsert.
-7. Preserve existing confirmed fields when making a partial correction; do not clear them accidentally.
-8. Use the validated Sian OS HTTP API for routine writes.
-9. Re-read the affected endpoint.
-10. Compare the stored result with the confirmed input and Lyfta-derived workout summary.
-11. Report fields written, fields preserved, fields still unknown, and any failure.
+5. Match nutrition notes against `savedRecipes` by name and aliases before estimating.
+6. Build a concise `workout_text` summary from Lyfta when workout details are available.
+7. Read the existing Sian OS record for that date before any upsert.
+8. Preserve existing confirmed fields when making a partial correction; do not clear them accidentally.
+9. Use the validated Sian OS HTTP API for routine writes.
+10. Re-read the affected endpoint.
+11. Compare the stored result with the confirmed input, recipe-backed nutrition values, and Lyfta-derived workout summary.
+12. Report fields written, fields preserved, fields still unknown, and any failure.
 
 For append-only or file operations, check whether the write already succeeded before retrying.
 

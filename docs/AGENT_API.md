@@ -38,10 +38,11 @@ Dates use `YYYY-MM-DD` and sleep/wake times use 24-hour `HH:mm`. Sleep duration 
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| GET | `/api/agent/context` | Profile, recent check-ins, and dashboard |
+| GET | `/api/agent/context` | Profile, recent check-ins, dashboard, and saved recipes |
 | GET | `/api/agent/state?key=last_weekly_report_date` | Weekly-report cadence state |
 | GET | `/api/dashboard` | Latest check-in, streak, current week, and weight trend |
 | GET | `/api/profile` | Personal profile and goals |
+| GET | `/api/recipes` | Saved repeat recipes for nutrition lookup |
 | GET | `/api/checkins?limit=30` | Recent daily check-ins (max 365) |
 | GET | `/api/checkins?date=2026-08-01` | One date, or `null` |
 | GET | `/api/reports?interval=weekly&from=2026-01-01&to=2026-12-31` | Daily, weekly, or monthly report points and summary |
@@ -86,6 +87,8 @@ Field notes:
 
 - `PUT /api/agent/state` — upsert limited agent state, currently only `{ "key": "last_weekly_report_date", "value": "YYYY-MM-DD" }`; send `null` to clear it.
 - `PUT /api/profile` — upsert profile fields.
+- `POST /api/recipes` and `PUT /api/recipes/:id` — multipart recipe writes with `name`, `calories`, `protein_grams`, optional `aliases`, `category`, `serving_description`, `ingredients`, `notes`, and optional image `photo`.
+- `DELETE /api/recipes/:id` — permanently remove one saved recipe and its photo.
 - `POST /api/progress-photos` — multipart form with `date`, `photo`, optional `label`, and optional `notes`; maximum 15 MB image.
 - `DELETE /api/progress-photos/:id` — permanently remove a photo and its metadata.
 - `POST /api/export` — create a timestamped R2 JSON backup.
@@ -112,7 +115,7 @@ This state is for cadence only. Do not store daily logs, coaching advice, creden
 
 ## Agent daily loop
 
-For daily logging, parse natural language into one `/api/checkins` upsert, then verify by date. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
+For daily logging, parse natural language into one `/api/checkins` upsert, then verify by date. Check saved recipes by name and aliases before estimating calories or protein; saved recipe values override estimates when the logged item clearly matches. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
 
 ## Agent safety rules
 
