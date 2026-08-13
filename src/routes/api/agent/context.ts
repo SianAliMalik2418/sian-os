@@ -14,6 +14,8 @@ const checkinWriteContract = {
     sleep_hours: { type: 'number', required: false, unit: 'hours', min: 0, max: 24 },
     water_liters: { type: 'number', required: false, unit: 'liters' },
     protein_grams: { type: 'integer', required: false, unit: 'grams' },
+    fat_grams: { type: 'integer', required: false, unit: 'grams' },
+    carb_grams: { type: 'integer', required: false, unit: 'grams' },
     calories: { type: 'integer', required: false, unit: 'kcal' },
     nutrition_notes: { type: 'string', required: false, maxLength: 2000 },
     workout_text: { type: 'string', required: false, maxLength: 2000, note: 'Reviewer-facing workout notes derived from Lyfta; Lyfta remains authoritative for workout details.' },

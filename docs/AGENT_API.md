@@ -32,7 +32,7 @@ Errors use an HTTP error status and a stable shape:
 }
 ```
 
-Dates use `YYYY-MM-DD`. Sleep is logged as numeric hours. Weight is kilograms, water is liters, protein is grams, and calories are estimated kcal. Omit unknown optional fields; do not invent data.
+Dates use `YYYY-MM-DD`. Sleep is logged as numeric hours. Weight is kilograms, water is liters, protein, fats, and carbs are grams, and calories are estimated kcal. Omit unknown optional fields; do not invent data.
 
 ## Read endpoints
 
@@ -67,6 +67,8 @@ curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
     "sleep_hours": 7.5,
     "water_liters": 2.5,
     "protein_grams": 145,
+    "fat_grams": 70,
+    "carb_grams": 300,
     "calories": 2400,
     "nutrition_notes": "Breakfast: eggs\nLunch: daal\nDinner: chicken",
     "workout_text": "Lower session completed in Lyfta. Exercises: Smith squat 3x8; leg extension 2x12. Notes: no joint pain.",
@@ -77,6 +79,7 @@ curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
 Field notes:
 
 - `sleep_hours` is optional numeric hours slept, from 0 to 24.
+- `protein_grams`, `fat_grams`, and `carb_grams` are optional integer gram estimates.
 - `nutrition_notes` is free text for formatted meals, snacks, drinks, and practical portion notes.
 - `workout_text` is free text for reviewer-facing workout notes derived from Lyfta. Lyfta remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, notes, and progression.
 - `calories` is an optional integer estimate in kcal.
@@ -115,7 +118,7 @@ This state is for cadence only. Do not store daily logs, coaching advice, creden
 
 ## Agent daily loop
 
-For daily logging, parse natural language into one `/api/checkins` upsert, then verify by date. Check saved recipes by name and aliases before estimating calories or protein; saved recipe values override estimates when the logged item clearly matches. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
+For daily logging, parse natural language into one `/api/checkins` upsert, then verify by date. Check saved recipes by name and aliases before estimating calories or protein; saved recipe values override estimates when the logged item clearly matches. Estimate fats and carbs only when the food context is sufficient. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
 
 ## Agent safety rules
 

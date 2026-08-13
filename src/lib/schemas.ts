@@ -15,6 +15,8 @@ export const checkinSchema = z.object({
   sleep_hours: z.number().min(0).max(24).optional(),
   water_liters: z.number().min(0).max(30).optional(),
   protein_grams: z.number().int().min(0).max(2000).optional(),
+  fat_grams: z.number().int().min(0).max(2000).optional(),
+  carb_grams: z.number().int().min(0).max(2000).optional(),
   calories: z.number().int().min(0).max(20000).optional(),
   nutrition_notes: optionalText,
   workout_text: optionalText,

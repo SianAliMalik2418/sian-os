@@ -7,7 +7,7 @@ info:
     Public single-owner wellness API for Sian OS.
 
     Use Lyfta as the detailed workout source of truth. Use Sian OS for daily wellness
-    check-ins, body weight, sleep, hydration, protein, calories, meal notes, brief
+    check-ins, body weight, sleep, hydration, protein, fats, carbs, calories, meal notes, brief
     workout status text, reports, profile context, and agent cadence state.
 
     Important write rule: POST /api/checkins and PUT /api/profile are full upserts.
@@ -350,6 +350,14 @@ components:
           type: integer
           minimum: 0
           maximum: 2000
+        fat_grams:
+          type: integer
+          minimum: 0
+          maximum: 2000
+        carb_grams:
+          type: integer
+          minimum: 0
+          maximum: 2000
         calories:
           type: integer
           minimum: 0
@@ -398,6 +406,14 @@ components:
             - number
             - "null"
         protein_grams:
+          type:
+            - integer
+            - "null"
+        fat_grams:
+          type:
+            - integer
+            - "null"
+        carb_grams:
           type:
             - integer
             - "null"

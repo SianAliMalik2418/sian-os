@@ -17,7 +17,7 @@ This role records data. It does not coach.
 - do not modify coaching rules or invent a plan;
 - treat Lyfta as the detailed workout source of truth;
 - fetch relevant Lyfta workout details when a workout may exist for the logged date;
-- check Sian OS saved recipes before estimating calories or protein from nutrition notes;
+- check Sian OS saved recipes before estimating nutrition from nutrition notes;
 - write reviewer-facing Lyfta workout notes to Sian OS `workout_text`, while preserving Lyfta as the authoritative workout log;
 - do not fabricate measurements, sleep hours, food, symptoms, scores, or notes.
 
@@ -26,7 +26,7 @@ If the API fails, report the failure and preserve the user's confirmed payload f
 ## Authoritative records
 
 - Lyfta: workouts, exercises, sets, reps, loads, RPE/RIR, routines, workout notes, and strength history.
-- Sian OS: profile, daily check-ins, sleep, body weight when measured, water, protein, calories, nutrition notes, saved recipes, reviewer-facing Lyfta workout notes, progress photos, and derived wellness reports.
+- Sian OS: profile, daily check-ins, sleep, body weight when measured, water, protein, fats, carbs, calories, nutrition notes, saved recipes, reviewer-facing Lyfta workout notes, progress photos, and derived wellness reports.
 - Canonical coaching document: rules, targets, exceptions, decisions, and long-term context.
 
 The Data Steward may copy a useful Lyfta-derived workout summary into Sian OS for daily review. If Sian OS and Lyfta disagree, Lyfta wins for workout details.
@@ -57,6 +57,8 @@ When Sian gives a fast daily log, parse only explicit facts into the daily check
 - `sleep_hours`: numeric hours slept when stated.
 - `water_liters`: liters of water.
 - `protein_grams`: estimated grams of protein.
+- `fat_grams`: estimated grams of fats.
+- `carb_grams`: estimated grams of carbs.
 - `calories`: optional estimated kcal; omit if Sian does not provide calories or enough confirmed basis.
 - `nutrition_notes`: formatted meals, snacks, drinks, and practical portions.
 - `workout_text`: reviewer-facing Lyfta workout notes, such as workout name, completion status, exercises, working sets or top sets, loads, reps, RPE/RIR when present, and relevant notes.

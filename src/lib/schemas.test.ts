@@ -9,11 +9,13 @@ describe('daily check-in schema', () => {
       sleep_hours: 7.5,
       water_liters: 2.5,
       protein_grams: 150,
+      fat_grams: 70,
+      carb_grams: 300,
       calories: 2400,
       nutrition_notes: 'Breakfast: eggs\nLunch: daal\nDinner: chicken',
       workout_text: 'Lower re-entry session logged in Lyfta',
       notes: 'Good day',
-    })).toMatchObject({ date: '2026-07-30', sleep_hours: 7.5 })
+    })).toMatchObject({ date: '2026-07-30', sleep_hours: 7.5, fat_grams: 70, carb_grams: 300 })
   })
 
   it.each(['sleep_time', 'wake_time', 'sleep_quality', 'energy', 'motivation', 'recovery', 'soreness', 'stress', 'mood'])('rejects removed field %s', (field) => {

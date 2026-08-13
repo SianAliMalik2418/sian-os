@@ -13,7 +13,7 @@ Fitness operations are split between [`agents/COACH_AGENT.md`](./agents/COACH_AG
 Sian OS is a single-user wellness operating system for:
 
 - daily check-ins;
-- sleep, hydration, protein, calories, body-weight, meal notes, and brief workout-summary text;
+- sleep, hydration, protein, fats, carbs, calories, body-weight, meal notes, and brief workout-summary text;
 - saved repeat recipes with ingredients, photos, calories, and protein;
 - progress photos inside the daily check-in flow;
 - daily, weekly, and monthly reports with charts and date ranges;
@@ -21,7 +21,7 @@ Sian OS is a single-user wellness operating system for:
 
 Sian OS does **not** own workouts, exercises, sets, loads, RPE/RIR, routines, or strength records. Lyfta owns those details. Sian OS may store reviewer-facing workout notes derived from Lyfta inside a daily check-in.
 
-The Coach also acts as Sian's nutrition coach. Sian OS owns the recorded nutrition evidence: food notes, protein, calories when estimated, water, body weight, sleep, and reports. Nutrition coaching is practical physique coaching, not clinical dietetics.
+The Coach also acts as Sian's nutrition coach. Sian OS owns the recorded nutrition evidence: food notes, protein, fats, carbs, calories when estimated, water, body weight, sleep, and reports. Nutrition coaching is practical physique coaching, not clinical dietetics.
 
 ## Access and privacy
 
@@ -121,7 +121,7 @@ Formats and units:
 - sleep: numeric hours;
 - weight: kilograms;
 - water: liters;
-- protein: grams;
+- protein, fats, and carbs: grams;
 - calories: estimated kcal;
 - optional text: generally limited to 2,000 characters.
 
@@ -163,6 +163,8 @@ There is deliberately no public arbitrary-SQL endpoint.
   "sleep_hours": 7.5,
   "water_liters": 2.5,
   "protein_grams": 145,
+  "fat_grams": 70,
+  "carb_grams": 300,
   "calories": 2400,
   "nutrition_notes": "Breakfast: eggs\nLunch: daal\nDinner: chicken",
   "workout_text": "Lower session completed in Lyfta. Exercises: Smith squat 3x8 at controlled load; leg extension 2x12. Notes: no joint pain.",
@@ -177,6 +179,8 @@ Rules:
 - `sleep_hours` is optional numeric hours from 0 to 24;
 - `water_liters` is 0–30;
 - `protein_grams` is an integer from 0–2000;
+- `fat_grams` is an integer from 0–2000;
+- `carb_grams` is an integer from 0–2000;
 - `calories` is an optional integer from 0–20000;
 - `nutrition_notes` is optional text, normally organized under Breakfast, Lunch, and Dinner;
 - `workout_text` is optional free text for reviewer-facing workout notes derived from Lyfta; Lyfta remains the detailed workout source of truth;
@@ -209,7 +213,7 @@ When recording a daily check-in from natural-language nutrition notes, check sav
 
 ### Reports
 
-Reports are derived read-only views; they are not saved as separate records. `GET /api/reports` accepts optional `from` and `to` dates plus `interval=daily|weekly|monthly`. It returns summary averages and aggregated points for weight, sleep, water, protein, calories, and check-in coverage.
+Reports are derived read-only views; they are not saved as separate records. `GET /api/reports` accepts optional `from` and `to` dates plus `interval=daily|weekly|monthly`. It returns summary averages and aggregated points for weight, sleep, water, protein, fats, carbs, calories, and check-in coverage.
 
 ## Nutrition coaching contract
 
@@ -243,20 +247,20 @@ The decision must explain the evidence: body-weight trend, protein consistency, 
 
 ### Export and backup
 
-- `GET /api/export` downloads `sian-os-export`, version `6`.
+- `GET /api/export` downloads `sian-os-export`, version `7`.
 - `POST /api/export` writes a timestamped JSON snapshot under `backups/` in R2.
 - Exported progress-photo records do not include original image bytes.
 
 ## Data model
 
 - `profile`: singleton owner profile where `id = 1`.
-- `daily_checkins`: one row per date with weight, sleep hours, water, protein, calories, nutrition text, brief workout text, and general notes.
+- `daily_checkins`: one row per date with weight, sleep hours, water, protein, fats, carbs, calories, nutrition text, brief workout text, and general notes.
 - `recipes`: saved repeat foods with calories, protein, serving notes, ingredients, optional aliases, and private R2 photo object keys.
 - `progress_photos`: D1 metadata and private R2 object key.
 - `agent_state`: limited agent-owned state, currently the last weekly report date.
 - `agent_audit_log`: API write history with action, entity type, entity ID, payload, and timestamp.
 
-Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval. Migration `0009_recipes.sql` adds the recipe library.
+Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval. Migration `0009_recipes.sql` adds the recipe library. Migration `0010_checkin_fats_carbs.sql` adds optional fats and carbs to daily check-ins.
 
 ## Calculated metrics
 

@@ -20,7 +20,7 @@ import { aggregateReports, reportAverages, type DailyReportPoint } from '@/lib/r
 export const Route = createFileRoute('/_app/reports')({ loader: () => getReportsData(), component: ReportsPage })
 
 type Interval = 'daily' | 'weekly' | 'monthly'
-type MetricKey = 'weight_kg' | 'sleep_hours' | 'water_liters' | 'protein_grams' | 'calories'
+type MetricKey = 'weight_kg' | 'sleep_hours' | 'water_liters' | 'protein_grams' | 'fat_grams' | 'carb_grams' | 'calories'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -133,12 +133,14 @@ function ReportsPage() {
         </CardPanel>
       </Card>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
         <SummaryCard icon={CheckCircle2} label="Check-ins" value={String(summary.checkins)} />
         <SummaryCard icon={Scale} label="Average weight" value={formatMetric(summary.weight_kg, ' kg')} />
         <SummaryCard icon={Moon} label="Average sleep" value={formatMetric(summary.sleep_hours, ' hrs')} />
         <SummaryCard icon={Droplets} label="Average water" value={formatMetric(summary.water_liters, ' L')} />
         <SummaryCard icon={Utensils} label="Average protein" value={formatMetric(summary.protein_grams, ' g')} />
+        <SummaryCard icon={Utensils} label="Average fats" value={formatMetric(summary.fat_grams, ' g')} />
+        <SummaryCard icon={Utensils} label="Average carbs" value={formatMetric(summary.carb_grams, ' g')} />
         <SummaryCard icon={Flame} label="Average calories" value={formatMetric(summary.calories, ' kcal')} />
       </div>
 
@@ -156,6 +158,8 @@ function ReportsPage() {
             <MetricChart title="Sleep duration" description="Logged sleep hours" icon={Moon} data={chartPoints} dataKey="sleep_hours" color="purple" suffix=" hrs" kind="line" />
             <MetricChart title="Hydration" description="Average recorded water intake" icon={Droplets} data={chartPoints} dataKey="water_liters" color="blue" suffix=" L" kind="bar" />
             <MetricChart title="Protein" description="Average recorded daily protein" icon={Utensils} data={chartPoints} dataKey="protein_grams" color="orange" suffix=" g" kind="bar" />
+            <MetricChart title="Fats" description="Average recorded daily fats" icon={Utensils} data={chartPoints} dataKey="fat_grams" color="pink" suffix=" g" kind="bar" />
+            <MetricChart title="Carbs" description="Average recorded daily carbs" icon={Utensils} data={chartPoints} dataKey="carb_grams" color="green" suffix=" g" kind="bar" />
             <MetricChart title="Calories" description="Average estimated daily intake" icon={Flame} data={chartPoints} dataKey="calories" color="red" suffix=" kcal" kind="bar" />
           </div>
         ) : (
@@ -168,9 +172,9 @@ function ReportsPage() {
       <Card>
         <CardHeader><div><CardTitle>{interval[0].toUpperCase() + interval.slice(1)} report</CardTitle><CardDescription>{interval === 'daily' ? 'Review, edit, or delete each daily check-in' : 'Detailed averages for the selected range'}</CardDescription></div></CardHeader>
         <CardPanel className="overflow-x-auto p-0">
-          <table className="w-full min-w-[840px] text-sm">
-            <thead className="border-b bg-secondary/40 text-left text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-4 py-3">Period</th><th className="px-4 py-3">Check-ins</th><th className="px-4 py-3">Weight</th><th className="px-4 py-3">Sleep</th><th className="px-4 py-3">Water</th><th className="px-4 py-3">Protein</th><th className="px-4 py-3">Calories</th>{interval === 'daily' && <th className="px-4 py-3 text-right">Actions</th>}</tr></thead>
-            <tbody>{points.map((point) => <tr key={point.period} className="border-b last:border-0"><td className="px-4 py-3 font-medium">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3 tabular-nums">{point.checkins}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.sleep_hours, ' hrs')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.water_liters, ' L')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.calories, ' kcal')}</td>{interval === 'daily' && <td className="px-4 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive"><Trash2 /></Button></div></td>}</tr>)}</tbody>
+          <table className="w-full min-w-[1040px] text-sm">
+            <thead className="border-b bg-secondary/40 text-left text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-4 py-3">Period</th><th className="px-4 py-3">Check-ins</th><th className="px-4 py-3">Weight</th><th className="px-4 py-3">Sleep</th><th className="px-4 py-3">Water</th><th className="px-4 py-3">Protein</th><th className="px-4 py-3">Fats</th><th className="px-4 py-3">Carbs</th><th className="px-4 py-3">Calories</th>{interval === 'daily' && <th className="px-4 py-3 text-right">Actions</th>}</tr></thead>
+            <tbody>{points.map((point) => <tr key={point.period} className="border-b last:border-0"><td className="px-4 py-3 font-medium">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3 tabular-nums">{point.checkins}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.sleep_hours, ' hrs')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.water_liters, ' L')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.fat_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.carb_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.calories, ' kcal')}</td>{interval === 'daily' && <td className="px-4 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive"><Trash2 /></Button></div></td>}</tr>)}</tbody>
           </table>
           {!points.length && <p className="py-10 text-center text-sm text-muted-foreground">No rows to display.</p>}
         </CardPanel>
@@ -201,7 +205,7 @@ function MetricChart({ title, description, icon: Icon, data, dataKey, color, suf
   icon: typeof Scale
   data: Array<DailyReportPoint & { label: string }>
   dataKey: MetricKey
-  color: 'green' | 'purple' | 'blue' | 'orange' | 'red'
+  color: 'green' | 'purple' | 'blue' | 'orange' | 'pink' | 'red'
   suffix: string
   kind: 'area' | 'line' | 'bar'
 }) {

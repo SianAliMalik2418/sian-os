@@ -247,6 +247,7 @@ When logging nutrition:
 ### Active targets
 
 - Protein: approximately 95–110 g per day.
+- Fats and carbs: optional estimates when Sian reports enough food context; use them as supporting nutrition detail, not as stricter targets unless Sian and the coach explicitly agree to macro targets.
 - Calories: optional estimate when Sian reports enough food context; do not pretend estimates are exact. Use calorie direction and weekly consistency more than single-day precision.
 - Water: at least 2 L per day, with more considered on hot or high-sweat days.
 - Creatine: 5 g daily unless a qualified clinician has advised otherwise.
@@ -423,6 +424,8 @@ Lunch:
 Dinner:
 Snacks and drinks:
 Estimated protein:
+Estimated fats:
+Estimated carbs:
 Estimated calories:
 Water:
 Creatine:
@@ -440,6 +443,7 @@ During the approved exam break, the workout field should be recorded as `approve
 - body weight when measured;
 - water;
 - protein;
+- fats and carbs when estimated;
 - calories when estimated;
 - food summary;
 - creatine;
@@ -516,4 +520,5 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-11 | Workout routine answers must come only from Lyfta. | The old Upper/Lower split and re-entry plan must not be used as the current routine. If Lyfta does not expose the active routine/template through available Actions, the coach must say it cannot verify the current routine instead of guessing. |
 | 2026-08-12 | Sian OS adds a saved recipe library for repeat nutrition items. | The Data Steward must check saved recipes before estimating calories and protein from nutrition notes; saved recipe values override estimates when the logged food clearly matches. |
 | 2026-08-13 | Sian OS check-ins record sleep as numeric hours instead of sleep and wake times. | The Data Steward should send `sleep_hours` directly when stated; the app no longer calculates sleep from separate time fields. |
+| 2026-08-13 | Sian OS daily check-ins may include estimated fats and carbs. | Fats and carbs become optional structured check-in fields for nutrition detail; they are not active macro targets unless separately confirmed. |
 | 2026-08-11 | Add a nutrition-coach workflow based on Peter Khatcherian's phase-based physique nutrition principles. | Weekly analysis must include a nutrition decision from evidence: hold, tighten, increase slightly, pull back slightly, or propose conditioning-first. The coach must reject vague "clean eating," aggressive bulking, crash dieting, and emotional changes. |

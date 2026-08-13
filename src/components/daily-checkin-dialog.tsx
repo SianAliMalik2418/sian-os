@@ -13,7 +13,7 @@ import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offl
 import type { CheckinInput } from '@/lib/schemas'
 import type { DailyCheckin, ProgressPhoto } from '@/lib/types'
 
-const numericFields = ['weight_kg', 'sleep_hours', 'water_liters', 'protein_grams', 'calories'] as const
+const numericFields = ['weight_kg', 'sleep_hours', 'water_liters', 'protein_grams', 'fat_grams', 'carb_grams', 'calories'] as const
 const nutritionTemplate = 'Breakfast:\nLunch:\nDinner:'
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -238,6 +238,12 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
                 </CheckinField>
                 <CheckinField label="Protein" description="Estimated grams">
                   <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="140" value={values.protein_grams || ''} onChange={(event) => update('protein_grams', event.target.value)} />
+                </CheckinField>
+                <CheckinField label="Fats" description="Estimated grams">
+                  <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="70" value={values.fat_grams || ''} onChange={(event) => update('fat_grams', event.target.value)} />
+                </CheckinField>
+                <CheckinField label="Carbs" description="Estimated grams">
+                  <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="300" value={values.carb_grams || ''} onChange={(event) => update('carb_grams', event.target.value)} />
                 </CheckinField>
                 <CheckinField label="Calories" description="Estimated kcal">
                   <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="2400" value={values.calories || ''} onChange={(event) => update('calories', event.target.value)} />
