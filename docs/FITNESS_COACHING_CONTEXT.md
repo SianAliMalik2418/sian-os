@@ -4,7 +4,7 @@
 >
 > Owner: Sian Malik
 >
-> Last updated: 2026-08-11
+> Last updated: 2026-08-13
 >
 > Status: Active
 
@@ -412,7 +412,7 @@ Sian may report naturally. The coach should extract only what is explicitly stat
 
 ```text
 Date:
-Sleep time / wake time:
+Sleep hours:
 Morning weight, if measured:
 Workout: completed / scheduled rest / approved break / missed
 Lyfta workout name or link, if applicable:
@@ -436,7 +436,7 @@ During the approved exam break, the workout field should be recorded as `approve
 
 ### Daily
 
-- sleep and wake time;
+- sleep hours;
 - body weight when measured;
 - water;
 - protein;
@@ -515,4 +515,5 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-11 | Lyfta replaces Hevy as the workout source of truth, and API-based Lyfta workout retrieval is approved. | The daily logger should fetch Lyfta workout details and store reviewer-facing workout notes in Sian OS `workout_text`; Lyfta remains authoritative for detailed workout records and progression. The Lyfta API key must be stored only as a secure runtime secret and never committed or written into docs. |
 | 2026-08-11 | Workout routine answers must come only from Lyfta. | The old Upper/Lower split and re-entry plan must not be used as the current routine. If Lyfta does not expose the active routine/template through available Actions, the coach must say it cannot verify the current routine instead of guessing. |
 | 2026-08-12 | Sian OS adds a saved recipe library for repeat nutrition items. | The Data Steward must check saved recipes before estimating calories and protein from nutrition notes; saved recipe values override estimates when the logged food clearly matches. |
+| 2026-08-13 | Sian OS check-ins record sleep as numeric hours instead of sleep and wake times. | The Data Steward should send `sleep_hours` directly when stated; the app no longer calculates sleep from separate time fields. |
 | 2026-08-11 | Add a nutrition-coach workflow based on Peter Khatcherian's phase-based physique nutrition principles. | Weekly analysis must include a nutrition decision from evidence: hold, tighten, increase slightly, pull back slightly, or propose conditioning-first. The coach must reject vague "clean eating," aggressive bulking, crash dieting, and emotional changes. |

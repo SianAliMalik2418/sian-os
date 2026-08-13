@@ -93,8 +93,7 @@ Verification:
 For check-ins:
 
 - Send `date` as `YYYY-MM-DD`.
-- Send both `sleep_time` and `wake_time`, or neither.
-- Never send `sleep_hours`; the server calculates it.
+- Send `sleep_hours` as numeric hours slept when stated.
 - Put meals, snacks, drinks, and practical portions in `nutrition_notes`.
 - Put Lyfta-derived workout review notes in `workout_text`.
 - Send `calories` only when stated or sufficiently explicit; otherwise omit.

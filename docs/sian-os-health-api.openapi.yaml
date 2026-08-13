@@ -174,8 +174,8 @@ paths:
       summary: Create or update a daily health check-in.
       description: |
         Upserts by date. Read GET /api/checkins?date=YYYY-MM-DD before updating
-        because omitted optional fields are cleared. Do not send sleep_hours; the
-        server calculates it from sleep_time and wake_time.
+        because omitted optional fields are cleared. Send sleep_hours directly
+        when sleep duration is known.
       requestBody:
         required: true
         content:
@@ -337,14 +337,11 @@ components:
           type: number
           exclusiveMinimum: 0
           maximum: 500
-        sleep_time:
-          type: string
-          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
-          description: HH:mm 24-hour time. Must be supplied with wake_time.
-        wake_time:
-          type: string
-          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
-          description: HH:mm 24-hour time. Must be supplied with sleep_time.
+        sleep_hours:
+          type: number
+          minimum: 0
+          maximum: 24
+          description: Optional numeric hours slept.
         water_liters:
           type: number
           minimum: 0

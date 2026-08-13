@@ -153,7 +153,7 @@ function ReportsPage() {
         {chartPoints.length ? (
           <div className="grid gap-4 xl:grid-cols-2">
             <MetricChart title="Body weight" description="Weight direction across the selected period" icon={Scale} data={chartPoints} dataKey="weight_kg" color="green" suffix=" kg" kind="area" />
-            <MetricChart title="Sleep duration" description="Calculated from sleep and wake times" icon={Moon} data={chartPoints} dataKey="sleep_hours" color="purple" suffix=" hrs" kind="line" />
+            <MetricChart title="Sleep duration" description="Logged sleep hours" icon={Moon} data={chartPoints} dataKey="sleep_hours" color="purple" suffix=" hrs" kind="line" />
             <MetricChart title="Hydration" description="Average recorded water intake" icon={Droplets} data={chartPoints} dataKey="water_liters" color="blue" suffix=" L" kind="bar" />
             <MetricChart title="Protein" description="Average recorded daily protein" icon={Utensils} data={chartPoints} dataKey="protein_grams" color="orange" suffix=" g" kind="bar" />
             <MetricChart title="Calories" description="Average estimated daily intake" icon={Flame} data={chartPoints} dataKey="calories" color="red" suffix=" kcal" kind="bar" />

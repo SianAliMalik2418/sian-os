@@ -1,6 +1,6 @@
 # Sian OS — Coach Agent Handoff
 
-> Last updated: 2026-08-11
+> Last updated: 2026-08-13
 
 This is the operating guide for an external wellness coach that can use the Sian OS HTTP API and the owner's Cloudflare account.
 
@@ -78,7 +78,7 @@ curl -sS "$SIAN_OS_URL/api/health"
 curl -sS "$SIAN_OS_URL/api/agent/context"
 ```
 
-Do not invent body weight, food intake, sleep times, symptoms, or subjective scores. Omit unknown optional fields rather than sending guesses or zeroes.
+Do not invent body weight, food intake, sleep hours, symptoms, or subjective scores. Omit unknown optional fields rather than sending guesses or zeroes.
 
 ## Owner-initiated agent loop
 
@@ -118,7 +118,7 @@ Error response:
 Formats and units:
 
 - dates: `YYYY-MM-DD`;
-- sleep/wake times: `HH:mm` using 24-hour time;
+- sleep: numeric hours;
 - weight: kilograms;
 - water: liters;
 - protein: grams;
@@ -160,8 +160,7 @@ There is deliberately no public arbitrary-SQL endpoint.
 {
   "date": "2026-08-01",
   "weight_kg": 72.4,
-  "sleep_time": "23:30",
-  "wake_time": "07:00",
+  "sleep_hours": 7.5,
   "water_liters": 2.5,
   "protein_grams": 145,
   "calories": 2400,
@@ -175,9 +174,7 @@ Rules:
 
 - `date` is required and unique;
 - `weight_kg` is greater than 0 and at most 500;
-- sleep and wake times must both be supplied or both omitted;
-- `sleep_hours` must not be sent; the server calculates it;
-- `23:30` to `07:00` becomes `7.5` hours;
+- `sleep_hours` is optional numeric hours from 0 to 24;
 - `water_liters` is 0–30;
 - `protein_grams` is an integer from 0–2000;
 - `calories` is an optional integer from 0–20000;
@@ -253,7 +250,7 @@ The decision must explain the evidence: body-weight trend, protein consistency, 
 ## Data model
 
 - `profile`: singleton owner profile where `id = 1`.
-- `daily_checkins`: one row per date with weight, sleep times, calculated duration, water, protein, calories, nutrition text, brief workout text, and general notes.
+- `daily_checkins`: one row per date with weight, sleep hours, water, protein, calories, nutrition text, brief workout text, and general notes.
 - `recipes`: saved repeat foods with calories, protein, serving notes, ingredients, optional aliases, and private R2 photo object keys.
 - `progress_photos`: D1 metadata and private R2 object key.
 - `agent_state`: limited agent-owned state, currently the last weekly report date.
@@ -265,7 +262,7 @@ Reports are calculated from existing daily data rather than stored in a report t
 
 - Daily streak uses consecutive UTC dates and may anchor on yesterday when today is incomplete.
 - Weeks start Monday in UTC.
-- Sleep duration rolls wake time into the next day when it is earlier than or equal to sleep time.
+- Sleep is stored as directly logged numeric hours.
 - Weekly reports use Monday-based UTC periods; monthly reports use calendar months.
 - Report averages ignore missing values rather than treating them as zero.
 - Report points are derived directly from daily check-ins.
@@ -385,7 +382,7 @@ Skip the migration command when none is pending. Always build after the final co
 3. The experience remains mobile-first.
 4. Use Coss UI and the shared Date Picker instead of native date inputs.
 5. Mood and readiness do not belong in the UI, API, types, or database.
-6. Sleep duration is calculated from sleep and wake times.
+6. Sleep is logged as numeric hours instead of separate sleep and wake times.
 7. Structured workout tracking, body-measurement tracking, separate nutrition logs, and weekly-review journaling do not belong in the product.
 8. Nutrition text and progress-photo management remain inside the daily check-in dialog.
 9. Reports remain derived from source records and use Dither Kit charts.

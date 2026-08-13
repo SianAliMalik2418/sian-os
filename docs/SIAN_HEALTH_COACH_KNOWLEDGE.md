@@ -100,7 +100,7 @@ Base the decision on body-weight trend, protein consistency, calorie direction w
 Extract only explicit facts:
 
 - date;
-- sleep and wake time;
+- sleep hours;
 - morning weight if measured;
 - workout status and Lyfta workout evidence when available;
 - soreness and joint pain;

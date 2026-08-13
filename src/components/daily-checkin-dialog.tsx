@@ -9,12 +9,11 @@ import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { calculateSleepHours } from '@/lib/metrics'
 import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offline-checkins'
 import type { CheckinInput } from '@/lib/schemas'
 import type { DailyCheckin, ProgressPhoto } from '@/lib/types'
 
-const numericFields = ['weight_kg', 'water_liters', 'protein_grams', 'calories'] as const
+const numericFields = ['weight_kg', 'sleep_hours', 'water_liters', 'protein_grams', 'calories'] as const
 const nutritionTemplate = 'Breakfast:\nLunch:\nDinner:'
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -72,11 +71,6 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
     const timeout = window.setTimeout(() => setSyncMessage(undefined), 5000)
     return () => window.clearTimeout(timeout)
   }, [pendingCount, syncMessage])
-
-  const sleepHours = useMemo(() => {
-    if (!/^\d{2}:\d{2}$/.test(values.sleep_time || '') || !/^\d{2}:\d{2}$/.test(values.wake_time || '')) return null
-    return calculateSleepHours(values.sleep_time, values.wake_time)
-  }, [values.sleep_time, values.wake_time])
 
   const selectedPhotos = useMemo(
     () => photos.filter((photo) => photo.date === values.date),
@@ -230,17 +224,12 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
 
               <section className="rounded-2xl border bg-muted/40 p-4">
                 <div className="mb-4 flex items-center justify-between gap-3">
-                  <div><p className="font-heading font-semibold">Sleep</p><p className="mt-1 text-xs text-muted-foreground">Overnight times are handled automatically.</p></div>
-                  <Badge variant={sleepHours === null ? 'secondary' : 'info'}><Clock3 /> {sleepHours === null ? 'Add times' : `${sleepHours} hours`}</Badge>
+                  <div><p className="font-heading font-semibold">Sleep</p><p className="mt-1 text-xs text-muted-foreground">Log the total hours slept.</p></div>
+                  <Badge variant={values.sleep_hours ? 'info' : 'secondary'}><Clock3 /> {values.sleep_hours ? `${values.sleep_hours} hours` : 'Add hours'}</Badge>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <CheckinField label="Sleep time">
-                    <Input nativeInput type="time" value={values.sleep_time || ''} onChange={(event) => update('sleep_time', event.target.value)} />
-                  </CheckinField>
-                  <CheckinField label="Wake time">
-                    <Input nativeInput type="time" value={values.wake_time || ''} onChange={(event) => update('wake_time', event.target.value)} />
-                  </CheckinField>
-                </div>
+                <CheckinField label="Sleep" description="Hours">
+                  <Input nativeInput type="number" min="0" max="24" step="0.25" inputMode="decimal" placeholder="7.5" value={values.sleep_hours || ''} onChange={(event) => update('sleep_hours', event.target.value)} />
+                </CheckinField>
               </section>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -308,7 +297,7 @@ function valuesFromCheckin(existing: DailyCheckin | null, date = today()) {
   const values: Record<string, string> = { date, nutrition_notes: nutritionTemplate }
   if (!existing) return values
   for (const [key, value] of Object.entries(existing)) {
-    if (value !== null && value !== undefined && !['id', 'created_at', 'updated_at', 'sleep_hours'].includes(key)) values[key] = String(value)
+    if (value !== null && value !== undefined && !['id', 'created_at', 'updated_at', 'sleep_time', 'wake_time'].includes(key)) values[key] = String(value)
   }
   return values
 }
