@@ -11,6 +11,7 @@ const checkinWriteContract = {
   fields: {
     date: { type: 'string', required: true, format: 'YYYY-MM-DD' },
     weight_kg: { type: 'number', required: false, unit: 'kg' },
+    waist_inches: { type: 'number', required: false, unit: 'inches' },
     sleep_hours: { type: 'number', required: false, unit: 'hours', min: 0, max: 24 },
     water_liters: { type: 'number', required: false, unit: 'liters' },
     protein_grams: { type: 'integer', required: false, unit: 'grams' },

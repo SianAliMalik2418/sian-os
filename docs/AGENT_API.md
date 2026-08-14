@@ -32,7 +32,7 @@ Errors use an HTTP error status and a stable shape:
 }
 ```
 
-Dates use `YYYY-MM-DD`. Sleep is logged as numeric hours. Weight is kilograms, water is liters, protein, fats, and carbs are grams, and calories are estimated kcal. Omit unknown optional fields; do not invent data.
+Dates use `YYYY-MM-DD`. Sleep is logged as numeric hours. Weight is kilograms, waist is inches, water is liters, protein, fats, and carbs are grams, and calories are estimated kcal. Omit unknown optional fields; do not invent data.
 
 ## Read endpoints
 
@@ -64,6 +64,7 @@ curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
   --data '{
     "date": "2026-08-01",
     "weight_kg": 72.4,
+    "waist_inches": 31.5,
     "sleep_hours": 7.5,
     "water_liters": 2.5,
     "protein_grams": 145,
@@ -79,6 +80,7 @@ curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
 Field notes:
 
 - `sleep_hours` is optional numeric hours slept, from 0 to 24.
+- `waist_inches` is an optional waist measurement in inches.
 - `protein_grams`, `fat_grams`, and `carb_grams` are optional integer gram estimates.
 - `nutrition_notes` is free text for formatted meals, snacks, drinks, and practical portion notes.
 - `workout_text` is free text for reviewer-facing workout notes derived from Lyfta. Lyfta remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, notes, and progression.

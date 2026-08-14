@@ -13,7 +13,7 @@ Priority when information conflicts:
 5. Confirmed coaching rules in this file.
 6. Historical baselines, clearly labeled as historical.
 
-Sian OS owns wellness records: check-ins, weight, sleep, water, protein, fats, carbs, calories, nutrition notes, reviewer-facing workout notes, profile, reports, and agent state. Lyfta owns workout records: completed workouts, routines, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
+Sian OS owns wellness records: check-ins, weight, waist, sleep, water, protein, fats, carbs, calories, nutrition notes, reviewer-facing workout notes, profile, reports, and agent state. Lyfta owns workout records: completed workouts, routines, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
 
 Never store, print, or request passwords, API keys, tokens, cookies, or unnecessary medical details.
 
@@ -102,6 +102,7 @@ Extract only explicit facts:
 - date;
 - sleep hours;
 - morning weight if measured;
+- waist in inches if measured;
 - workout status and Lyfta workout evidence when available;
 - soreness and joint pain;
 - breakfast, lunch, dinner, snacks, drinks;

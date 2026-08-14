@@ -23,11 +23,11 @@ export const Route = createFileRoute('/api/checkins')({
       POST: async ({ request }) => handleApi(async () => {
         const input = checkinSchema.parse(await readJson(request))
         const result = await db().prepare(`
-          INSERT INTO daily_checkins (date, weight_kg, sleep_time, wake_time, sleep_hours, water_liters, protein_grams, fat_grams, carb_grams, calories, nutrition_notes, workout_text, notes, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-          ON CONFLICT(date) DO UPDATE SET weight_kg=excluded.weight_kg, sleep_time=excluded.sleep_time, wake_time=excluded.wake_time, sleep_hours=excluded.sleep_hours, water_liters=excluded.water_liters, protein_grams=excluded.protein_grams, fat_grams=excluded.fat_grams, carb_grams=excluded.carb_grams, calories=excluded.calories, nutrition_notes=excluded.nutrition_notes, workout_text=excluded.workout_text, notes=excluded.notes, updated_at=CURRENT_TIMESTAMP
+          INSERT INTO daily_checkins (date, weight_kg, waist_inches, sleep_time, wake_time, sleep_hours, water_liters, protein_grams, fat_grams, carb_grams, calories, nutrition_notes, workout_text, notes, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ON CONFLICT(date) DO UPDATE SET weight_kg=excluded.weight_kg, waist_inches=excluded.waist_inches, sleep_time=excluded.sleep_time, wake_time=excluded.wake_time, sleep_hours=excluded.sleep_hours, water_liters=excluded.water_liters, protein_grams=excluded.protein_grams, fat_grams=excluded.fat_grams, carb_grams=excluded.carb_grams, calories=excluded.calories, nutrition_notes=excluded.nutrition_notes, workout_text=excluded.workout_text, notes=excluded.notes, updated_at=CURRENT_TIMESTAMP
           RETURNING *
-        `).bind(input.date, nullable(input.weight_kg), null, null, nullable(input.sleep_hours), nullable(input.water_liters), nullable(input.protein_grams), nullable(input.fat_grams), nullable(input.carb_grams), nullable(input.calories), nullable(input.nutrition_notes), nullable(input.workout_text), nullable(input.notes)).first<DailyCheckin>()
+        `).bind(input.date, nullable(input.weight_kg), nullable(input.waist_inches), null, null, nullable(input.sleep_hours), nullable(input.water_liters), nullable(input.protein_grams), nullable(input.fat_grams), nullable(input.carb_grams), nullable(input.calories), nullable(input.nutrition_notes), nullable(input.workout_text), nullable(input.notes)).first<DailyCheckin>()
         await recordApiWrite('upsert', 'daily_checkin', result?.id, input)
         return json({ ok: true, data: result }, { status: 201 })
       }),

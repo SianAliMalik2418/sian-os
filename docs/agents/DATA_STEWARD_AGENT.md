@@ -19,14 +19,14 @@ This role records data. It does not coach.
 - fetch relevant Lyfta workout details when a workout may exist for the logged date;
 - check Sian OS saved recipes before estimating nutrition from nutrition notes;
 - write reviewer-facing Lyfta workout notes to Sian OS `workout_text`, while preserving Lyfta as the authoritative workout log;
-- do not fabricate measurements, sleep hours, food, symptoms, scores, or notes.
+- do not fabricate measurements, waist, sleep hours, food, symptoms, scores, or notes.
 
 If the API fails, report the failure and preserve the user's confirmed payload for a later retry. A separate development task can investigate the application.
 
 ## Authoritative records
 
 - Lyfta: workouts, exercises, sets, reps, loads, RPE/RIR, routines, workout notes, and strength history.
-- Sian OS: profile, daily check-ins, sleep, body weight when measured, water, protein, fats, carbs, calories, nutrition notes, saved recipes, reviewer-facing Lyfta workout notes, progress photos, and derived wellness reports.
+- Sian OS: profile, daily check-ins, sleep, body weight when measured, waist when measured, water, protein, fats, carbs, calories, nutrition notes, saved recipes, reviewer-facing Lyfta workout notes, progress photos, and derived wellness reports.
 - Canonical coaching document: rules, targets, exceptions, decisions, and long-term context.
 
 The Data Steward may copy a useful Lyfta-derived workout summary into Sian OS for daily review. If Sian OS and Lyfta disagree, Lyfta wins for workout details.
@@ -54,6 +54,7 @@ When Sian gives a fast daily log, parse only explicit facts into the daily check
 
 - `date`: exact logged day; resolve `yesterday` relative to the current date unless Sian gives a date.
 - `weight_kg`: morning/body weight in kg when stated.
+- `waist_inches`: waist measurement in inches when stated.
 - `sleep_hours`: numeric hours slept when stated.
 - `water_liters`: liters of water.
 - `protein_grams`: estimated grams of protein.

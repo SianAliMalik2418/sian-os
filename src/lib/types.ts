@@ -2,6 +2,7 @@ export interface DailyCheckin {
   id: number
   date: string
   weight_kg: number | null
+  waist_inches: number | null
   sleep_time: string | null
   wake_time: string | null
   sleep_hours: number | null

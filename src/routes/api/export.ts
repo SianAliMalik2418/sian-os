@@ -15,7 +15,7 @@ async function buildExport() {
   ])
   return {
     format: 'sian-os-export',
-    version: 7,
+    version: 8,
     exportedAt: new Date().toISOString(),
     data: {
       profile: profile.results,

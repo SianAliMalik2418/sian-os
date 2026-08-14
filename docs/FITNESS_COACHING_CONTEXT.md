@@ -4,7 +4,7 @@
 >
 > Owner: Sian Malik
 >
-> Last updated: 2026-08-13
+> Last updated: 2026-08-14
 >
 > Status: Active
 
@@ -339,6 +339,7 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Workout sessions, exercises, sets, reps, load, RPE/RIR | Lyfta |
 | Sleep and wake time | Sian OS daily check-in |
 | Daily body weight when measured | Sian OS daily check-in |
+| Waist when measured | Sian OS daily check-in |
 | Water and protein | Sian OS daily check-in |
 | Estimated calories | Sian OS daily check-in |
 | Breakfast, lunch, dinner, and food summary | Sian OS daily check-in nutrition textarea |
@@ -415,6 +416,7 @@ Sian may report naturally. The coach should extract only what is explicitly stat
 Date:
 Sleep hours:
 Morning weight, if measured:
+Waist, if measured:
 Workout: completed / scheduled rest / approved break / missed
 Lyfta workout name or link, if applicable:
 Muscle soreness:
@@ -441,6 +443,7 @@ During the approved exam break, the workout field should be recorded as `approve
 
 - sleep hours;
 - body weight when measured;
+- waist when measured;
 - water;
 - protein;
 - fats and carbs when estimated;
@@ -521,4 +524,5 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-12 | Sian OS adds a saved recipe library for repeat nutrition items. | The Data Steward must check saved recipes before estimating calories and protein from nutrition notes; saved recipe values override estimates when the logged food clearly matches. |
 | 2026-08-13 | Sian OS check-ins record sleep as numeric hours instead of sleep and wake times. | The Data Steward should send `sleep_hours` directly when stated; the app no longer calculates sleep from separate time fields. |
 | 2026-08-13 | Sian OS daily check-ins may include estimated fats and carbs. | Fats and carbs become optional structured check-in fields for nutrition detail; they are not active macro targets unless separately confirmed. |
+| 2026-08-14 | Sian OS daily check-ins may include waist measurements in inches. | Waist becomes an optional structured check-in field for tracking lean-gain conditioning and visual softness trends. |
 | 2026-08-11 | Add a nutrition-coach workflow based on Peter Khatcherian's phase-based physique nutrition principles. | Weekly analysis must include a nutrition decision from evidence: hold, tighten, increase slightly, pull back slightly, or propose conditioning-first. The coach must reject vague "clean eating," aggressive bulking, crash dieting, and emotional changes. |

@@ -3,6 +3,7 @@ import { startOfWeekIso } from './metrics'
 export interface DailyReportPoint {
   period: string
   weight_kg: number | null
+  waist_inches: number | null
   sleep_hours: number | null
   water_liters: number | null
   protein_grams: number | null
@@ -15,6 +16,7 @@ export interface DailyReportPoint {
 interface CheckinReportSource {
   date: string
   weight_kg: number | null
+  waist_inches: number | null
   sleep_hours: number | null
   water_liters: number | null
   protein_grams: number | null
@@ -34,6 +36,7 @@ export function buildDailyReports(checkins: CheckinReportSource[]) {
     .map((checkin): DailyReportPoint => ({
       period: checkin.date,
       weight_kg: checkin.weight_kg,
+      waist_inches: checkin.waist_inches,
       sleep_hours: checkin.sleep_hours,
       water_liters: checkin.water_liters,
       protein_grams: checkin.protein_grams,
@@ -59,6 +62,7 @@ export function aggregateReports(points: DailyReportPoint[], interval: 'weekly' 
     .map(([period, rows]): DailyReportPoint => ({
       period,
       weight_kg: average(rows.map((row) => row.weight_kg)),
+      waist_inches: average(rows.map((row) => row.waist_inches)),
       sleep_hours: average(rows.map((row) => row.sleep_hours)),
       water_liters: average(rows.map((row) => row.water_liters)),
       protein_grams: average(rows.map((row) => row.protein_grams)),
@@ -72,6 +76,7 @@ export function aggregateReports(points: DailyReportPoint[], interval: 'weekly' 
 export function reportAverages(points: DailyReportPoint[]) {
   return {
     weight_kg: average(points.map((point) => point.weight_kg)),
+    waist_inches: average(points.map((point) => point.waist_inches)),
     sleep_hours: average(points.map((point) => point.sleep_hours)),
     water_liters: average(points.map((point) => point.water_liters)),
     protein_grams: average(points.map((point) => point.protein_grams)),

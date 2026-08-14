@@ -12,6 +12,7 @@ export const dateSchema = date
 export const checkinSchema = z.object({
   date,
   weight_kg: z.number().positive().max(500).optional(),
+  waist_inches: z.number().positive().max(200).optional(),
   sleep_hours: z.number().min(0).max(24).optional(),
   water_liters: z.number().min(0).max(30).optional(),
   protein_grams: z.number().int().min(0).max(2000).optional(),

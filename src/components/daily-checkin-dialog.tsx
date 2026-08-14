@@ -13,7 +13,7 @@ import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offl
 import type { CheckinInput } from '@/lib/schemas'
 import type { DailyCheckin, ProgressPhoto } from '@/lib/types'
 
-const numericFields = ['weight_kg', 'sleep_hours', 'water_liters', 'protein_grams', 'fat_grams', 'carb_grams', 'calories'] as const
+const numericFields = ['weight_kg', 'waist_inches', 'sleep_hours', 'water_liters', 'protein_grams', 'fat_grams', 'carb_grams', 'calories'] as const
 const nutritionTemplate = 'Breakfast:\nLunch:\nDinner:'
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -219,6 +219,9 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
                 </CheckinField>
                 <CheckinField label="Weight" description="Kilograms">
                   <Input nativeInput type="number" min="0" step="0.1" inputMode="decimal" placeholder="72.4" value={values.weight_kg || ''} onChange={(event) => update('weight_kg', event.target.value)} />
+                </CheckinField>
+                <CheckinField label="Waist" description="Inches">
+                  <Input nativeInput type="number" min="0" step="0.1" inputMode="decimal" placeholder="31.5" value={values.waist_inches || ''} onChange={(event) => update('waist_inches', event.target.value)} />
                 </CheckinField>
               </div>
 
