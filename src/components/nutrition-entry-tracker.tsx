@@ -1,8 +1,9 @@
-import { Trash2, Utensils } from 'lucide-react'
+import { Plus, Trash2, Utensils } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogPopup, DialogTitle } from '@/components/ui/dialog'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -25,6 +26,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   const [carbs, setCarbs] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string>()
+  const [addOpen, setAddOpen] = useState(false)
 
   const calorieTotal = entries.reduce((total, entry) => total + entry.calories, 0)
   const proteinTotal = entries.reduce((total, entry) => total + entry.protein_grams, 0)
@@ -107,6 +109,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       setProtein('')
       setFats('')
       setCarbs('')
+      if (!compact) setAddOpen(false)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not save food item')
     } finally {
@@ -135,6 +138,13 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     }
   }
 
+  function openAddDialog() {
+    setError(undefined)
+    setAddOpen(true)
+  }
+
+  const entryFields = <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} fats={fats} carbs={carbs} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} onFatsChange={setFats} onCarbsChange={setCarbs} />
+
   const body = (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -146,15 +156,10 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
 
       {compact ? (
         <div className="grid gap-3 lg:grid-cols-[1fr_7rem_7rem_7rem_7rem_auto]">
-          <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} fats={fats} carbs={carbs} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} onFatsChange={setFats} onCarbsChange={setCarbs} />
+          {entryFields}
           <Button type="button" loading={saving} className="self-end" onClick={addEntry}>Add</Button>
         </div>
-      ) : (
-        <Form onSubmit={submit} className="grid gap-3 lg:grid-cols-[1fr_7rem_7rem_7rem_7rem_auto]">
-          <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} fats={fats} carbs={carbs} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} onFatsChange={setFats} onCarbsChange={setCarbs} />
-          <Button type="submit" loading={saving} className="self-end">Add</Button>
-        </Form>
-      )}
+      ) : null}
 
       {entries.length ? (
         <div className="divide-y rounded-lg border">
@@ -177,13 +182,36 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   if (compact) return body
 
   return (
-    <Card>
-      <CardHeader>
-        <div><CardTitle>Nutrition</CardTitle><CardDescription>Food items for today</CardDescription></div>
-        <CardAction><Utensils className="size-5 text-primary" /></CardAction>
-      </CardHeader>
-      <CardPanel>{body}</CardPanel>
-    </Card>
+    <>
+      <Card>
+        <CardHeader>
+          <div><CardTitle>Nutrition</CardTitle><CardDescription>Food items for today</CardDescription></div>
+          <CardAction>
+            <Button type="button" size="sm" onClick={openAddDialog}><Plus /> Add food</Button>
+          </CardAction>
+        </CardHeader>
+        <CardPanel>{body}</CardPanel>
+      </Card>
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogPopup className="max-w-xl">
+          <Form onSubmit={submit} className="flex min-h-0 flex-col">
+            <DialogHeader>
+              <DialogTitle>Add food</DialogTitle>
+              <DialogDescription>Record one item with calories and macros for today.</DialogDescription>
+            </DialogHeader>
+            <DialogPanel className="grid gap-4">
+              <div className="grid gap-3 sm:grid-cols-2">{entryFields}</div>
+              {error && <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
+            </DialogPanel>
+            <DialogFooter>
+              <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
+              <Button type="submit" loading={saving}><Utensils /> Save food</Button>
+            </DialogFooter>
+          </Form>
+        </DialogPopup>
+      </Dialog>
+    </>
   )
 }
 
