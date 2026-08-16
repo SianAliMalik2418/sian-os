@@ -59,9 +59,22 @@ export interface Recipe {
   updated_at: string
 }
 
+export interface NutritionEntry {
+  id: number
+  date: string
+  item_name: string
+  calories: number
+  protein_grams: number
+  fat_grams: number
+  carb_grams: number
+  created_at: string
+  updated_at: string
+}
+
 export interface DashboardSummary {
   checkin: DailyCheckin | null
   profile: Profile | null
+  nutritionEntries: NutritionEntry[]
   weightTrend: Array<{ date: string; weight_kg: number }>
   streak: number
   weeklyCheckins: Array<{ date: string }>

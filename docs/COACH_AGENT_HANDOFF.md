@@ -13,7 +13,7 @@ Fitness operations are split between [`agents/COACH_AGENT.md`](./agents/COACH_AG
 Sian OS is a single-user wellness operating system for:
 
 - daily check-ins;
-- running daily calories/protein, sleep, hydration, fats, carbs, body-weight, waist, meal notes, and brief workout-summary text;
+- itemized daily food rows plus running daily calories/protein/fat/carb totals, sleep, hydration, body-weight, waist, and brief workout-summary text;
 - editable daily calorie and protein goals in the profile;
 - saved repeat recipes with ingredients, photos, calories, and protein;
 - progress photos inside the daily check-in flow;
@@ -158,7 +158,9 @@ There is deliberately no public arbitrary-SQL endpoint.
 
 `POST /api/checkins` upserts by date. Read the existing row before correcting it because omitted optional values are cleared.
 
-Today's check-in may be used as a running draft. The Home page and Data Steward may update `calories` and `protein_grams` during the day, as long as existing fields are preserved on every upsert.
+Today's check-in may be used as a running draft. The Home page and Data Steward may update `calories`, `protein_grams`, `fat_grams`, and `carb_grams` during the day through itemized foods, as long as existing fields are preserved on every direct check-in upsert.
+
+Prefer itemized nutrition entries for foods. `POST /api/nutrition-entries` accepts one row with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`; the API automatically recalculates daily calorie/protein/fat/carb totals.
 
 ```json
 {
@@ -171,7 +173,6 @@ Today's check-in may be used as a running draft. The Home page and Data Steward 
   "fat_grams": 70,
   "carb_grams": 300,
   "calories": 2400,
-  "nutrition_notes": "Breakfast: eggs\nLunch: daal\nDinner: chicken",
   "workout_text": "Lower session completed in Lyfta. Exercises: Smith squat 3x8 at controlled load; leg extension 2x12. Notes: no joint pain.",
   "notes": "Normal day"
 }
@@ -188,7 +189,7 @@ Rules:
 - `fat_grams` is an integer from 0–2000;
 - `carb_grams` is an integer from 0–2000;
 - `calories` is an optional integer from 0–20000;
-- `nutrition_notes` is optional text, normally organized under Breakfast, Lunch, and Dinner;
+- `nutrition_notes` is legacy optional text; do not use it for routine food logging;
 - `workout_text` is optional free text for reviewer-facing workout notes derived from Lyfta; Lyfta remains the detailed workout source of truth;
 - there are no readiness or mood fields;
 - `DELETE /api/checkins?date=YYYY-MM-DD` permanently removes one check-in but keeps photos for that date.
@@ -217,7 +218,7 @@ Recipes are Sian OS's source for repeat-food nutrition values. The app exposes t
 
 Saved recipe fields include `name`, `aliases`, `category`, `serving_description`, `calories`, `protein_grams`, `ingredients`, `notes`, and photo metadata. Calories and protein represent one normal serving unless the serving description says otherwise.
 
-When recording a daily check-in from natural-language nutrition notes, check saved recipes by name and aliases before estimating. If a logged item clearly matches a saved recipe, use its saved calories and protein. Estimate only unmatched foods or unclear amounts. If the serving or match is ambiguous, preserve the uncertainty in the notes or ask the owner instead of silently guessing.
+When recording food from natural language, check saved recipes by name and aliases before estimating. If a logged item clearly matches a saved recipe, use its saved calories and protein. Estimate only unmatched foods or unclear amounts. If the serving or match is ambiguous, state the assumption or ask the owner instead of silently guessing.
 
 ### Reports
 
@@ -262,13 +263,14 @@ The decision must explain the evidence: body-weight trend, protein consistency, 
 ## Data model
 
 - `profile`: singleton owner profile where `id = 1`.
-- `daily_checkins`: one row per date with weight, waist, sleep hours, water, protein, fats, carbs, calories, nutrition text, brief workout text, and general notes.
+- `daily_checkins`: one row per date with weight, waist, sleep hours, water, derived nutrition totals, brief workout text, and general notes.
+- `nutrition_entries`: itemized food rows by date with item name, calories, protein grams, fat grams, and carb grams. These rows drive the aggregate daily nutrition totals.
 - `recipes`: saved repeat foods with calories, protein, serving notes, ingredients, optional aliases, and private R2 photo object keys.
 - `progress_photos`: D1 metadata and private R2 object key.
 - `agent_state`: limited agent-owned state, currently the last weekly report date.
 - `agent_audit_log`: API write history with action, entity type, entity ID, payload, and timestamp.
 
-Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval. Migration `0009_recipes.sql` adds the recipe library. Migration `0010_checkin_fats_carbs.sql` adds optional fats and carbs to daily check-ins. Migration `0011_checkin_waist_inches.sql` adds optional waist measurements in inches. Migration `0012_profile_nutrition_goals.sql` adds editable calorie and protein goals to the profile.
+Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves legacy meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval. Migration `0009_recipes.sql` adds the recipe library. Migration `0010_checkin_fats_carbs.sql` adds optional fats and carbs to daily check-ins. Migration `0011_checkin_waist_inches.sql` adds optional waist measurements in inches. Migration `0012_profile_nutrition_goals.sql` adds editable calorie and protein goals to the profile. Migration `0013_nutrition_entries.sql` adds itemized food rows. Migration `0014_nutrition_entry_macros.sql` adds fats and carbs to itemized nutrition entries so rows recalculate daily calorie/protein/fat/carb totals.
 
 ## Calculated metrics
 

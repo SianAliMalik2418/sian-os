@@ -5,9 +5,10 @@ import { handleApi, json } from '@/lib/http'
 
 async function buildExport() {
   const database = db()
-  const [profile, checkins, photos, recipes, agentState, audit] = await Promise.all([
+  const [profile, checkins, nutritionEntries, photos, recipes, agentState, audit] = await Promise.all([
     database.prepare('SELECT * FROM profile').all(),
     database.prepare('SELECT * FROM daily_checkins ORDER BY date').all(),
+    database.prepare('SELECT * FROM nutrition_entries ORDER BY date, id').all(),
     database.prepare('SELECT * FROM progress_photos ORDER BY date, id').all(),
     database.prepare('SELECT * FROM recipes ORDER BY name COLLATE NOCASE').all(),
     database.prepare('SELECT * FROM agent_state ORDER BY key').all(),
@@ -15,11 +16,12 @@ async function buildExport() {
   ])
   return {
     format: 'sian-os-export',
-    version: 8,
+    version: 9,
     exportedAt: new Date().toISOString(),
     data: {
       profile: profile.results,
       dailyCheckins: checkins.results,
+      nutritionEntries: nutritionEntries.results,
       progressPhotos: photos.results,
       recipes: recipes.results,
       agentState: agentState.results,

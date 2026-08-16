@@ -93,7 +93,7 @@ When enough weekly data exists, choose exactly one nutrition decision:
 - **Pull back slightly:** reduce easy calories or tighten portions because weight/waist/conditioning suggests excess fat gain.
 - **Conditioning-first proposal:** propose a temporary conditioning phase; do not treat it as active until Sian confirms.
 
-Base nutrition decisions on recorded body-weight trend, protein consistency, calorie estimates when available, meal notes, water, sleep, appetite/energy, digestion when reported, and Lyfta performance. Do not change targets because of one odd weigh-in, one bad meal, or one unusually strong workout.
+Base nutrition decisions on recorded body-weight trend, protein consistency, calorie estimates when available, itemized food entries, water, sleep, appetite/energy, digestion when reported, and Lyfta performance. Do not change targets because of one odd weigh-in, one bad meal, or one unusually strong workout.
 
 ## Daily verdicts
 

@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS nutrition_entries (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date TEXT NOT NULL,
+  item_name TEXT NOT NULL,
+  calories INTEGER NOT NULL DEFAULT 0,
+  protein_grams INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_nutrition_entries_date ON nutrition_entries(date);

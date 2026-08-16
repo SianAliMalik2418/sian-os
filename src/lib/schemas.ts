@@ -39,4 +39,14 @@ export const profileSchema = z.object({
   protein_goal: z.number().int().min(0).max(2000).optional(),
 })
 
+export const nutritionEntrySchema = z.object({
+  date,
+  item_name: z.string().trim().min(1).max(200),
+  calories: z.number().int().min(0).max(20000),
+  protein_grams: z.number().int().min(0).max(2000).optional(),
+  fat_grams: z.number().int().min(0).max(2000).optional(),
+  carb_grams: z.number().int().min(0).max(2000).optional(),
+}).strict()
+
 export type CheckinInput = z.infer<typeof checkinSchema>
+export type NutritionEntryInput = z.infer<typeof nutritionEntrySchema>

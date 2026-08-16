@@ -1,6 +1,7 @@
 import { useRouter } from '@tanstack/react-router'
 import { Camera, Check, Clock3, Save, Trash2 } from 'lucide-react'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
@@ -11,10 +12,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offline-checkins'
 import type { CheckinInput } from '@/lib/schemas'
-import type { DailyCheckin, ProgressPhoto } from '@/lib/types'
+import type { DailyCheckin, Profile, ProgressPhoto } from '@/lib/types'
 
 const numericFields = ['weight_kg', 'waist_inches', 'sleep_hours', 'water_liters', 'protein_grams', 'fat_grams', 'carb_grams', 'calories'] as const
-const nutritionTemplate = 'Breakfast:\nLunch:\nDinner:'
 const today = () => new Date().toISOString().slice(0, 10)
 
 const DailyCheckinDialogContext = createContext<{ openCheckin: (date?: string) => void } | null>(null)
@@ -25,7 +25,7 @@ export function useDailyCheckinDialog() {
   return context
 }
 
-export function DailyCheckinDialogProvider({ existing, photos, children }: { existing: DailyCheckin | null; photos: ProgressPhoto[]; children: ReactNode }) {
+export function DailyCheckinDialogProvider({ existing, photos, profile, children }: { existing: DailyCheckin | null; photos: ProgressPhoto[]; profile: Profile | null; children: ReactNode }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<DailyCheckin | null>(existing)
@@ -76,6 +76,8 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
     () => photos.filter((photo) => photo.date === values.date),
     [photos, values.date],
   )
+  const calorieGoal = profile?.calorie_goal || 2200
+  const proteinGoal = profile?.protein_goal || 100
 
   async function openCheckin(date = today()) {
     setOpen(true)
@@ -118,6 +120,17 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
 
   function update(name: string, value: string) {
     setValues((current) => ({ ...current, [name]: value }))
+  }
+
+  function updateNutritionTotals(nextCheckin: DailyCheckin) {
+    setEditing(nextCheckin)
+    setValues((current) => ({
+      ...current,
+      calories: nextCheckin.calories === null ? '' : String(nextCheckin.calories),
+      protein_grams: nextCheckin.protein_grams === null ? '' : String(nextCheckin.protein_grams),
+      fat_grams: nextCheckin.fat_grams === null ? '' : String(nextCheckin.fat_grams),
+      carb_grams: nextCheckin.carb_grams === null ? '' : String(nextCheckin.carb_grams),
+    }))
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -239,23 +252,12 @@ export function DailyCheckinDialogProvider({ existing, photos, children }: { exi
                 <CheckinField label="Water" description="Liters">
                   <Input nativeInput type="number" min="0" step="0.1" inputMode="decimal" placeholder="2.5" value={values.water_liters || ''} onChange={(event) => update('water_liters', event.target.value)} />
                 </CheckinField>
-                <CheckinField label="Protein" description="Estimated grams">
-                  <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="140" value={values.protein_grams || ''} onChange={(event) => update('protein_grams', event.target.value)} />
-                </CheckinField>
-                <CheckinField label="Fats" description="Estimated grams">
-                  <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="70" value={values.fat_grams || ''} onChange={(event) => update('fat_grams', event.target.value)} />
-                </CheckinField>
-                <CheckinField label="Carbs" description="Estimated grams">
-                  <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="300" value={values.carb_grams || ''} onChange={(event) => update('carb_grams', event.target.value)} />
-                </CheckinField>
-                <CheckinField label="Calories" description="Estimated kcal">
-                  <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="2400" value={values.calories || ''} onChange={(event) => update('calories', event.target.value)} />
-                </CheckinField>
               </div>
 
-              <CheckinField label="Nutrition" description="Add meals or a simple food summary">
-                <Textarea value={values.nutrition_notes || ''} onChange={(event) => update('nutrition_notes', event.target.value)} rows={6} />
-              </CheckinField>
+              <section className="rounded-2xl border p-4">
+                <div className="mb-4"><p className="font-heading font-semibold">Nutrition items</p><p className="mt-1 text-xs text-muted-foreground">Food rows update calories, protein, fats, and carbs.</p></div>
+                <NutritionEntryTracker date={values.date} calorieGoal={calorieGoal} proteinGoal={proteinGoal} compact onCheckinChange={updateNutritionTotals} />
+              </section>
 
               <CheckinField label="Workout" description="Reviewer-facing notes; detailed workouts stay in Lyfta">
                 <Textarea value={values.workout_text || ''} onChange={(event) => update('workout_text', event.target.value)} placeholder="Lyfta workout name, exercises, sets, notes…" rows={4} />
@@ -303,7 +305,7 @@ function isOfflineSave(error: unknown) {
 }
 
 function valuesFromCheckin(existing: DailyCheckin | null, date = today()) {
-  const values: Record<string, string> = { date, nutrition_notes: nutritionTemplate }
+  const values: Record<string, string> = { date }
   if (!existing) return values
   for (const [key, value] of Object.entries(existing)) {
     if (value !== null && value !== undefined && !['id', 'created_at', 'updated_at', 'sleep_time', 'wake_time'].includes(key)) values[key] = String(value)

@@ -38,10 +38,11 @@ Dates use `YYYY-MM-DD`. Sleep is logged as numeric hours. Weight is kilograms, w
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| GET | `/api/agent/context` | Profile, recent check-ins, dashboard, and saved recipes |
+| GET | `/api/agent/context` | Profile, recent check-ins, recent nutrition entries, dashboard, and saved recipes |
 | GET | `/api/agent/state?key=last_weekly_report_date` | Weekly-report cadence state |
 | GET | `/api/dashboard` | Latest check-in, streak, current week, weight trend, and profile nutrition goals |
 | GET | `/api/profile` | Personal profile and goals, including editable daily calorie/protein targets |
+| GET | `/api/nutrition-entries?date=2026-08-16` | Food-item rows for one date |
 | GET | `/api/recipes` | Saved repeat recipes for nutrition lookup |
 | GET | `/api/checkins?limit=30` | Recent daily check-ins (max 365) |
 | GET | `/api/checkins?date=2026-08-01` | One date, or `null` |
@@ -58,7 +59,9 @@ Arbitrary SQL is never accepted.
 
 `POST /api/checkins` upserts by `date`, so retrying the same date updates rather than duplicates. Read an existing row before updating because omitted optional values are cleared.
 
-Today's check-in may be a running draft. When adding calories or protein during the day, read the current date first, preserve all existing fields, and update only the changed total.
+Today's check-in may be a running draft. When adding food during the day, prefer itemized nutrition rows so calories, protein, fats, and carbs are recalculated without overwriting other check-in fields.
+
+Prefer `/api/nutrition-entries` for itemized food logging. Nutrition entries automatically recalculate `daily_checkins.calories`, `daily_checkins.protein_grams`, `daily_checkins.fat_grams`, and `daily_checkins.carb_grams`.
 
 ```bash
 curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
@@ -73,7 +76,6 @@ curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
     "fat_grams": 70,
     "carb_grams": 300,
     "calories": 2400,
-    "nutrition_notes": "Breakfast: eggs\nLunch: daal\nDinner: chicken",
     "workout_text": "Lower session completed in Lyfta. Exercises: Smith squat 3x8; leg extension 2x12. Notes: no joint pain.",
     "notes": "Normal day"
   }'
@@ -83,8 +85,8 @@ Field notes:
 
 - `sleep_hours` is optional numeric hours slept, from 0 to 24.
 - `waist_inches` is an optional waist measurement in inches.
-- `protein_grams`, `fat_grams`, and `carb_grams` are optional integer gram estimates.
-- `nutrition_notes` is free text for formatted meals, snacks, drinks, and practical portion notes.
+- `protein_grams`, `fat_grams`, and `carb_grams` are optional integer gram totals, normally recalculated from itemized nutrition rows.
+- `nutrition_notes` is a legacy free-text field; do not use it for routine food logging.
 - `workout_text` is free text for reviewer-facing workout notes derived from Lyfta. Lyfta remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, notes, and progression.
 - `calories` is an optional integer estimate in kcal.
 
@@ -92,6 +94,8 @@ Field notes:
 
 ## Other writes
 
+- `POST /api/nutrition-entries` — add one food row with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`. This automatically updates the daily check-in nutrition totals.
+- `DELETE /api/nutrition-entries/:id` — delete one food row and recalculate the daily totals.
 - `PUT /api/agent/state` — upsert limited agent state, currently only `{ "key": "last_weekly_report_date", "value": "YYYY-MM-DD" }`; send `null` to clear it.
 - `PUT /api/profile` — upsert profile fields, including `calorie_goal` and `protein_goal` for daily targets.
 - `POST /api/recipes` and `PUT /api/recipes/:id` — multipart recipe writes with `name`, `calories`, `protein_grams`, optional `aliases`, `category`, `serving_description`, `ingredients`, `notes`, and optional image `photo`.
@@ -122,7 +126,7 @@ This state is for cadence only. Do not store daily logs, coaching advice, creden
 
 ## Agent daily loop
 
-For daily logging, parse natural language into one `/api/checkins` upsert, then verify by date. Check saved recipes by name and aliases before estimating calories or protein; saved recipe values override estimates when the logged item clearly matches. Estimate fats and carbs only when the food context is sufficient. Use profile `calorie_goal` and `protein_goal` to calculate remaining daily intake. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
+For daily logging, parse natural language food items into `/api/nutrition-entries` rows, then verify by date. Use `/api/checkins` for non-food daily facts such as sleep, water, waist, weight, notes, and workout text. Check saved recipes by name and aliases before estimating item calories or protein; saved recipe values override estimates when the logged item clearly matches. Estimate fats and carbs only when the food context is sufficient. Use profile `calorie_goal` and `protein_goal` to calculate remaining daily intake. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
 
 ## Agent safety rules
 

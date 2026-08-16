@@ -18,7 +18,7 @@ const checkinWriteContract = {
     fat_grams: { type: 'integer', required: false, unit: 'grams' },
     carb_grams: { type: 'integer', required: false, unit: 'grams' },
     calories: { type: 'integer', required: false, unit: 'kcal' },
-    nutrition_notes: { type: 'string', required: false, maxLength: 2000 },
+    nutrition_notes: { type: 'string', required: false, maxLength: 2000, note: 'Legacy/free-text field. Do not use for routine food logging; use /api/nutrition-entries.' },
     workout_text: { type: 'string', required: false, maxLength: 2000, note: 'Reviewer-facing workout notes derived from Lyfta; Lyfta remains authoritative for workout details.' },
     notes: { type: 'string', required: false, maxLength: 2000 },
   },
@@ -33,6 +33,8 @@ const recipeGuidance = {
 
 const nutritionTargetGuidance = {
   source: 'profile.calorie_goal and profile.protein_goal',
+  entryEndpoint: 'POST /api/nutrition-entries',
+  entryRule: 'When the owner says they ate a specific food, create a nutrition entry with date, item_name, calories, and optional protein_grams, fat_grams, and carb_grams. Entries automatically update daily_checkins calories, protein_grams, fat_grams, and carb_grams.',
   rule: 'Use profile nutrition goals to calculate remaining daily calories and protein. The owner may update today during the day; treat the current daily check-in as a draft until the day is complete.',
 }
 
@@ -49,10 +51,12 @@ export const Route = createFileRoute('/api/agent/context')({
     handlers: {
       GET: async () => handleApi(async () => {
         const database = db()
-        const [profile, dashboard, checkins, recipes] = await Promise.all([
+        const today = new Date().toISOString().slice(0, 10)
+        const [profile, dashboard, checkins, nutritionEntries, recipes] = await Promise.all([
           database.prepare('SELECT * FROM profile WHERE id = 1').first(),
           dashboardSummary(),
           database.prepare('SELECT * FROM daily_checkins ORDER BY date DESC LIMIT 30').all(),
+          database.prepare('SELECT * FROM nutrition_entries WHERE date >= date(?, \'-30 days\') ORDER BY date DESC, id DESC LIMIT 500').bind(today).all(),
           database.prepare('SELECT id, name, aliases, category, serving_description, calories, protein_grams, ingredients, notes, updated_at FROM recipes ORDER BY name COLLATE NOCASE LIMIT 500').all(),
         ])
         return json({
@@ -62,6 +66,7 @@ export const Route = createFileRoute('/api/agent/context')({
             profile,
             dashboard,
             recentCheckins: checkins.results,
+            recentNutritionEntries: nutritionEntries.results,
             savedRecipes: recipes.results,
             agent: {
               checkinWriteContract,

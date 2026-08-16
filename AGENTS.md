@@ -75,8 +75,9 @@ For Data Steward Sian OS writes:
 
 For the current owner-initiated agent loop:
 
-- natural-language daily logs are parsed by the Data Steward into Sian OS check-ins;
-- `nutrition_notes` holds formatted meals, snacks, drinks, and practical portions;
+- natural-language daily logs are parsed by the Data Steward into Sian OS check-ins and itemized nutrition entries;
+- routine food logging must use `/api/nutrition-entries`, not `nutrition_notes`;
+- itemized foods should be written with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`; these rows recalculate daily calorie/protein/fat/carb totals;
 - `workout_text` holds reviewer-facing workout notes derived from Lyfta, while Lyfta remains authoritative for full workout history and progression;
 - `calories` is an optional estimated kcal field and must be omitted when not stated;
 - `Analyze yesterday` runs Coach workflow after verified data exists;

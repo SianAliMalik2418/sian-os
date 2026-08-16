@@ -1,0 +1,2 @@
+ALTER TABLE nutrition_entries ADD COLUMN fat_grams INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE nutrition_entries ADD COLUMN carb_grams INTEGER NOT NULL DEFAULT 0;

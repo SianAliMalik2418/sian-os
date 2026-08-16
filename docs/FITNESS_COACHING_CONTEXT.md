@@ -234,7 +234,7 @@ Controlled lean gain means:
 
 ### Recipe source of truth
 
-Sian OS owns a saved recipe library for repeat foods, dishes, snacks, and drinks. Each saved recipe may include a photo, ingredients, aliases, serving description, calories, and protein for one normal serving.
+Sian OS owns itemized daily nutrition entries and a saved recipe library for repeat foods, dishes, snacks, and drinks. Each daily nutrition entry may include a food item name, calories, protein, fats, and carbs. Each saved recipe may include a photo, ingredients, aliases, serving description, calories, and protein for one normal serving.
 
 When logging nutrition:
 
@@ -249,7 +249,7 @@ When logging nutrition:
 - Protein: profile target defaults to approximately 100 g per day, aligned with the 95–110 g coaching range.
 - Calories: profile target defaults to approximately 2200 kcal per day and may be adjusted from evidence.
 - Fats and carbs: optional estimates when Sian reports enough food context; use them as supporting nutrition detail, not as stricter targets unless Sian and the coach explicitly agree to macro targets.
-- Daily calorie and protein totals may be updated throughout the day in today's draft check-in.
+- Daily calorie, protein, fat, and carb totals may be updated throughout the day through itemized food rows in today's draft check-in.
 - Water: at least 2 L per day, with more considered on hot or high-sweat days.
 - Creatine: 5 g daily unless a qualified clinician has advised otherwise.
 - Controlled lean gain: adequate food without an uncontrolled bulk.
@@ -341,10 +341,10 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Sleep and wake time | Sian OS daily check-in |
 | Daily body weight when measured | Sian OS daily check-in |
 | Waist when measured | Sian OS daily check-in |
-| Water and protein | Sian OS daily check-in |
+| Water | Sian OS daily check-in |
+| Protein, fats, carbs, and calories | Sian OS nutrition entries, then derived Sian OS daily check-in totals |
 | Daily calorie and protein targets | Sian OS profile |
-| Estimated calories | Sian OS daily check-in |
-| Breakfast, lunch, dinner, and food summary | Sian OS daily check-in nutrition textarea |
+| Estimated calories, protein, fats, and carbs by food item | Sian OS nutrition entries |
 | Reviewer-facing workout notes derived from Lyfta | Sian OS daily check-in workout textarea |
 | Progress photos | Sian OS check-in dialog/R2 |
 | Derived daily/weekly/monthly wellness reports | Sian OS Reports page |
@@ -510,7 +510,7 @@ These references support the standing targets but do not replace individualized 
 | --- | --- | --- |
 | 2026-07-30 | The coach will be strict, direct, evidence-based, and non-insulting. | Excuses and inconsistency are challenged; unsafe punishment and all-or-nothing behavior are rejected. |
 | 2026-07-30 | The goal is controlled lean gain with strength, health, energy, focus, and long-term discipline. | Trends and sustainable progress outrank rapid bulking. |
-| 2026-07-30 | Sian OS remains the wellness source of truth. | Confirmed sleep, weight, water, protein, meal notes, and photos are recorded there; reports are derived from daily check-ins. |
+| 2026-07-30 | Sian OS remains the wellness source of truth. | Confirmed sleep, weight, water, nutrition totals, and photos are recorded there; reports are derived from daily check-ins. |
 | 2026-07-30 | The false API smoke-test check-in may be removed. | It was backed up, deleted, audited, and verified absent. |
 | 2026-07-30 | Exams justify a planned gym break through 2026-08-06. | No gym sessions in that period count as missed. |
 | 2026-07-30 | Gym training restarts on Friday, 2026-08-07. | Superseded as active routine guidance on 2026-08-11; current routine and progression must come from Lyfta. |
@@ -523,9 +523,10 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-10 | Sian OS daily check-ins may include estimated calories and workout-summary text. | Calories become a structured check-in field; workout text is allowed for daily review context, while the active workout tracker remains authoritative for detailed workout records and progression. |
 | 2026-08-11 | Lyfta replaces Hevy as the workout source of truth, and API-based Lyfta workout retrieval is approved. | The daily logger should fetch Lyfta workout details and store reviewer-facing workout notes in Sian OS `workout_text`; Lyfta remains authoritative for detailed workout records and progression. The Lyfta API key must be stored only as a secure runtime secret and never committed or written into docs. |
 | 2026-08-11 | Workout routine answers must come only from Lyfta. | The old Upper/Lower split and re-entry plan must not be used as the current routine. If Lyfta does not expose the active routine/template through available Actions, the coach must say it cannot verify the current routine instead of guessing. |
-| 2026-08-12 | Sian OS adds a saved recipe library for repeat nutrition items. | The Data Steward must check saved recipes before estimating calories and protein from nutrition notes; saved recipe values override estimates when the logged food clearly matches. |
+| 2026-08-12 | Sian OS adds a saved recipe library for repeat nutrition items. | The Data Steward must check saved recipes before estimating calories and protein from food descriptions; saved recipe values override estimates when the logged food clearly matches. |
 | 2026-08-13 | Sian OS check-ins record sleep as numeric hours instead of sleep and wake times. | The Data Steward should send `sleep_hours` directly when stated; the app no longer calculates sleep from separate time fields. |
 | 2026-08-13 | Sian OS daily check-ins may include estimated fats and carbs. | Fats and carbs become optional structured check-in fields for nutrition detail; they are not active macro targets unless separately confirmed. |
 | 2026-08-14 | Sian OS daily check-ins may include waist measurements in inches. | Waist becomes an optional structured check-in field for tracking lean-gain conditioning and visual softness trends. |
 | 2026-08-11 | Add a nutrition-coach workflow based on Peter Khatcherian's phase-based physique nutrition principles. | Weekly analysis must include a nutrition decision from evidence: hold, tighten, increase slightly, pull back slightly, or propose conditioning-first. The coach must reject vague "clean eating," aggressive bulking, crash dieting, and emotional changes. |
 | 2026-08-16 | Add running Home-page calorie and protein progress with editable profile goals. | Today's check-in can act as a draft updated during the day; default targets are 2200 kcal and 100 g protein unless profile values are changed. |
+| 2026-08-16 | Add itemized macro nutrition entries to Home and Check-in. | Food items should be logged as rows with item name, calories, protein, fats, and carbs; these rows recalculate daily nutrition totals for the coach and progress cards. Routine food logging no longer uses the check-in nutrition notes field. |

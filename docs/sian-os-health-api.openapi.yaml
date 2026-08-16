@@ -7,12 +7,15 @@ info:
     Public single-owner wellness API for Sian OS.
 
     Use Lyfta as the detailed workout source of truth. Use Sian OS for daily wellness
-    check-ins, body weight, waist, sleep, hydration, protein, fats, carbs, calories, meal notes, brief
+    check-ins, body weight, waist, sleep, hydration, itemized nutrition macros, brief
     workout status text, reports, editable nutrition goals in profile, profile context, and agent cadence state.
 
     Important write rule: POST /api/checkins and PUT /api/profile are full upserts.
     Omitted optional fields are cleared, so read the existing record first and preserve
     confirmed existing values when updating.
+
+    Prefer itemized nutrition entries for food logging. Nutrition entries automatically
+    recalculate daily check-in calorie, protein, fat, and carb totals.
 
 servers:
   - url: https://sian-os.sianalimalik2418.workers.dev
@@ -176,7 +179,7 @@ paths:
         Upserts by date. Read GET /api/checkins?date=YYYY-MM-DD before updating
         because omitted optional fields are cleared. Send sleep_hours directly
         when sleep duration is known. Today's check-in may be updated throughout
-        the day as a draft for running calories and protein totals.
+        the day as a draft for running calorie, protein, fat, and carb totals.
       requestBody:
         required: true
         content:
@@ -204,6 +207,78 @@ paths:
       responses:
         "200":
           description: Dashboard summary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /api/nutrition-entries:
+    get:
+      operationId: getNutritionEntries
+      summary: Get itemized nutrition rows for one date.
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Nutrition rows.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/NutritionEntry"
+
+    post:
+      operationId: addNutritionEntry
+      summary: Add one itemized food row.
+      description: Adds one food item and automatically recalculates daily check-in calories, protein, fats, and carbs for that date.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NutritionEntryInput"
+      responses:
+        "201":
+          description: Nutrition row saved and daily totals recalculated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          entry:
+                            $ref: "#/components/schemas/NutritionEntry"
+                          checkin:
+                            $ref: "#/components/schemas/DailyCheckin"
+
+  /api/nutrition-entries/{entryId}:
+    delete:
+      operationId: deleteNutritionEntry
+      summary: Delete one itemized food row.
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Nutrition row deleted and daily totals recalculated.
           content:
             application/json:
               schema:
@@ -372,7 +447,7 @@ components:
         nutrition_notes:
           type: string
           maxLength: 2000
-          description: Formatted meals, snacks, drinks, and practical portion notes.
+          description: Legacy free-text nutrition notes. Use /api/nutrition-entries for routine food logging.
         workout_text:
           type: string
           maxLength: 2000
@@ -447,6 +522,57 @@ components:
           type: string
         updated_at:
           type: string
+
+    NutritionEntryInput:
+      type: object
+      additionalProperties: false
+      properties:
+        date:
+          type: string
+          format: date
+        item_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Food item or portion label, such as "egg" or "2 rotis".
+        calories:
+          type: integer
+          minimum: 0
+          maximum: 20000
+        protein_grams:
+          type: integer
+          minimum: 0
+          maximum: 2000
+        fat_grams:
+          type: integer
+          minimum: 0
+          maximum: 2000
+        carb_grams:
+          type: integer
+          minimum: 0
+          maximum: 2000
+      required:
+        - date
+        - item_name
+        - calories
+
+    NutritionEntry:
+      allOf:
+        - $ref: "#/components/schemas/NutritionEntryInput"
+        - type: object
+          properties:
+            id:
+              type: integer
+            protein_grams:
+              type: integer
+            fat_grams:
+              type: integer
+            carb_grams:
+              type: integer
+            created_at:
+              type: string
+            updated_at:
+              type: string
 
     ProfileInput:
       type: object

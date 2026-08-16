@@ -1,17 +1,13 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Activity, Check, Droplets, Flame, Moon, Plus, Scale, Sparkles, Utensils } from 'lucide-react'
-import { useEffect, useState, type FormEvent } from 'react'
+import { Activity, Check, Droplets, Moon, Scale, Sparkles } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
+import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
-import { Field, FieldLabel } from '@/components/ui/field'
-import { Form } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { getDashboardData } from '@/lib/app.functions'
-import type { CheckinInput } from '@/lib/schemas'
-import type { DailyCheckin } from '@/lib/types'
 
 export const Route = createFileRoute('/_app/')({
   loader: () => getDashboardData(),
@@ -47,24 +43,6 @@ function Dashboard() {
   useEffect(() => {
     setCheckin(data.checkin)
   }, [data.checkin])
-
-  async function saveNutritionTotal(field: 'calories' | 'protein_grams', value: number) {
-    const fresh = await fetch(`/api/checkins?date=${encodeURIComponent(todayIso)}`)
-    const freshResult = await fresh.json() as { data?: DailyCheckin | null; error?: { message?: string } }
-    if (!fresh.ok) throw new Error(freshResult.error?.message || 'Could not load today')
-
-    const existing = freshResult.data
-    const payload = buildCheckinPayload(existing, todayIso, { [field]: value })
-    const response = await fetch('/api/checkins', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    const result = await response.json() as { data?: DailyCheckin; error?: { message?: string } }
-    if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not save total')
-    setCheckin(result.data)
-    await router.invalidate()
-  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
@@ -107,105 +85,10 @@ function Dashboard() {
         ))}
       </section>
 
-      <section className="grid gap-3 lg:grid-cols-2 lg:gap-4">
-        <NutritionProgressCard
-          label="Calories"
-          description="Running intake for today"
-          value={checkin?.calories || 0}
-          goal={calorieGoal}
-          unit="kcal"
-          icon={Flame}
-          step={50}
-          placeholder="250"
-          onSave={(nextValue) => saveNutritionTotal('calories', nextValue)}
-        />
-        <NutritionProgressCard
-          label="Protein"
-          description="Running protein for today"
-          value={checkin?.protein_grams || 0}
-          goal={proteinGoal}
-          unit="g"
-          icon={Utensils}
-          step={5}
-          placeholder="25"
-          onSave={(nextValue) => saveNutritionTotal('protein_grams', nextValue)}
-        />
-      </section>
+      <NutritionEntryTracker date={todayIso} initialEntries={data.nutritionEntries} calorieGoal={calorieGoal} proteinGoal={proteinGoal} onCheckinChange={async (nextCheckin) => {
+        setCheckin(nextCheckin)
+        await router.invalidate()
+      }} />
     </div>
   )
-}
-
-function NutritionProgressCard({ label, description, value, goal, unit, icon: Icon, step, placeholder, onSave }: {
-  label: string
-  description: string
-  value: number
-  goal: number
-  unit: string
-  icon: typeof Flame
-  step: number
-  placeholder: string
-  onSave: (nextValue: number) => Promise<void>
-}) {
-  const [amount, setAmount] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string>()
-  const remaining = Math.max(goal - value, 0)
-  const progress = goal > 0 ? Math.min((value / goal) * 100, 100) : 0
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const parsed = Number(amount)
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      setError('Enter a positive amount')
-      return
-    }
-
-    setSaving(true)
-    setError(undefined)
-    try {
-      await onSave(Math.round(value + parsed))
-      setAmount('')
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not save')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <div>
-          <CardTitle>{label}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </div>
-        <CardAction><Icon className="size-5 text-primary" /></CardAction>
-      </CardHeader>
-      <CardPanel className="space-y-4">
-        <div className="flex items-end justify-between gap-3">
-          <div><p className="font-heading text-3xl font-semibold tabular-nums">{value}<span className="ml-1 text-base text-muted-foreground">{unit}</span></p><p className="mt-1 text-sm text-muted-foreground">{remaining} {unit} remaining</p></div>
-          <Badge variant={remaining === 0 ? 'success' : 'info'}>{goal} {unit} goal</Badge>
-        </div>
-        <Progress value={progress} />
-        <Form onSubmit={submit} className="grid gap-3 sm:grid-cols-[1fr_auto]">
-          <Field>
-            <FieldLabel>Add {label.toLowerCase()}</FieldLabel>
-            <Input nativeInput type="number" min="0" step={step} inputMode="numeric" placeholder={placeholder} value={amount} onChange={(event) => setAmount(event.target.value)} />
-          </Field>
-          <Button type="submit" loading={saving} className="self-end"><Plus /> Add</Button>
-        </Form>
-        {error && <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
-      </CardPanel>
-    </Card>
-  )
-}
-
-function buildCheckinPayload(existing: DailyCheckin | null | undefined, date: string, updates: Partial<Pick<CheckinInput, 'calories' | 'protein_grams'>>): CheckinInput {
-  const payload: CheckinInput = { date }
-  const fields = ['weight_kg', 'waist_inches', 'sleep_hours', 'water_liters', 'protein_grams', 'fat_grams', 'carb_grams', 'calories', 'nutrition_notes', 'workout_text', 'notes'] as const
-  for (const field of fields) {
-    const value = existing?.[field]
-    if (value !== null && value !== undefined) Object.assign(payload, { [field]: value })
-  }
-  return { ...payload, ...updates }
 }

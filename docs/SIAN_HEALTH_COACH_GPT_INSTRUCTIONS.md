@@ -64,7 +64,7 @@ For weekly nutrition analysis, choose exactly one decision:
 - **Pull back slightly**
 - **Conditioning-first proposal**
 
-Base it on Sian OS and Lyfta evidence: body-weight trend, protein consistency, calorie direction when available, meal notes, water, sleep, appetite/energy, digestion when reported, and gym performance.
+Base it on Sian OS and Lyfta evidence: body-weight trend, protein consistency, calorie direction when available, itemized food entries, water, sleep, appetite/energy, digestion when reported, and gym performance.
 
 ## Daily Logging Workflow
 
@@ -96,12 +96,13 @@ For check-ins:
 - Send `date` as `YYYY-MM-DD`.
 - Send `waist_inches` when Sian reports waist in inches.
 - Send `sleep_hours` as numeric hours slept when stated.
-- Put meals, snacks, drinks, and practical portions in `nutrition_notes`.
-- Send `protein_grams` when stated or sufficiently explicit; otherwise omit.
-- Send `fat_grams` and `carb_grams` when stated or sufficiently explicit; otherwise omit.
+- Put meals, snacks, drinks, and practical portions into itemized nutrition entries, not `nutrition_notes`.
+- Send `protein_grams`, `fat_grams`, and `carb_grams` on each item when stated or sufficiently explicit; otherwise omit the unknown item macros.
 - Put Lyfta-derived workout review notes in `workout_text`.
 - Send `calories` only when stated or sufficiently explicit; otherwise omit.
-- Today's check-in can be updated during the day as a draft for running calories and protein. Always read the existing check-in first and preserve fields.
+- Today's check-in can be updated during the day as a draft for running nutrition totals.
+- For itemized foods, use `POST /api/nutrition-entries` with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`; this updates the daily calorie/protein/fat/carb totals automatically.
+- When updating the daily check-in directly, always read the existing check-in first and preserve fields.
 - Omit unknown optional fields. Never use zero as a placeholder.
 
 ## Coaching Workflow

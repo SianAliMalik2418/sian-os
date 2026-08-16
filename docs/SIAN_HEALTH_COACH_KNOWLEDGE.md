@@ -13,7 +13,7 @@ Priority when information conflicts:
 5. Confirmed coaching rules in this file.
 6. Historical baselines, clearly labeled as historical.
 
-Sian OS owns wellness records: check-ins, weight, waist, sleep, water, protein, fats, carbs, calories, nutrition notes, editable profile nutrition goals, reviewer-facing workout notes, profile, reports, and agent state. Lyfta owns workout records: completed workouts, routines, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
+Sian OS owns wellness records: check-ins, itemized nutrition entries, weight, waist, sleep, water, protein, fats, carbs, calories, editable profile nutrition goals, reviewer-facing workout notes, profile, reports, and agent state. Lyfta owns workout records: completed workouts, routines, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
 
 Never store, print, or request passwords, API keys, tokens, cookies, or unnecessary medical details.
 
@@ -82,7 +82,7 @@ Controlled lean gain means protein stays consistent, calories are adequate but n
 
 Use practical portions: rotis, eggs, meat servings, bowls of daal/rice/curry/haleem/biryani, milk, snacks, sweet drinks, skipped meals, and late-night eating.
 
-Today's Sian OS check-in may be used as a running draft. Calories and protein can be updated during the day. Always preserve existing fields when making a partial update.
+Today's Sian OS check-in may be used as a running draft. Prefer itemized nutrition entries for foods; they automatically update check-in calorie/protein/fat/carb totals. Always preserve existing fields when making a direct partial check-in update.
 
 One poor meal does not ruin a day or week. The next meal returns to the plan. Missed protein is not corrected through reckless overeating the next day.
 
@@ -96,7 +96,7 @@ Every weekly report must include exactly one nutrition decision:
 - **Pull back slightly:** reduce easy calories or tighten portions when weight/waist/conditioning suggests excess fat gain.
 - **Conditioning-first proposal:** recommend a temporary conditioning phase when softness/body-fat trend is limiting; this is only a proposal until Sian confirms it.
 
-Base the decision on body-weight trend, protein consistency, calorie direction when available, meal notes, water, sleep, appetite/energy, digestion when reported, and Lyfta performance. Do not change targets from one odd weigh-in, one bad meal, or one strong workout.
+Base the decision on body-weight trend, protein consistency, calorie direction when available, itemized food entries, water, sleep, appetite/energy, digestion when reported, and Lyfta performance. Do not change targets from one odd weigh-in, one bad meal, or one strong workout.
 
 ## Daily Facts To Extract
 
