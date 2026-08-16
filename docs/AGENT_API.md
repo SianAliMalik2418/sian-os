@@ -40,8 +40,8 @@ Dates use `YYYY-MM-DD`. Sleep is logged as numeric hours. Weight is kilograms, w
 | --- | --- | --- |
 | GET | `/api/agent/context` | Profile, recent check-ins, dashboard, and saved recipes |
 | GET | `/api/agent/state?key=last_weekly_report_date` | Weekly-report cadence state |
-| GET | `/api/dashboard` | Latest check-in, streak, current week, and weight trend |
-| GET | `/api/profile` | Personal profile and goals |
+| GET | `/api/dashboard` | Latest check-in, streak, current week, weight trend, and profile nutrition goals |
+| GET | `/api/profile` | Personal profile and goals, including editable daily calorie/protein targets |
 | GET | `/api/recipes` | Saved repeat recipes for nutrition lookup |
 | GET | `/api/checkins?limit=30` | Recent daily check-ins (max 365) |
 | GET | `/api/checkins?date=2026-08-01` | One date, or `null` |
@@ -57,6 +57,8 @@ Arbitrary SQL is never accepted.
 ## Write a daily check-in
 
 `POST /api/checkins` upserts by `date`, so retrying the same date updates rather than duplicates. Read an existing row before updating because omitted optional values are cleared.
+
+Today's check-in may be a running draft. When adding calories or protein during the day, read the current date first, preserve all existing fields, and update only the changed total.
 
 ```bash
 curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
@@ -91,7 +93,7 @@ Field notes:
 ## Other writes
 
 - `PUT /api/agent/state` — upsert limited agent state, currently only `{ "key": "last_weekly_report_date", "value": "YYYY-MM-DD" }`; send `null` to clear it.
-- `PUT /api/profile` — upsert profile fields.
+- `PUT /api/profile` — upsert profile fields, including `calorie_goal` and `protein_goal` for daily targets.
 - `POST /api/recipes` and `PUT /api/recipes/:id` — multipart recipe writes with `name`, `calories`, `protein_grams`, optional `aliases`, `category`, `serving_description`, `ingredients`, `notes`, and optional image `photo`.
 - `DELETE /api/recipes/:id` — permanently remove one saved recipe and its photo.
 - `POST /api/progress-photos` — multipart form with `date`, `photo`, optional `label`, and optional `notes`; maximum 15 MB image.
@@ -120,7 +122,7 @@ This state is for cadence only. Do not store daily logs, coaching advice, creden
 
 ## Agent daily loop
 
-For daily logging, parse natural language into one `/api/checkins` upsert, then verify by date. Check saved recipes by name and aliases before estimating calories or protein; saved recipe values override estimates when the logged item clearly matches. Estimate fats and carbs only when the food context is sufficient. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
+For daily logging, parse natural language into one `/api/checkins` upsert, then verify by date. Check saved recipes by name and aliases before estimating calories or protein; saved recipe values override estimates when the logged item clearly matches. Estimate fats and carbs only when the food context is sufficient. Use profile `calorie_goal` and `protein_goal` to calculate remaining daily intake. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
 
 ## Agent safety rules
 

@@ -8,7 +8,7 @@ info:
 
     Use Lyfta as the detailed workout source of truth. Use Sian OS for daily wellness
     check-ins, body weight, waist, sleep, hydration, protein, fats, carbs, calories, meal notes, brief
-    workout status text, reports, profile context, and agent cadence state.
+    workout status text, reports, editable nutrition goals in profile, profile context, and agent cadence state.
 
     Important write rule: POST /api/checkins and PUT /api/profile are full upserts.
     Omitted optional fields are cleared, so read the existing record first and preserve
@@ -175,7 +175,8 @@ paths:
       description: |
         Upserts by date. Read GET /api/checkins?date=YYYY-MM-DD before updating
         because omitted optional fields are cleared. Send sleep_hours directly
-        when sleep duration is known.
+        when sleep duration is known. Today's check-in may be updated throughout
+        the day as a draft for running calories and protein totals.
       requestBody:
         required: true
         content:
@@ -484,6 +485,16 @@ components:
         long_term_vision:
           type: string
           maxLength: 2000
+        calorie_goal:
+          type: integer
+          minimum: 0
+          maximum: 20000
+          description: Daily calorie target in kcal for progress cards and coaching.
+        protein_goal:
+          type: integer
+          minimum: 0
+          maximum: 2000
+          description: Daily protein target in grams for progress cards and coaching.
 
     Profile:
       allOf:

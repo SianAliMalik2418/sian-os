@@ -1,20 +1,23 @@
 import { env } from 'cloudflare:workers'
 import { calculateDailyStreak, startOfWeekIso } from './metrics'
-import type { DailyCheckin, DashboardSummary } from './types'
+import type { DailyCheckin, DashboardSummary, Profile } from './types'
 
 export const db = () => env.DB
 
 export async function dashboardSummary(): Promise<DashboardSummary> {
   const database = db()
   const weekStart = startOfWeekIso()
-  const [checkin, weightTrend, streakRows, weeklyCheckins] = await Promise.all([
-    database.prepare('SELECT * FROM daily_checkins ORDER BY date DESC LIMIT 1').first<DailyCheckin>(),
+  const today = new Date().toISOString().slice(0, 10)
+  const [checkin, profile, weightTrend, streakRows, weeklyCheckins] = await Promise.all([
+    database.prepare('SELECT * FROM daily_checkins WHERE date = ?').bind(today).first<DailyCheckin>(),
+    database.prepare('SELECT * FROM profile WHERE id = 1').first<Profile>(),
     database.prepare('SELECT date, weight_kg FROM daily_checkins WHERE weight_kg IS NOT NULL ORDER BY date DESC LIMIT 14').all<{ date: string; weight_kg: number }>(),
     database.prepare("SELECT date FROM daily_checkins WHERE date >= date('now', '-120 days') ORDER BY date DESC").all<{ date: string }>(),
     database.prepare('SELECT date FROM daily_checkins WHERE date >= ? ORDER BY date').bind(weekStart).all<{ date: string }>(),
   ])
   return {
     checkin,
+    profile,
     weightTrend: weightTrend.results,
     streak: calculateDailyStreak(streakRows.results),
     weeklyCheckins: weeklyCheckins.results,

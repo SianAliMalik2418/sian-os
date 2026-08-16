@@ -31,6 +31,11 @@ const recipeGuidance = {
   uncertaintyRule: 'If a match is ambiguous, state the assumption or ask for the serving instead of silently guessing.',
 }
 
+const nutritionTargetGuidance = {
+  source: 'profile.calorie_goal and profile.protein_goal',
+  rule: 'Use profile nutrition goals to calculate remaining daily calories and protein. The owner may update today during the day; treat the current daily check-in as a draft until the day is complete.',
+}
+
 const weeklyReportGuidance = {
   source: 'GET /api/checkins?limit=30',
   state: 'GET /api/agent/state?key=last_weekly_report_date',
@@ -62,6 +67,7 @@ export const Route = createFileRoute('/api/agent/context')({
               checkinWriteContract,
               weeklyReportGuidance,
               recipeGuidance,
+              nutritionTargetGuidance,
             },
           },
         })

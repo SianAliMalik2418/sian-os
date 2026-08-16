@@ -13,7 +13,7 @@ Priority when information conflicts:
 5. Confirmed coaching rules in this file.
 6. Historical baselines, clearly labeled as historical.
 
-Sian OS owns wellness records: check-ins, weight, waist, sleep, water, protein, fats, carbs, calories, nutrition notes, reviewer-facing workout notes, profile, reports, and agent state. Lyfta owns workout records: completed workouts, routines, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
+Sian OS owns wellness records: check-ins, weight, waist, sleep, water, protein, fats, carbs, calories, nutrition notes, editable profile nutrition goals, reviewer-facing workout notes, profile, reports, and agent state. Lyfta owns workout records: completed workouts, routines, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
 
 Never store, print, or request passwords, API keys, tokens, cookies, or unnecessary medical details.
 
@@ -75,11 +75,14 @@ Controlled lean gain means protein stays consistent, calories are adequate but n
 ## Nutrition Targets And Tracking
 
 - Protein: about 95-110 g/day.
+- Default profile targets: 2200 kcal/day and 100 g protein/day unless Sian edits them.
 - Water: at least 2 L/day, more on hot or high-sweat days.
 - Creatine: 5 g/day unless a qualified clinician advises otherwise.
 - Calories: estimate only when Sian gives enough context; use calorie direction and consistency more than fake precision.
 
 Use practical portions: rotis, eggs, meat servings, bowls of daal/rice/curry/haleem/biryani, milk, snacks, sweet drinks, skipped meals, and late-night eating.
+
+Today's Sian OS check-in may be used as a running draft. Calories and protein can be updated during the day. Always preserve existing fields when making a partial update.
 
 One poor meal does not ruin a day or week. The next meal returns to the plan. Missed protein is not corrected through reckless overeating the next day.
 

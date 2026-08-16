@@ -35,6 +35,8 @@ export const profileSchema = z.object({
   equipment: optionalText,
   injuries: optionalText,
   long_term_vision: optionalText,
+  calorie_goal: z.number().int().min(0).max(20000).optional(),
+  protein_goal: z.number().int().min(0).max(2000).optional(),
 })
 
 export type CheckinInput = z.infer<typeof checkinSchema>

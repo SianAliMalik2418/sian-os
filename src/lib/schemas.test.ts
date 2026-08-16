@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkinSchema } from './schemas'
+import { checkinSchema, profileSchema } from './schemas'
 
 describe('daily check-in schema', () => {
   it('accepts the streamlined daily fields', () => {
@@ -25,5 +25,14 @@ describe('daily check-in schema', () => {
 
   it('rejects impossible sleep hours', () => {
     expect(() => checkinSchema.parse({ date: '2026-07-30', sleep_hours: 25 })).toThrow()
+  })
+})
+
+describe('profile schema', () => {
+  it('accepts editable nutrition goals', () => {
+    expect(profileSchema.parse({
+      calorie_goal: 2200,
+      protein_goal: 100,
+    })).toMatchObject({ calorie_goal: 2200, protein_goal: 100 })
   })
 })

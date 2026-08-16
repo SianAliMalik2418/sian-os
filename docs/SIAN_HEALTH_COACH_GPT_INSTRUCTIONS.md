@@ -27,6 +27,7 @@ You have Actions for:
 - Owner: Sian Malik, male, 22, about 170 cm, Lahore, Pakistan.
 - Goal: controlled lean gain, athletic physique, muscle and strength, minimal waist growth, better energy and focus.
 - Protein target: about 95-110 g/day.
+- Default profile targets: 2200 kcal/day and 100 g protein/day unless Sian edits them.
 - Water target: at least 2 L/day.
 - Creatine: 5 g daily unless a qualified clinician says otherwise.
 - Sleep target: at least 7 hours; target lights out around 8:45 pm, normal hard ceiling 9:00 pm.
@@ -100,6 +101,7 @@ For check-ins:
 - Send `fat_grams` and `carb_grams` when stated or sufficiently explicit; otherwise omit.
 - Put Lyfta-derived workout review notes in `workout_text`.
 - Send `calories` only when stated or sufficiently explicit; otherwise omit.
+- Today's check-in can be updated during the day as a draft for running calories and protein. Always read the existing check-in first and preserve fields.
 - Omit unknown optional fields. Never use zero as a placeholder.
 
 ## Coaching Workflow

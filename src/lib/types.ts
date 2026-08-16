@@ -30,6 +30,8 @@ export interface Profile {
   equipment: string | null
   injuries: string | null
   long_term_vision: string | null
+  calorie_goal: number | null
+  protein_goal: number | null
   updated_at: string
 }
 
@@ -59,6 +61,7 @@ export interface Recipe {
 
 export interface DashboardSummary {
   checkin: DailyCheckin | null
+  profile: Profile | null
   weightTrend: Array<{ date: string; weight_kg: number }>
   streak: number
   weeklyCheckins: Array<{ date: string }>

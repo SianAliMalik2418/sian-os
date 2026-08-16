@@ -12,7 +12,7 @@ import type { Profile } from '@/lib/types'
 
 export const Route = createFileRoute('/_app/profile')({ loader: () => getProfileData(), component: ProfilePage })
 
-const numericFields = new Set(['height_cm', 'weight_kg', 'age'])
+const numericFields = new Set(['height_cm', 'weight_kg', 'age', 'calorie_goal', 'protein_goal'])
 
 function ProfilePage() {
   const loadedProfile = Route.useLoaderData()
@@ -114,6 +114,10 @@ function ProfileOverview({ profile, onEdit }: { profile: Profile | null; onEdit:
         <CardAction><Target className="size-5 text-primary" /></CardAction>
       </CardHeader>
       <CardPanel className="grid gap-5">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ProfileMetric label="Calorie goal" value={profile.calorie_goal === null ? null : `${profile.calorie_goal} kcal`} />
+          <ProfileMetric label="Protein goal" value={profile.protein_goal === null ? null : `${profile.protein_goal} g`} />
+        </div>
         <ProfileValue label="Goals" value={profile.goals} />
         <ProfileValue label="Long-term vision" value={profile.long_term_vision} />
       </CardPanel>
@@ -162,6 +166,10 @@ function ProfileEditor({ values, saving, onUpdate, onSubmit, onCancel, error }: 
         <CardAction><Target className="size-5 text-primary" /></CardAction>
       </CardHeader>
       <CardPanel className="grid gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <ProfileField label="Calorie goal" description="Daily kcal"><Input nativeInput type="number" min="0" max="20000" step="1" inputMode="numeric" value={values.calorie_goal || ''} onChange={(event) => onUpdate('calorie_goal', event.target.value)} placeholder="2200" /></ProfileField>
+          <ProfileField label="Protein goal" description="Daily grams"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.protein_goal || ''} onChange={(event) => onUpdate('protein_goal', event.target.value)} placeholder="100" /></ProfileField>
+        </div>
         <ProfileField label="Goals"><Textarea rows={4} value={values.goals || ''} onChange={(event) => onUpdate('goals', event.target.value)} placeholder="Your current health and fitness goals…" /></ProfileField>
         <ProfileField label="Long-term vision"><Textarea rows={4} value={values.long_term_vision || ''} onChange={(event) => onUpdate('long_term_vision', event.target.value)} placeholder="What sustainable progress looks like to you…" /></ProfileField>
       </CardPanel>

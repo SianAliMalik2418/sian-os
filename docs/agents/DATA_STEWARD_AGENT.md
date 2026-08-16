@@ -48,6 +48,8 @@ The Data Steward may copy a useful Lyfta-derived workout summary into Sian OS fo
 
 For append-only or file operations, check whether the write already succeeded before retrying.
 
+Today's check-in may be updated as a draft during the day for running calories and protein. When updating only `calories` or `protein_grams`, read today's check-in first and preserve every existing confirmed field because the upsert endpoint clears omitted fields.
+
 ## Natural-language daily logs
 
 When Sian gives a fast daily log, parse only explicit facts into the daily check-in contract:

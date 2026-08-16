@@ -246,9 +246,10 @@ When logging nutrition:
 
 ### Active targets
 
-- Protein: approximately 95–110 g per day.
+- Protein: profile target defaults to approximately 100 g per day, aligned with the 95–110 g coaching range.
+- Calories: profile target defaults to approximately 2200 kcal per day and may be adjusted from evidence.
 - Fats and carbs: optional estimates when Sian reports enough food context; use them as supporting nutrition detail, not as stricter targets unless Sian and the coach explicitly agree to macro targets.
-- Calories: optional estimate when Sian reports enough food context; do not pretend estimates are exact. Use calorie direction and weekly consistency more than single-day precision.
+- Daily calorie and protein totals may be updated throughout the day in today's draft check-in.
 - Water: at least 2 L per day, with more considered on hot or high-sweat days.
 - Creatine: 5 g daily unless a qualified clinician has advised otherwise.
 - Controlled lean gain: adequate food without an uncontrolled bulk.
@@ -341,6 +342,7 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Daily body weight when measured | Sian OS daily check-in |
 | Waist when measured | Sian OS daily check-in |
 | Water and protein | Sian OS daily check-in |
+| Daily calorie and protein targets | Sian OS profile |
 | Estimated calories | Sian OS daily check-in |
 | Breakfast, lunch, dinner, and food summary | Sian OS daily check-in nutrition textarea |
 | Reviewer-facing workout notes derived from Lyfta | Sian OS daily check-in workout textarea |
@@ -526,3 +528,4 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-13 | Sian OS daily check-ins may include estimated fats and carbs. | Fats and carbs become optional structured check-in fields for nutrition detail; they are not active macro targets unless separately confirmed. |
 | 2026-08-14 | Sian OS daily check-ins may include waist measurements in inches. | Waist becomes an optional structured check-in field for tracking lean-gain conditioning and visual softness trends. |
 | 2026-08-11 | Add a nutrition-coach workflow based on Peter Khatcherian's phase-based physique nutrition principles. | Weekly analysis must include a nutrition decision from evidence: hold, tighten, increase slightly, pull back slightly, or propose conditioning-first. The coach must reject vague "clean eating," aggressive bulking, crash dieting, and emotional changes. |
+| 2026-08-16 | Add running Home-page calorie and protein progress with editable profile goals. | Today's check-in can act as a draft updated during the day; default targets are 2200 kcal and 100 g protein unless profile values are changed. |
