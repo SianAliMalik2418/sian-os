@@ -9,6 +9,7 @@ import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { getRecipesData } from '@/lib/app.functions'
+import { nutritionEntryFromRecipe } from '@/lib/nutrition-entries'
 import type { Recipe } from '@/lib/types'
 
 export const Route = createFileRoute('/_app/recipes')({
@@ -23,6 +24,8 @@ const emptyValues = {
   serving_description: '',
   calories: '',
   protein_grams: '',
+  fat_grams: '',
+  carb_grams: '',
   ingredients: '',
   notes: '',
 }
@@ -35,6 +38,7 @@ function RecipesPage() {
   const [values, setValues] = useState<Record<string, string>>(emptyValues)
   const [query, setQuery] = useState('')
   const [saving, setSaving] = useState(false)
+  const [loggingRecipeId, setLoggingRecipeId] = useState<number | null>(null)
   const [status, setStatus] = useState<string>()
   const [error, setError] = useState<string>()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -112,13 +116,36 @@ function RecipesPage() {
     await router.invalidate()
   }
 
+  async function logRecipeToday(recipe: Recipe) {
+    setError(undefined)
+    setStatus(undefined)
+    setLoggingRecipeId(recipe.id)
+    const today = new Date().toISOString().slice(0, 10)
+
+    try {
+      const response = await fetch('/api/nutrition-entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nutritionEntryFromRecipe(recipe, today)),
+      })
+      const result = await response.json() as { error?: { message?: string } }
+      if (!response.ok) throw new Error(result.error?.message || 'Could not log recipe')
+      setStatus(`${recipe.name} logged for today.`)
+      await router.invalidate()
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not log recipe')
+    } finally {
+      setLoggingRecipeId(null)
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Recipes</p>
           <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Your repeat meals.</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">Save dishes, snacks, drinks, portions, ingredients, calories, protein, and photos.</p>
+          <p className="mt-2 max-w-2xl text-muted-foreground">Save dishes, snacks, drinks, portions, ingredients, macros, and photos.</p>
         </div>
         <Button type="button" size="lg" onClick={beginCreate}><Plus /> New recipe</Button>
       </header>
@@ -135,14 +162,14 @@ function RecipesPage() {
 
           {filteredRecipes.length ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {filteredRecipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} onEdit={() => beginEdit(recipe)} onDelete={() => deleteRecipe(recipe)} />)}
+              {filteredRecipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} logging={loggingRecipeId === recipe.id} onLog={() => logRecipeToday(recipe)} onEdit={() => beginEdit(recipe)} onDelete={() => deleteRecipe(recipe)} />)}
             </div>
           ) : (
             <Card>
               <CardPanel className="py-16 text-center">
                 <Utensils className="mx-auto mb-3 size-8 text-muted-foreground" />
                 <p className="font-medium">No recipes found</p>
-                <p className="mt-1 text-sm text-muted-foreground">Add repeat meals so nutrition logs can use known calories and protein.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Add repeat meals so nutrition logs can use known macros.</p>
               </CardPanel>
             </Card>
           )}
@@ -154,7 +181,7 @@ function RecipesPage() {
   )
 }
 
-function RecipeCard({ recipe, onEdit, onDelete }: { recipe: Recipe; onEdit: () => void; onDelete: () => void }) {
+function RecipeCard({ recipe, logging, onLog, onEdit, onDelete }: { recipe: Recipe; logging: boolean; onLog: () => void; onEdit: () => void; onDelete: () => void }) {
   return (
     <Card className="overflow-hidden">
       {recipe.photo_r2_key ? <img src={`/api/recipes/${recipe.id}/photo`} alt={recipe.name} className="aspect-video w-full object-cover" loading="lazy" /> : <div className="flex aspect-video items-center justify-center bg-secondary/40"><ImageIcon className="size-8 text-muted-foreground" /></div>}
@@ -168,11 +195,15 @@ function RecipeCard({ recipe, onEdit, onDelete }: { recipe: Recipe; onEdit: () =
       <CardPanel className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <Metric label="Calories" value={`${recipe.calories} kcal`} />
+          <Metric label="Protein" value={`${recipe.protein_grams} g`} />
+          <Metric label="Fats" value={`${recipe.fat_grams} g`} />
+          <Metric label="Carbs" value={`${recipe.carb_grams} g`} />
           <Metric label="Category" value={recipe.category || 'Not set'} />
         </div>
         {recipe.ingredients && <p className="line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{recipe.ingredients}</p>}
         {recipe.aliases && <p className="text-xs text-muted-foreground">Also: {recipe.aliases}</p>}
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button type="button" variant="secondary" onClick={onLog} loading={logging}><Utensils /> Log today</Button>
           <Button type="button" variant="outline" onClick={onEdit}><Pencil /> Edit</Button>
           <Button type="button" variant="destructive" onClick={onDelete}><Trash2 /> Delete</Button>
         </div>
@@ -194,7 +225,7 @@ function RecipeForm({ editing, values, saving, fileRef, onUpdate, onSubmit, onCa
     <Form onSubmit={onSubmit} className="sticky top-20 h-fit space-y-4 rounded-xl border bg-card p-4 text-card-foreground">
       <div>
         <p className="font-heading text-xl font-semibold">{editing ? 'Edit recipe' : 'Add recipe'}</p>
-        <p className="mt-1 text-sm text-muted-foreground">Calories and protein should match one normal serving.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Macros should match one normal serving.</p>
       </div>
       <RecipeField label="Name"><Input nativeInput required value={values.name} onChange={(event) => onUpdate('name', event.target.value)} placeholder="Chicken pulao" /></RecipeField>
       <RecipeField label="Aliases" description="Comma-separated names the agent may see">
@@ -203,6 +234,8 @@ function RecipeForm({ editing, values, saving, fileRef, onUpdate, onSubmit, onCa
       <div className="grid grid-cols-2 gap-3">
         <RecipeField label="Calories"><Input nativeInput required type="number" min="0" max="20000" step="1" inputMode="numeric" value={values.calories} onChange={(event) => onUpdate('calories', event.target.value)} /></RecipeField>
         <RecipeField label="Protein"><Input nativeInput required type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.protein_grams} onChange={(event) => onUpdate('protein_grams', event.target.value)} /></RecipeField>
+        <RecipeField label="Fats"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.fat_grams} onChange={(event) => onUpdate('fat_grams', event.target.value)} /></RecipeField>
+        <RecipeField label="Carbs"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.carb_grams} onChange={(event) => onUpdate('carb_grams', event.target.value)} /></RecipeField>
       </div>
       <RecipeField label="Serving"><Input nativeInput value={values.serving_description} onChange={(event) => onUpdate('serving_description', event.target.value)} placeholder="1 plate, 1 bowl, 2 pieces…" /></RecipeField>
       <RecipeField label="Category"><Input nativeInput value={values.category} onChange={(event) => onUpdate('category', event.target.value)} placeholder="Dish, snack, drink…" /></RecipeField>
@@ -233,6 +266,8 @@ function valuesFromRecipe(recipe: Recipe) {
     serving_description: recipe.serving_description || '',
     calories: String(recipe.calories),
     protein_grams: String(recipe.protein_grams),
+    fat_grams: String(recipe.fat_grams),
+    carb_grams: String(recipe.carb_grams),
     ingredients: recipe.ingredients || '',
     notes: recipe.notes || '',
   }

@@ -48,5 +48,19 @@ export const nutritionEntrySchema = z.object({
   carb_grams: z.number().int().min(0).max(2000).optional(),
 }).strict()
 
+export const recipeSchema = z.object({
+  name: z.string().trim().min(1).max(500),
+  aliases: z.string().trim().max(500).optional(),
+  category: z.string().trim().max(500).optional(),
+  serving_description: z.string().trim().max(500).optional(),
+  calories: z.number().int().min(0).max(20000),
+  protein_grams: z.number().int().min(0).max(2000),
+  fat_grams: z.number().int().min(0).max(2000).optional(),
+  carb_grams: z.number().int().min(0).max(2000).optional(),
+  ingredients: optionalText,
+  notes: optionalText,
+}).strict()
+
 export type CheckinInput = z.infer<typeof checkinSchema>
 export type NutritionEntryInput = z.infer<typeof nutritionEntrySchema>
+export type RecipeInput = z.infer<typeof recipeSchema>

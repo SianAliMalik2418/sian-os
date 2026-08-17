@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers'
 import { db } from './db'
-import { HttpError } from './http'
+import { HttpError, readJson } from './http'
+import { recipeSchema, type RecipeInput } from './schemas'
 import type { Recipe } from './types'
 
 const maxRecipePhotoBytes = 8 * 1024 * 1024
@@ -13,7 +14,7 @@ export function recipeId(value: string) {
 
 export async function listRecipes(limit = 500) {
   const result = await db().prepare(`
-    SELECT id, name, aliases, category, serving_description, calories, protein_grams, ingredients, notes, photo_r2_key, photo_content_type, created_at, updated_at
+    SELECT id, name, aliases, category, serving_description, calories, protein_grams, fat_grams, carb_grams, ingredients, notes, photo_r2_key, photo_content_type, created_at, updated_at
     FROM recipes
     ORDER BY name COLLATE NOCASE
     LIMIT ?
@@ -25,6 +26,12 @@ export async function readRecipe(id: number) {
   return db().prepare('SELECT * FROM recipes WHERE id = ?').bind(id).first<Recipe>()
 }
 
+export async function recipeFromRequest(request: Request, existing?: Recipe | null) {
+  const contentType = request.headers.get('content-type') || ''
+  if (contentType.includes('application/json')) return recipeFromJson(recipeSchema.parse(await readJson(request)), existing)
+  return recipeFromForm(await request.formData(), existing)
+}
+
 export async function recipeFromForm(form: FormData, existing?: Recipe | null) {
   const name = formText(form, 'name')
   const aliases = formText(form, 'aliases')
@@ -34,6 +41,8 @@ export async function recipeFromForm(form: FormData, existing?: Recipe | null) {
   const notes = formText(form, 'notes')
   const calories = formInt(form, 'calories', 0, 20000)
   const proteinGrams = formInt(form, 'protein_grams', 0, 2000)
+  const fatGrams = formOptionalInt(form, 'fat_grams', 0, 2000)
+  const carbGrams = formOptionalInt(form, 'carb_grams', 0, 2000)
   const photo = form.get('photo')
 
   if (!name) throw new HttpError(400, 'NAME_REQUIRED', 'Recipe name is required')
@@ -60,6 +69,8 @@ export async function recipeFromForm(form: FormData, existing?: Recipe | null) {
       serving_description: optionalValue(servingDescription),
       calories,
       protein_grams: proteinGrams,
+      fat_grams: fatGrams,
+      carb_grams: carbGrams,
       ingredients: optionalValue(ingredients),
       notes: optionalValue(notes),
       photo_r2_key: photoKey,
@@ -67,6 +78,27 @@ export async function recipeFromForm(form: FormData, existing?: Recipe | null) {
     },
     oldPhotoKey,
     newPhotoKey: photoKey && photoKey !== existing?.photo_r2_key ? photoKey : null,
+  }
+}
+
+function recipeFromJson(input: RecipeInput, existing?: Recipe | null) {
+  return {
+    values: {
+      name: input.name,
+      aliases: optionalValue(input.aliases || ''),
+      category: optionalValue(input.category || ''),
+      serving_description: optionalValue(input.serving_description || ''),
+      calories: input.calories,
+      protein_grams: input.protein_grams,
+      fat_grams: input.fat_grams ?? 0,
+      carb_grams: input.carb_grams ?? 0,
+      ingredients: optionalValue(input.ingredients || ''),
+      notes: optionalValue(input.notes || ''),
+      photo_r2_key: existing?.photo_r2_key || null,
+      photo_content_type: existing?.photo_content_type || null,
+    },
+    oldPhotoKey: null,
+    newPhotoKey: null,
   }
 }
 
@@ -80,6 +112,14 @@ function formText(form: FormData, key: string) {
 
 function formInt(form: FormData, key: string, min: number, max: number) {
   const raw = String(form.get(key) || '').trim()
+  const value = Number(raw)
+  if (!Number.isInteger(value) || value < min || value > max) throw new HttpError(400, 'INVALID_NUMBER', `${key} must be an integer from ${min} to ${max}`)
+  return value
+}
+
+function formOptionalInt(form: FormData, key: string, min: number, max: number) {
+  const raw = String(form.get(key) || '').trim()
+  if (!raw) return 0
   const value = Number(raw)
   if (!Number.isInteger(value) || value < min || value > max) throw new HttpError(400, 'INVALID_NUMBER', `${key} must be an integer from ${min} to ${max}`)
   return value

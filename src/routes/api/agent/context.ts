@@ -26,8 +26,8 @@ const checkinWriteContract = {
 
 const recipeGuidance = {
   source: 'GET /api/recipes',
-  rule: 'Before estimating nutrition from meal text, check savedRecipes by name and aliases. If a logged food clearly matches a saved recipe and serving, use that recipe calories and protein instead of estimating. Estimate only missing foods or unmatched recipes.',
-  servingRule: 'Saved recipe calories and protein represent one normal serving unless serving_description says otherwise. If the owner logs multiple servings, multiply the saved values.',
+  rule: 'Before estimating nutrition from meal text, check savedRecipes by name and aliases. If a logged food clearly matches a saved recipe and serving, use that recipe calories, protein, fats, and carbs instead of estimating. Estimate only missing foods or unmatched recipes.',
+  servingRule: 'Saved recipe calories, protein, fats, and carbs represent one normal serving unless serving_description says otherwise. If the owner logs multiple servings, multiply the saved values.',
   uncertaintyRule: 'If a match is ambiguous, state the assumption or ask for the serving instead of silently guessing.',
 }
 
@@ -57,7 +57,7 @@ export const Route = createFileRoute('/api/agent/context')({
           dashboardSummary(),
           database.prepare('SELECT * FROM daily_checkins ORDER BY date DESC LIMIT 30').all(),
           database.prepare('SELECT * FROM nutrition_entries WHERE date >= date(?, \'-30 days\') ORDER BY date DESC, id DESC LIMIT 500').bind(today).all(),
-          database.prepare('SELECT id, name, aliases, category, serving_description, calories, protein_grams, ingredients, notes, updated_at FROM recipes ORDER BY name COLLATE NOCASE LIMIT 500').all(),
+          database.prepare('SELECT id, name, aliases, category, serving_description, calories, protein_grams, fat_grams, carb_grams, ingredients, notes, updated_at FROM recipes ORDER BY name COLLATE NOCASE LIMIT 500').all(),
         ])
         return json({
           ok: true,

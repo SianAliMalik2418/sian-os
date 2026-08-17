@@ -98,7 +98,7 @@ Field notes:
 - `DELETE /api/nutrition-entries/:id` — delete one food row and recalculate the daily totals.
 - `PUT /api/agent/state` — upsert limited agent state, currently only `{ "key": "last_weekly_report_date", "value": "YYYY-MM-DD" }`; send `null` to clear it.
 - `PUT /api/profile` — upsert profile fields, including `calorie_goal` and `protein_goal` for daily targets.
-- `POST /api/recipes` and `PUT /api/recipes/:id` — multipart recipe writes with `name`, `calories`, `protein_grams`, optional `aliases`, `category`, `serving_description`, `ingredients`, `notes`, and optional image `photo`.
+- `POST /api/recipes` and `PUT /api/recipes/:id` — multipart recipe writes with `name`, `calories`, `protein_grams`, optional `fat_grams`, `carb_grams`, `aliases`, `category`, `serving_description`, `ingredients`, `notes`, and optional image `photo`.
 - `DELETE /api/recipes/:id` — permanently remove one saved recipe and its photo.
 - `POST /api/progress-photos` — multipart form with `date`, `photo`, optional `label`, and optional `notes`; maximum 15 MB image.
 - `DELETE /api/progress-photos/:id` — permanently remove a photo and its metadata.
@@ -126,7 +126,7 @@ This state is for cadence only. Do not store daily logs, coaching advice, creden
 
 ## Agent daily loop
 
-For daily logging, parse natural language food items into `/api/nutrition-entries` rows, then verify by date. Use `/api/checkins` for non-food daily facts such as sleep, water, waist, weight, notes, and workout text. Check saved recipes by name and aliases before estimating item calories or protein; saved recipe values override estimates when the logged item clearly matches. Estimate fats and carbs only when the food context is sufficient. Use profile `calorie_goal` and `protein_goal` to calculate remaining daily intake. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
+For daily logging, parse natural language food items into `/api/nutrition-entries` rows, then verify by date. Use `/api/checkins` for non-food daily facts such as sleep, water, waist, weight, notes, and workout text. Check saved recipes by name and aliases before estimating item calories, protein, fats, or carbs; saved recipe values override estimates when the logged item clearly matches. Estimate fats and carbs only when the food context is sufficient. Use profile `calorie_goal` and `protein_goal` to calculate remaining daily intake. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
 
 ## Agent safety rules
 

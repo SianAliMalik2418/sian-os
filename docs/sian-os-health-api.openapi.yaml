@@ -324,6 +324,97 @@ paths:
                       data:
                         $ref: "#/components/schemas/Profile"
 
+  /api/recipes:
+    get:
+      operationId: getRecipes
+      summary: Get saved repeat recipes.
+      description: Use saved recipes before estimating repeat-food nutrition values.
+      responses:
+        "200":
+          description: Saved recipes.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Recipe"
+
+    post:
+      operationId: createRecipe
+      summary: Create a saved repeat recipe.
+      description: Saves one normal serving of a repeat food with calories and macros. Use JSON for GPT Actions. The app UI may also send multipart/form-data when uploading a photo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecipeInput"
+      responses:
+        "201":
+          description: Recipe saved.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Recipe"
+
+  /api/recipes/{recipeId}:
+    put:
+      operationId: updateRecipe
+      summary: Update a saved repeat recipe.
+      description: Replaces editable recipe fields. Read recipes first when preserving fields matters. JSON updates keep any existing photo.
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecipeInput"
+      responses:
+        "200":
+          description: Recipe updated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Recipe"
+
+    delete:
+      operationId: deleteRecipe
+      summary: Delete one saved repeat recipe.
+      description: Permanently removes one recipe and its photo if it has one. Ask the owner before using this destructive operation.
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recipe deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   /api/reports:
     get:
       operationId: getReports
@@ -573,6 +664,101 @@ components:
               type: string
             updated_at:
               type: string
+
+    RecipeInput:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 500
+        aliases:
+          type: string
+          maxLength: 500
+          description: Comma-separated alternate names the owner or agent may use.
+        category:
+          type: string
+          maxLength: 500
+        serving_description:
+          type: string
+          maxLength: 500
+          description: Portion represented by these macros, such as "1 egg" or "1 bowl".
+        calories:
+          type: integer
+          minimum: 0
+          maximum: 20000
+        protein_grams:
+          type: integer
+          minimum: 0
+          maximum: 2000
+        fat_grams:
+          type: integer
+          minimum: 0
+          maximum: 2000
+        carb_grams:
+          type: integer
+          minimum: 0
+          maximum: 2000
+        ingredients:
+          type: string
+          maxLength: 2000
+        notes:
+          type: string
+          maxLength: 2000
+      required:
+        - name
+        - calories
+        - protein_grams
+
+    Recipe:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        aliases:
+          type:
+            - string
+            - "null"
+        category:
+          type:
+            - string
+            - "null"
+        serving_description:
+          type:
+            - string
+            - "null"
+        calories:
+          type: integer
+        protein_grams:
+          type: integer
+        fat_grams:
+          type: integer
+        carb_grams:
+          type: integer
+        ingredients:
+          type:
+            - string
+            - "null"
+        notes:
+          type:
+            - string
+            - "null"
+        photo_r2_key:
+          type:
+            - string
+            - "null"
+          description: Private R2 object key; do not expose as a public URL.
+        photo_content_type:
+          type:
+            - string
+            - "null"
+        created_at:
+          type: string
+        updated_at:
+          type: string
 
     ProfileInput:
       type: object

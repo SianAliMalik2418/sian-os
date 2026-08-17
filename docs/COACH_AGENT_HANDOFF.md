@@ -15,7 +15,7 @@ Sian OS is a single-user wellness operating system for:
 - daily check-ins;
 - itemized daily food rows plus running daily calories/protein/fat/carb totals, sleep, hydration, body-weight, waist, and brief workout-summary text;
 - editable daily calorie and protein goals in the profile;
-- saved repeat recipes with ingredients, photos, calories, and protein;
+- saved repeat recipes with ingredients, photos, calories, protein, fats, and carbs;
 - progress photos inside the daily check-in flow;
 - daily, weekly, and monthly reports with charts and date ranges;
 - structured context for an external coaching agent.
@@ -216,9 +216,9 @@ Use `null` for `value` to clear it. Read this key before weekly analysis and upd
 
 Recipes are Sian OS's source for repeat-food nutrition values. The app exposes them in `/api/agent/context` as `savedRecipes`, and through `GET /api/recipes`.
 
-Saved recipe fields include `name`, `aliases`, `category`, `serving_description`, `calories`, `protein_grams`, `ingredients`, `notes`, and photo metadata. Calories and protein represent one normal serving unless the serving description says otherwise.
+Saved recipe fields include `name`, `aliases`, `category`, `serving_description`, `calories`, `protein_grams`, `fat_grams`, `carb_grams`, `ingredients`, `notes`, and photo metadata. Calories and macros represent one normal serving unless the serving description says otherwise.
 
-When recording food from natural language, check saved recipes by name and aliases before estimating. If a logged item clearly matches a saved recipe, use its saved calories and protein. Estimate only unmatched foods or unclear amounts. If the serving or match is ambiguous, state the assumption or ask the owner instead of silently guessing.
+When recording food from natural language, check saved recipes by name and aliases before estimating. If a logged item clearly matches a saved recipe, use its saved calories, protein, fats, and carbs. Estimate only unmatched foods or unclear amounts. If the serving or match is ambiguous, state the assumption or ask the owner instead of silently guessing.
 
 ### Reports
 
@@ -265,12 +265,12 @@ The decision must explain the evidence: body-weight trend, protein consistency, 
 - `profile`: singleton owner profile where `id = 1`.
 - `daily_checkins`: one row per date with weight, waist, sleep hours, water, derived nutrition totals, brief workout text, and general notes.
 - `nutrition_entries`: itemized food rows by date with item name, calories, protein grams, fat grams, and carb grams. These rows drive the aggregate daily nutrition totals.
-- `recipes`: saved repeat foods with calories, protein, serving notes, ingredients, optional aliases, and private R2 photo object keys.
+- `recipes`: saved repeat foods with calories, protein, fats, carbs, serving notes, ingredients, optional aliases, and private R2 photo object keys.
 - `progress_photos`: D1 metadata and private R2 object key.
 - `agent_state`: limited agent-owned state, currently the last weekly report date.
 - `agent_audit_log`: API write history with action, entity type, entity ID, payload, and timestamp.
 
-Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves legacy meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval. Migration `0009_recipes.sql` adds the recipe library. Migration `0010_checkin_fats_carbs.sql` adds optional fats and carbs to daily check-ins. Migration `0011_checkin_waist_inches.sql` adds optional waist measurements in inches. Migration `0012_profile_nutrition_goals.sql` adds editable calorie and protein goals to the profile. Migration `0013_nutrition_entries.sql` adds itemized food rows. Migration `0014_nutrition_entry_macros.sql` adds fats and carbs to itemized nutrition entries so rows recalculate daily calorie/protein/fat/carb totals.
+Reports are calculated from existing daily data rather than stored in a report table. Migration `0006_replace_weekly_reviews_with_reports.sql` removes the retired weekly-review table. Migration `0007_profile_checkin_nutrition_remove_progress.sql` moves legacy meal notes into check-ins and removes the retired body-measurement and separate nutrition tables. Both were applied to production on 2026-07-30 after backup and owner approval. Migration `0009_recipes.sql` adds the recipe library. Migration `0010_checkin_fats_carbs.sql` adds optional fats and carbs to daily check-ins. Migration `0011_checkin_waist_inches.sql` adds optional waist measurements in inches. Migration `0012_profile_nutrition_goals.sql` adds editable calorie and protein goals to the profile. Migration `0013_nutrition_entries.sql` adds itemized food rows. Migration `0014_nutrition_entry_macros.sql` adds fats and carbs to itemized nutrition entries so rows recalculate daily calorie/protein/fat/carb totals. Migration `0015_recipe_macros.sql` adds saved recipe fats and carbs so recipe logging can populate daily macro rows.
 
 ## Calculated metrics
 

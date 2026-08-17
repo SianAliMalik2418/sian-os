@@ -51,6 +51,8 @@ export interface Recipe {
   serving_description: string | null
   calories: number
   protein_grams: number
+  fat_grams: number
+  carb_grams: number
   ingredients: string | null
   notes: string | null
   photo_r2_key: string | null
