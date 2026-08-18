@@ -1,4 +1,4 @@
-import { Minus, Plus, Save, Trash2, Utensils } from 'lucide-react'
+import { Minus, Plus, Save, Search, Trash2, Utensils } from 'lucide-react'
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -43,6 +43,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [recipesLoading, setRecipesLoading] = useState(false)
   const [recipesLoaded, setRecipesLoaded] = useState(false)
+  const [recipeQuery, setRecipeQuery] = useState('')
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<number>>(new Set())
   const [recipeQuantities, setRecipeQuantities] = useState<Record<number, number>>({})
   const [recipeDialogOpen, setRecipeDialogOpen] = useState(false)
@@ -87,6 +88,11 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   }, [addOpen, compact, recipesLoaded, recipesLoading])
 
   const groupedEntries = groupedNutritionEntries(entries)
+  const filteredRecipes = useMemo(() => {
+    const needle = recipeQuery.trim().toLowerCase()
+    if (!needle) return recipes
+    return recipes.filter((recipe) => [recipe.name, recipe.aliases, recipe.category, recipe.ingredients].some((value) => value?.toLowerCase().includes(needle)))
+  }, [recipeQuery, recipes])
   const selectedRecipes = useMemo(() => recipes.filter((recipe) => selectedRecipeIds.has(recipe.id)), [recipes, selectedRecipeIds])
   const selectedTotals = selectedRecipes.reduce((totals, recipe) => {
     const quantity = recipeQuantities[recipe.id] || 1
@@ -356,11 +362,16 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
                 <Button type="button" variant="outline" size="sm" onClick={() => setRecipeDialogOpen(true)}><Plus /> New recipe</Button>
               </div>
 
+              <div className="flex items-center gap-2 rounded-xl border bg-background px-3 py-2">
+                <Search className="size-4 text-muted-foreground" />
+                <Input nativeInput value={recipeQuery} onChange={(event) => setRecipeQuery(event.target.value)} placeholder="Search recipes, aliases, ingredients..." className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
+              </div>
+
               {recipesLoading ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">Loading recipes...</p> : null}
 
-              {!recipesLoading && recipes.length ? (
+              {!recipesLoading && filteredRecipes.length ? (
                 <div className="grid max-h-[52vh] gap-3 overflow-y-auto pr-1">
-                  {recipes.map((recipe) => {
+                  {filteredRecipes.map((recipe) => {
                     const selected = selectedRecipeIds.has(recipe.id)
                     const quantity = recipeQuantities[recipe.id] || 1
                     return (
@@ -389,6 +400,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
               ) : null}
 
               {!recipesLoading && !recipes.length ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">No saved recipes yet. Create one here, then log it today.</p> : null}
+              {!recipesLoading && recipes.length > 0 && !filteredRecipes.length ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">No recipes match that search.</p> : null}
               {error && <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
             </DialogPanel>
             <DialogFooter>

@@ -160,42 +160,40 @@ function RecipesPage() {
       {status && <p role="status" className="rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary">{status}</p>}
       {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_24rem]">
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 rounded-xl border bg-secondary/25 px-3 py-2">
-            <Search className="size-4 text-muted-foreground" />
-            <Input nativeInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search recipes, aliases, ingredients…" className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
-          </div>
+      <section className="space-y-4">
+        <div className="flex w-full items-center gap-2 rounded-xl border bg-secondary/25 px-3 py-2">
+          <Search className="size-4 text-muted-foreground" />
+          <Input nativeInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search recipes, aliases, ingredients…" className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
+        </div>
 
-          {filteredRecipes.length ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {filteredRecipes.map((recipe) => {
-                const quantity = quantities[recipe.id] || 1
-                return (
-                  <RecipeCard
-                    key={recipe.id}
-                    recipe={recipe}
-                    quantity={quantity}
-                    logging={loggingRecipeId === recipe.id}
-                    onQuantityChange={(nextQuantity) => setRecipeQuantity(recipe.id, nextQuantity)}
-                    onLog={() => logRecipeToday(recipe)}
-                    onEdit={() => beginEdit(recipe)}
-                    onDelete={() => deleteRecipe(recipe)}
-                  />
-                )
-              })}
-            </div>
-          ) : (
-            <Card>
-              <CardPanel className="py-16 text-center">
-                <Utensils className="mx-auto mb-3 size-8 text-muted-foreground" />
-                <p className="font-medium">No recipes found</p>
-                <p className="mt-1 text-sm text-muted-foreground">Add repeat meals so nutrition logs can use known macros.</p>
-              </CardPanel>
-            </Card>
-          )}
-        </section>
-      </div>
+        {filteredRecipes.length ? (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {filteredRecipes.map((recipe) => {
+              const quantity = quantities[recipe.id] || 1
+              return (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  quantity={quantity}
+                  logging={loggingRecipeId === recipe.id}
+                  onQuantityChange={(nextQuantity) => setRecipeQuantity(recipe.id, nextQuantity)}
+                  onLog={() => logRecipeToday(recipe)}
+                  onEdit={() => beginEdit(recipe)}
+                  onDelete={() => deleteRecipe(recipe)}
+                />
+              )
+            })}
+          </div>
+        ) : (
+          <Card>
+            <CardPanel className="py-16 text-center">
+              <Utensils className="mx-auto mb-3 size-8 text-muted-foreground" />
+              <p className="font-medium">No recipes found</p>
+              <p className="mt-1 text-sm text-muted-foreground">Add repeat meals so nutrition logs can use known macros.</p>
+            </CardPanel>
+          </Card>
+        )}
+      </section>
 
       <RecipeFormDialog open={formOpen} editing={editing} values={values} saving={saving} onOpenChange={(open) => open ? setFormOpen(true) : closeForm()} onUpdate={update} onSubmit={submit} onCancel={closeForm} />
     </div>
