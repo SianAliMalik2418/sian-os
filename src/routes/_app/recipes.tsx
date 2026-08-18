@@ -1,9 +1,10 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { ImageIcon, Pencil, Plus, Save, Search, Trash2, Utensils, X } from 'lucide-react'
-import { useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react'
+import { Minus, Pencil, Plus, Save, Search, Trash2, Utensils, X } from 'lucide-react'
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogPopup, DialogTitle } from '@/components/ui/dialog'
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -35,13 +36,14 @@ function RecipesPage() {
   const router = useRouter()
   const [recipes, setRecipes] = useState(loadedRecipes)
   const [editing, setEditing] = useState<Recipe | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
   const [values, setValues] = useState<Record<string, string>>(emptyValues)
+  const [quantities, setQuantities] = useState<Record<number, number>>({})
   const [query, setQuery] = useState('')
   const [saving, setSaving] = useState(false)
   const [loggingRecipeId, setLoggingRecipeId] = useState<number | null>(null)
   const [status, setStatus] = useState<string>()
   const [error, setError] = useState<string>()
-  const fileRef = useRef<HTMLInputElement>(null)
 
   const filteredRecipes = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -58,7 +60,7 @@ function RecipesPage() {
     setValues(emptyValues)
     setStatus(undefined)
     setError(undefined)
-    if (fileRef.current) fileRef.current.value = ''
+    setFormOpen(true)
   }
 
   function beginEdit(recipe: Recipe) {
@@ -66,7 +68,17 @@ function RecipesPage() {
     setValues(valuesFromRecipe(recipe))
     setStatus(undefined)
     setError(undefined)
-    if (fileRef.current) fileRef.current.value = ''
+    setFormOpen(true)
+  }
+
+  function closeForm() {
+    setFormOpen(false)
+    setEditing(null)
+    setValues(emptyValues)
+  }
+
+  function setRecipeQuantity(recipeId: number, quantity: number) {
+    setQuantities((current) => ({ ...current, [recipeId]: Math.max(1, Math.min(20, quantity)) }))
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -77,8 +89,6 @@ function RecipesPage() {
 
     const form = new FormData()
     for (const [key, value] of Object.entries(values)) form.set(key, value)
-    const photo = fileRef.current?.files?.[0]
-    if (photo) form.set('photo', photo)
 
     try {
       const response = await fetch(editing ? `/api/recipes/${editing.id}` : '/api/recipes', { method: editing ? 'PUT' : 'POST', body: form })
@@ -86,9 +96,7 @@ function RecipesPage() {
       if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not save recipe')
       const saved = result.data
       setRecipes((current) => editing ? current.map((recipe) => recipe.id === saved.id ? saved : recipe) : [...current, saved].sort((a, b) => a.name.localeCompare(b.name)))
-      setEditing(null)
-      setValues(emptyValues)
-      if (fileRef.current) fileRef.current.value = ''
+      closeForm()
       setStatus('Recipe saved.')
       await router.invalidate()
     } catch (caught) {
@@ -108,10 +116,7 @@ function RecipesPage() {
       return
     }
     setRecipes((current) => current.filter((item) => item.id !== recipe.id))
-    if (editing?.id === recipe.id) {
-      setEditing(null)
-      setValues(emptyValues)
-    }
+    if (editing?.id === recipe.id) closeForm()
     setStatus('Recipe deleted.')
     await router.invalidate()
   }
@@ -120,17 +125,18 @@ function RecipesPage() {
     setError(undefined)
     setStatus(undefined)
     setLoggingRecipeId(recipe.id)
+    const quantity = quantities[recipe.id] || 1
     const today = new Date().toISOString().slice(0, 10)
 
     try {
       const response = await fetch('/api/nutrition-entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nutritionEntryFromRecipe(recipe, today)),
+        body: JSON.stringify(nutritionEntryFromRecipe(recipe, today, quantity)),
       })
       const result = await response.json() as { error?: { message?: string } }
       if (!response.ok) throw new Error(result.error?.message || 'Could not log recipe')
-      setStatus(`${recipe.name} logged for today.`)
+      setStatus(`${recipe.name}${quantity > 1 ? ` x${quantity}` : ''} logged for today.`)
       await router.invalidate()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not log recipe')
@@ -145,7 +151,7 @@ function RecipesPage() {
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Recipes</p>
           <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Your repeat meals.</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">Save dishes, snacks, drinks, portions, ingredients, macros, and photos.</p>
+          <p className="mt-2 max-w-2xl text-muted-foreground">Save dishes, snacks, drinks, portions, ingredients, macros, and notes.</p>
         </div>
         <Button type="button" size="lg" onClick={beginCreate}><Plus /> New recipe</Button>
       </header>
@@ -162,7 +168,21 @@ function RecipesPage() {
 
           {filteredRecipes.length ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {filteredRecipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} logging={loggingRecipeId === recipe.id} onLog={() => logRecipeToday(recipe)} onEdit={() => beginEdit(recipe)} onDelete={() => deleteRecipe(recipe)} />)}
+              {filteredRecipes.map((recipe) => {
+                const quantity = quantities[recipe.id] || 1
+                return (
+                  <RecipeCard
+                    key={recipe.id}
+                    recipe={recipe}
+                    quantity={quantity}
+                    logging={loggingRecipeId === recipe.id}
+                    onQuantityChange={(nextQuantity) => setRecipeQuantity(recipe.id, nextQuantity)}
+                    onLog={() => logRecipeToday(recipe)}
+                    onEdit={() => beginEdit(recipe)}
+                    onDelete={() => deleteRecipe(recipe)}
+                  />
+                )
+              })}
             </div>
           ) : (
             <Card>
@@ -174,17 +194,24 @@ function RecipesPage() {
             </Card>
           )}
         </section>
-
-        <RecipeForm editing={editing} values={values} saving={saving} fileRef={fileRef} onUpdate={update} onSubmit={submit} onCancel={() => { setEditing(null); setValues(emptyValues) }} />
       </div>
+
+      <RecipeFormDialog open={formOpen} editing={editing} values={values} saving={saving} onOpenChange={(open) => open ? setFormOpen(true) : closeForm()} onUpdate={update} onSubmit={submit} onCancel={closeForm} />
     </div>
   )
 }
 
-function RecipeCard({ recipe, logging, onLog, onEdit, onDelete }: { recipe: Recipe; logging: boolean; onLog: () => void; onEdit: () => void; onDelete: () => void }) {
+function RecipeCard({ recipe, quantity, logging, onQuantityChange, onLog, onEdit, onDelete }: {
+  recipe: Recipe
+  quantity: number
+  logging: boolean
+  onQuantityChange: (quantity: number) => void
+  onLog: () => void
+  onEdit: () => void
+  onDelete: () => void
+}) {
   return (
-    <Card className="overflow-hidden">
-      {recipe.photo_r2_key ? <img src={`/api/recipes/${recipe.id}/photo`} alt={recipe.name} className="aspect-video w-full object-cover" loading="lazy" /> : <div className="flex aspect-video items-center justify-center bg-secondary/40"><ImageIcon className="size-8 text-muted-foreground" /></div>}
+    <Card>
       <CardHeader>
         <div>
           <CardTitle>{recipe.name}</CardTitle>
@@ -194,59 +221,75 @@ function RecipeCard({ recipe, logging, onLog, onEdit, onDelete }: { recipe: Reci
       </CardHeader>
       <CardPanel className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <Metric label="Calories" value={`${recipe.calories} kcal`} />
-          <Metric label="Protein" value={`${recipe.protein_grams} g`} />
-          <Metric label="Fats" value={`${recipe.fat_grams} g`} />
-          <Metric label="Carbs" value={`${recipe.carb_grams} g`} />
+          <Metric label="Calories" value={`${recipe.calories * quantity} kcal`} />
+          <Metric label="Protein" value={`${recipe.protein_grams * quantity} g`} />
+          <Metric label="Fats" value={`${recipe.fat_grams * quantity} g`} />
+          <Metric label="Carbs" value={`${recipe.carb_grams * quantity} g`} />
           <Metric label="Category" value={recipe.category || 'Not set'} />
         </div>
         {recipe.ingredients && <p className="line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{recipe.ingredients}</p>}
         {recipe.aliases && <p className="text-xs text-muted-foreground">Also: {recipe.aliases}</p>}
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-1 rounded-lg border bg-background p-1" aria-label={`${recipe.name} quantity`}>
+            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity - 1)} disabled={quantity <= 1}><Minus /></Button>
+            <Input nativeInput type="number" min="1" max="20" step="1" inputMode="numeric" aria-label={`${recipe.name} quantity value`} value={quantity} onChange={(event) => onQuantityChange(Number(event.target.value) || 1)} className="h-7 w-12 px-1 text-center text-sm tabular-nums" />
+            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity + 1)}><Plus /></Button>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onLog} loading={logging}><Utensils /> Log today</Button>
           <Button type="button" variant="outline" onClick={onEdit}><Pencil /> Edit</Button>
           <Button type="button" variant="destructive" onClick={onDelete}><Trash2 /> Delete</Button>
+          </div>
         </div>
       </CardPanel>
     </Card>
   )
 }
 
-function RecipeForm({ editing, values, saving, fileRef, onUpdate, onSubmit, onCancel }: {
+function RecipeFormDialog({ open, editing, values, saving, onOpenChange, onUpdate, onSubmit, onCancel }: {
+  open: boolean
   editing: Recipe | null
   values: Record<string, string>
   saving: boolean
-  fileRef: RefObject<HTMLInputElement | null>
+  onOpenChange: (open: boolean) => void
   onUpdate: (name: string, value: string) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onCancel: () => void
 }) {
   return (
-    <Form onSubmit={onSubmit} className="sticky top-20 h-fit space-y-4 rounded-xl border bg-card p-4 text-card-foreground">
-      <div>
-        <p className="font-heading text-xl font-semibold">{editing ? 'Edit recipe' : 'Add recipe'}</p>
-        <p className="mt-1 text-sm text-muted-foreground">Macros should match one normal serving.</p>
-      </div>
-      <RecipeField label="Name"><Input nativeInput required value={values.name} onChange={(event) => onUpdate('name', event.target.value)} placeholder="Chicken pulao" /></RecipeField>
-      <RecipeField label="Aliases" description="Comma-separated names the agent may see">
-        <Input nativeInput value={values.aliases} onChange={(event) => onUpdate('aliases', event.target.value)} placeholder="pulao, chicken rice" />
-      </RecipeField>
-      <div className="grid grid-cols-2 gap-3">
-        <RecipeField label="Calories"><Input nativeInput required type="number" min="0" max="20000" step="1" inputMode="numeric" value={values.calories} onChange={(event) => onUpdate('calories', event.target.value)} /></RecipeField>
-        <RecipeField label="Protein"><Input nativeInput required type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.protein_grams} onChange={(event) => onUpdate('protein_grams', event.target.value)} /></RecipeField>
-        <RecipeField label="Fats"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.fat_grams} onChange={(event) => onUpdate('fat_grams', event.target.value)} /></RecipeField>
-        <RecipeField label="Carbs"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.carb_grams} onChange={(event) => onUpdate('carb_grams', event.target.value)} /></RecipeField>
-      </div>
-      <RecipeField label="Serving"><Input nativeInput value={values.serving_description} onChange={(event) => onUpdate('serving_description', event.target.value)} placeholder="1 plate, 1 bowl, 2 pieces…" /></RecipeField>
-      <RecipeField label="Category"><Input nativeInput value={values.category} onChange={(event) => onUpdate('category', event.target.value)} placeholder="Dish, snack, drink…" /></RecipeField>
-      <RecipeField label="Ingredients"><Textarea rows={5} value={values.ingredients} onChange={(event) => onUpdate('ingredients', event.target.value)} placeholder="Chicken, rice, oil, yogurt…" /></RecipeField>
-      <RecipeField label="Photo"><Input ref={fileRef} nativeInput type="file" accept="image/*" /></RecipeField>
-      <RecipeField label="Notes"><Textarea rows={3} value={values.notes} onChange={(event) => onUpdate('notes', event.target.value)} placeholder="Usual portion, home version, restaurant version…" /></RecipeField>
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={saving}><X /> Clear</Button>
-        <Button type="submit" loading={saving}><Save /> {editing ? 'Save' : 'Add'}</Button>
-      </div>
-    </Form>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogPopup className="max-w-2xl">
+        <Form onSubmit={onSubmit} className="flex min-h-0 flex-col">
+          <DialogHeader>
+            <DialogTitle>{editing ? 'Edit recipe' : 'Add recipe'}</DialogTitle>
+            <DialogDescription>Macros should match one normal serving.</DialogDescription>
+          </DialogHeader>
+          <DialogPanel className="grid gap-4">
+            <RecipeField label="Name"><Input nativeInput required value={values.name} onChange={(event) => onUpdate('name', event.target.value)} placeholder="Chicken pulao" /></RecipeField>
+            <RecipeField label="Aliases" description="Comma-separated names the agent may see">
+              <Input nativeInput value={values.aliases} onChange={(event) => onUpdate('aliases', event.target.value)} placeholder="pulao, chicken rice" />
+            </RecipeField>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <RecipeField label="Calories"><Input nativeInput required type="number" min="0" max="20000" step="1" inputMode="numeric" value={values.calories} onChange={(event) => onUpdate('calories', event.target.value)} /></RecipeField>
+              <RecipeField label="Protein"><Input nativeInput required type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.protein_grams} onChange={(event) => onUpdate('protein_grams', event.target.value)} /></RecipeField>
+              <RecipeField label="Fats"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.fat_grams} onChange={(event) => onUpdate('fat_grams', event.target.value)} /></RecipeField>
+              <RecipeField label="Carbs"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.carb_grams} onChange={(event) => onUpdate('carb_grams', event.target.value)} /></RecipeField>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <RecipeField label="Serving"><Input nativeInput value={values.serving_description} onChange={(event) => onUpdate('serving_description', event.target.value)} placeholder="1 plate, 1 bowl, 2 pieces…" /></RecipeField>
+              <RecipeField label="Category"><Input nativeInput value={values.category} onChange={(event) => onUpdate('category', event.target.value)} placeholder="Dish, snack, drink…" /></RecipeField>
+            </div>
+            <RecipeField label="Ingredients"><Textarea rows={5} value={values.ingredients} onChange={(event) => onUpdate('ingredients', event.target.value)} placeholder="Chicken, rice, oil, yogurt…" /></RecipeField>
+            <RecipeField label="Notes"><Textarea rows={3} value={values.notes} onChange={(event) => onUpdate('notes', event.target.value)} placeholder="Usual portion, home version, restaurant version…" /></RecipeField>
+          </DialogPanel>
+          <DialogFooter>
+            <DialogClose render={<Button type="button" variant="outline" disabled={saving} />}>Cancel</DialogClose>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={saving}><X /> Clear</Button>
+            <Button type="submit" loading={saving}><Save /> {editing ? 'Save' : 'Add'}</Button>
+          </DialogFooter>
+        </Form>
+      </DialogPopup>
+    </Dialog>
   )
 }
 

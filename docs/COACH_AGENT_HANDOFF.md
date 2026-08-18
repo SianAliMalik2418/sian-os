@@ -160,7 +160,7 @@ There is deliberately no public arbitrary-SQL endpoint.
 
 Today's check-in may be used as a running draft. The Home page and Data Steward may update `calories`, `protein_grams`, `fat_grams`, and `carb_grams` during the day through itemized foods, as long as existing fields are preserved on every direct check-in upsert.
 
-Prefer itemized nutrition entries for foods. `POST /api/nutrition-entries` accepts one row with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`; the API automatically recalculates daily calorie/protein/fat/carb totals.
+Prefer itemized nutrition entries for foods. `POST /api/nutrition-entries` accepts one row with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`; the API automatically recalculates daily calorie/protein/fat/carb totals. For multiple servings of one saved recipe, multiply the recipe macros and label the row with the count, such as `Bread x3`.
 
 ```json
 {
@@ -218,7 +218,7 @@ Recipes are Sian OS's source for repeat-food nutrition values. The app exposes t
 
 Saved recipe fields include `name`, `aliases`, `category`, `serving_description`, `calories`, `protein_grams`, `fat_grams`, `carb_grams`, `ingredients`, `notes`, and photo metadata. Calories and macros represent one normal serving unless the serving description says otherwise.
 
-When recording food from natural language, check saved recipes by name and aliases before estimating. If a logged item clearly matches a saved recipe, use its saved calories, protein, fats, and carbs. Estimate only unmatched foods or unclear amounts. If the serving or match is ambiguous, state the assumption or ask the owner instead of silently guessing.
+When recording food from natural language, check saved recipes by name and aliases before estimating. If a logged item clearly matches a saved recipe, use its saved calories, protein, fats, and carbs. Multiply saved recipe macros when the owner states multiple servings and label the nutrition row with the count. Estimate only unmatched foods or unclear amounts. If the serving or match is ambiguous, state the assumption or ask the owner instead of silently guessing.
 
 ### Reports
 

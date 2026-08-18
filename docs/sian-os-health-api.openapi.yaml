@@ -625,7 +625,7 @@ components:
           type: string
           minLength: 1
           maxLength: 200
-          description: Food item or portion label, such as "egg" or "2 rotis".
+          description: Food item or portion label, such as "egg", "2 rotis", or "Bread x3" for multiple servings of one saved recipe.
         calories:
           type: integer
           minimum: 0

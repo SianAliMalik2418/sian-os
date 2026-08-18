@@ -61,7 +61,7 @@ Arbitrary SQL is never accepted.
 
 Today's check-in may be a running draft. When adding food during the day, prefer itemized nutrition rows so calories, protein, fats, and carbs are recalculated without overwriting other check-in fields.
 
-Prefer `/api/nutrition-entries` for itemized food logging. Nutrition entries automatically recalculate `daily_checkins.calories`, `daily_checkins.protein_grams`, `daily_checkins.fat_grams`, and `daily_checkins.carb_grams`.
+Prefer `/api/nutrition-entries` for itemized food logging. Nutrition entries automatically recalculate `daily_checkins.calories`, `daily_checkins.protein_grams`, `daily_checkins.fat_grams`, and `daily_checkins.carb_grams`. For multiple servings of one saved recipe, multiply the recipe macros and put the serving count in `item_name`, such as `Bread x3`.
 
 ```bash
 curl -sS -X POST "$SIAN_OS_URL/api/checkins" \
@@ -126,7 +126,7 @@ This state is for cadence only. Do not store daily logs, coaching advice, creden
 
 ## Agent daily loop
 
-For daily logging, parse natural language food items into `/api/nutrition-entries` rows, then verify by date. Use `/api/checkins` for non-food daily facts such as sleep, water, waist, weight, notes, and workout text. Check saved recipes by name and aliases before estimating item calories, protein, fats, or carbs; saved recipe values override estimates when the logged item clearly matches. Estimate fats and carbs only when the food context is sufficient. Use profile `calorie_goal` and `protein_goal` to calculate remaining daily intake. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
+For daily logging, parse natural language food items into `/api/nutrition-entries` rows, then verify by date. Use `/api/checkins` for non-food daily facts such as sleep, water, waist, weight, notes, and workout text. Check saved recipes by name and aliases before estimating item calories, protein, fats, or carbs; saved recipe values override estimates when the logged item clearly matches. Multiply saved recipe macros when the owner states multiple servings and label the row with the count, such as `Bread x3`. Estimate fats and carbs only when the food context is sufficient. Use profile `calorie_goal` and `protein_goal` to calculate remaining daily intake. For analysis, fetch recent check-ins and use the latest completed/logged day unless the owner specifies another date. Include weekly analysis only through the cadence rule above.
 
 ## Agent safety rules
 

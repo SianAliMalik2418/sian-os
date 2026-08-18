@@ -240,7 +240,7 @@ When logging nutrition:
 
 - first check Sian OS saved recipes by name and aliases;
 - if a logged food clearly matches a saved recipe, use the saved calories, protein, fats, and carbs instead of estimating;
-- multiply saved values when Sian states multiple servings;
+- multiply saved values when Sian states multiple servings, and label the nutrition row with the count such as `Bread x3`;
 - estimate only foods or servings that are not covered by saved recipes;
 - if the match or serving is ambiguous, state the assumption or ask for clarification instead of silently guessing.
 

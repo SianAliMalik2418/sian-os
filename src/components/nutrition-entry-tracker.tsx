@@ -8,6 +8,7 @@ import { Field, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
+import { groupedNutritionEntries } from '@/lib/nutrition-entries'
 import type { DailyCheckin, NutritionEntry } from '@/lib/types'
 
 export function NutritionEntryTracker({ date, initialEntries, calorieGoal, proteinGoal, compact = false, onCheckinChange }: {
@@ -122,17 +123,17 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     await addEntry()
   }
 
-  async function deleteEntry(entry: NutritionEntry) {
+  async function deleteEntry(entryId: number, itemName: string) {
     setSaving(true)
     setError(undefined)
     try {
-      const response = await fetch(`/api/nutrition-entries/${entry.id}`, { method: 'DELETE' })
+      const response = await fetch(`/api/nutrition-entries/${entryId}`, { method: 'DELETE' })
       const result = await response.json() as { data?: { checkin?: DailyCheckin }; error?: { message?: string } }
       if (!response.ok || !result.data?.checkin) throw new Error(result.error?.message || 'Could not delete food item')
-      setEntries((current) => current.filter((item) => item.id !== entry.id))
+      setEntries((current) => current.filter((item) => item.id !== entryId))
       onCheckinChange?.(result.data.checkin)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not delete food item')
+      setError(caught instanceof Error ? caught.message : `Could not delete ${itemName}`)
     } finally {
       setSaving(false)
     }
@@ -144,6 +145,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   }
 
   const entryFields = <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} fats={fats} carbs={carbs} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} onFatsChange={setFats} onCarbsChange={setCarbs} />
+  const groupedEntries = groupedNutritionEntries(entries)
 
   const body = (
     <div className="space-y-4">
@@ -161,15 +163,15 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
         </div>
       ) : null}
 
-      {entries.length ? (
+      {groupedEntries.length ? (
         <div className="divide-y rounded-lg border">
-          {entries.map((entry) => (
-            <div key={entry.id} className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2 text-sm">
+          {groupedEntries.map((entry) => (
+            <div key={entry.ids.join('-')} className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2 text-sm">
               <div className="min-w-0">
-                <p className="truncate font-medium">{entry.item_name}</p>
+                <p className="truncate font-medium">{entry.item_name}{entry.quantity > 1 ? ` x${entry.quantity}` : ''}</p>
                 <p className="text-muted-foreground">{entry.calories} kcal · {entry.protein_grams} g protein · {entry.fat_grams} g fat · {entry.carb_grams} g carbs</p>
               </div>
-              <Button type="button" variant="ghost" size="icon" aria-label={`Delete ${entry.item_name}`} onClick={() => deleteEntry(entry)} disabled={saving}><Trash2 className="size-4" /></Button>
+              <Button type="button" variant="ghost" size="icon" aria-label={`Delete one ${entry.item_name}`} onClick={() => deleteEntry(entry.ids.at(-1) ?? entry.ids[0], entry.item_name)} disabled={saving}><Trash2 className="size-4" /></Button>
             </div>
           ))}
         </div>

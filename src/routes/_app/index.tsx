@@ -79,16 +79,16 @@ function Dashboard() {
         </CardPanel>
       </Card>
 
+      <NutritionEntryTracker date={todayIso} initialEntries={data.nutritionEntries} calorieGoal={calorieGoal} proteinGoal={proteinGoal} onCheckinChange={async (nextCheckin) => {
+        setCheckin(nextCheckin)
+        await router.invalidate()
+      }} />
+
       <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
         {metrics.map(({ label, value, icon: Icon }) => (
           <Card key={label}><CardHeader><CardDescription>{label}</CardDescription><CardAction><Icon className="size-5 text-primary" /></CardAction><CardTitle className="text-2xl">{value}</CardTitle></CardHeader></Card>
         ))}
       </section>
-
-      <NutritionEntryTracker date={todayIso} initialEntries={data.nutritionEntries} calorieGoal={calorieGoal} proteinGoal={proteinGoal} onCheckinChange={async (nextCheckin) => {
-        setCheckin(nextCheckin)
-        await router.invalidate()
-      }} />
     </div>
   )
 }
