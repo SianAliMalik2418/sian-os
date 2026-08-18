@@ -23,6 +23,12 @@ export function nutritionEntryFromRecipe(recipe: Recipe, date: string, quantity 
   }
 }
 
+export function nutritionEntriesFromRecipes(recipes: Recipe[], date: string, selectedIds: Set<number>, quantities: Record<number, number>): NutritionEntryInput[] {
+  return recipes
+    .filter((recipe) => selectedIds.has(recipe.id))
+    .map((recipe) => nutritionEntryFromRecipe(recipe, date, quantities[recipe.id] || 1))
+}
+
 export function groupedNutritionEntries(entries: NutritionEntry[]): GroupedNutritionEntry[] {
   const groups = new Map<string, GroupedNutritionEntry>()
 

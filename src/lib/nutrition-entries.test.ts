@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { groupedNutritionEntries, nutritionEntryFromRecipe } from './nutrition-entries'
+import { groupedNutritionEntries, nutritionEntriesFromRecipes, nutritionEntryFromRecipe } from './nutrition-entries'
 import type { NutritionEntry, Recipe } from './types'
 
 const recipe: Recipe = {
@@ -57,6 +57,37 @@ describe('nutrition entry helpers', () => {
         protein_grams: 6,
         fat_grams: 5,
         carb_grams: 1,
+      },
+    ])
+  })
+
+  it('builds rows for selected recipes with their quantities', () => {
+    const aloo = {
+      ...recipe,
+      id: 13,
+      name: 'Aloo Bhuji',
+      calories: 500,
+      protein_grams: 10,
+      fat_grams: 20,
+      carb_grams: 72,
+    }
+
+    expect(nutritionEntriesFromRecipes([recipe, aloo], '2026-08-17', new Set([12, 13]), { 12: 2, 13: 1 })).toEqual([
+      {
+        date: '2026-08-17',
+        item_name: 'Egg x2',
+        calories: 200,
+        protein_grams: 12,
+        fat_grams: 10,
+        carb_grams: 2,
+      },
+      {
+        date: '2026-08-17',
+        item_name: 'Aloo Bhuji',
+        calories: 500,
+        protein_grams: 10,
+        fat_grams: 20,
+        carb_grams: 72,
       },
     ])
   })

@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Minus, Pencil, Plus, Save, Search, Trash2, Utensils, X } from 'lucide-react'
+import { MoreHorizontal, Minus, Pencil, Plus, Save, Search, Trash2, Utensils, X } from 'lucide-react'
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import { Dialog, DialogClose, DialogDescription, DialogFooter, DialogHeader, Dia
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Menu, MenuItem, MenuPopup, MenuSeparator, MenuTrigger } from '@/components/ui/menu'
 import { Textarea } from '@/components/ui/textarea'
 import { getRecipesData } from '@/lib/app.functions'
 import { nutritionEntryFromRecipe } from '@/lib/nutrition-entries'
@@ -213,13 +214,36 @@ function RecipeCard({ recipe, quantity, logging, onQuantityChange, onLog, onEdit
   return (
     <Card>
       <CardHeader>
-        <div>
+        <div className="min-w-0 pr-2">
           <CardTitle>{recipe.name}</CardTitle>
           <CardDescription>{recipe.serving_description || recipe.category || 'Saved recipe'}</CardDescription>
         </div>
-        <CardAction><Badge variant="info">{recipe.protein_grams}g protein</Badge></CardAction>
+        <CardAction>
+          <Menu>
+            <MenuTrigger render={<Button type="button" variant="ghost" size="icon" aria-label={`${recipe.name} actions`} />}>
+              <MoreHorizontal />
+            </MenuTrigger>
+            <MenuPopup align="end">
+              <MenuItem onClick={onLog} disabled={logging}><Utensils /> Log today</MenuItem>
+              <MenuItem onClick={onEdit}><Pencil /> Edit</MenuItem>
+              <MenuSeparator />
+              <MenuItem variant="destructive" onClick={onDelete}><Trash2 /> Delete</MenuItem>
+            </MenuPopup>
+          </Menu>
+        </CardAction>
       </CardHeader>
       <CardPanel className="space-y-4">
+        <div className="flex flex-col gap-3 rounded-xl border bg-secondary/20 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <Badge variant="info">{recipe.protein_grams * quantity}g protein</Badge>
+            <p className="text-xs text-muted-foreground">Macros shown for selected quantity.</p>
+          </div>
+          <div className="grid w-full grid-cols-[2.5rem_minmax(5rem,1fr)_2.5rem] items-center rounded-lg border bg-background p-1 sm:w-44" aria-label={`${recipe.name} quantity`}>
+            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity - 1)} disabled={quantity <= 1}><Minus /></Button>
+            <Input nativeInput type="number" min="1" max="20" step="1" inputMode="numeric" aria-label={`${recipe.name} quantity value`} value={quantity} onChange={(event) => onQuantityChange(Number(event.target.value) || 1)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
+            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity + 1)}><Plus /></Button>
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Metric label="Calories" value={`${recipe.calories * quantity} kcal`} />
           <Metric label="Protein" value={`${recipe.protein_grams * quantity} g`} />
@@ -229,18 +253,6 @@ function RecipeCard({ recipe, quantity, logging, onQuantityChange, onLog, onEdit
         </div>
         {recipe.ingredients && <p className="line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{recipe.ingredients}</p>}
         {recipe.aliases && <p className="text-xs text-muted-foreground">Also: {recipe.aliases}</p>}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-1 rounded-lg border bg-background p-1" aria-label={`${recipe.name} quantity`}>
-            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity - 1)} disabled={quantity <= 1}><Minus /></Button>
-            <Input nativeInput type="number" min="1" max="20" step="1" inputMode="numeric" aria-label={`${recipe.name} quantity value`} value={quantity} onChange={(event) => onQuantityChange(Number(event.target.value) || 1)} className="h-7 w-12 px-1 text-center text-sm tabular-nums" />
-            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity + 1)}><Plus /></Button>
-          </div>
-          <div className="flex flex-wrap justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={onLog} loading={logging}><Utensils /> Log today</Button>
-          <Button type="button" variant="outline" onClick={onEdit}><Pencil /> Edit</Button>
-          <Button type="button" variant="destructive" onClick={onDelete}><Trash2 /> Delete</Button>
-          </div>
-        </div>
       </CardPanel>
     </Card>
   )

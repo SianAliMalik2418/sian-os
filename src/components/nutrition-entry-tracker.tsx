@@ -1,15 +1,30 @@
-import { Plus, Trash2, Utensils } from 'lucide-react'
-import { useEffect, useState, type FormEvent } from 'react'
+import { Minus, Plus, Save, Trash2, Utensils } from 'lucide-react'
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogPopup, DialogTitle } from '@/components/ui/dialog'
-import { Field, FieldLabel } from '@/components/ui/field'
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { groupedNutritionEntries } from '@/lib/nutrition-entries'
-import type { DailyCheckin, NutritionEntry } from '@/lib/types'
+import { Textarea } from '@/components/ui/textarea'
+import { groupedNutritionEntries, nutritionEntriesFromRecipes } from '@/lib/nutrition-entries'
+import type { DailyCheckin, NutritionEntry, Recipe } from '@/lib/types'
+
+const emptyRecipeValues = {
+  name: '',
+  aliases: '',
+  category: '',
+  serving_description: '',
+  calories: '',
+  protein_grams: '',
+  fat_grams: '',
+  carb_grams: '',
+  ingredients: '',
+  notes: '',
+}
 
 export function NutritionEntryTracker({ date, initialEntries, calorieGoal, proteinGoal, compact = false, onCheckinChange }: {
   date: string
@@ -25,6 +40,14 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   const [protein, setProtein] = useState('')
   const [fats, setFats] = useState('')
   const [carbs, setCarbs] = useState('')
+  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [recipesLoading, setRecipesLoading] = useState(false)
+  const [recipesLoaded, setRecipesLoaded] = useState(false)
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<number>>(new Set())
+  const [recipeQuantities, setRecipeQuantities] = useState<Record<number, number>>({})
+  const [recipeDialogOpen, setRecipeDialogOpen] = useState(false)
+  const [recipeValues, setRecipeValues] = useState<Record<string, string>>(emptyRecipeValues)
+  const [recipeSaving, setRecipeSaving] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string>()
   const [addOpen, setAddOpen] = useState(false)
@@ -57,6 +80,38 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       isCurrent = false
     }
   }, [date, initialEntries])
+
+  useEffect(() => {
+    if (!addOpen || compact || recipesLoaded || recipesLoading) return
+    void loadRecipes()
+  }, [addOpen, compact, recipesLoaded, recipesLoading])
+
+  const groupedEntries = groupedNutritionEntries(entries)
+  const selectedRecipes = useMemo(() => recipes.filter((recipe) => selectedRecipeIds.has(recipe.id)), [recipes, selectedRecipeIds])
+  const selectedTotals = selectedRecipes.reduce((totals, recipe) => {
+    const quantity = recipeQuantities[recipe.id] || 1
+    totals.calories += recipe.calories * quantity
+    totals.protein += recipe.protein_grams * quantity
+    totals.fats += recipe.fat_grams * quantity
+    totals.carbs += recipe.carb_grams * quantity
+    return totals
+  }, { calories: 0, protein: 0, fats: 0, carbs: 0 })
+
+  async function loadRecipes() {
+    setRecipesLoading(true)
+    setError(undefined)
+    try {
+      const response = await fetch('/api/recipes')
+      const result = await response.json() as { data?: Recipe[]; error?: { message?: string } }
+      if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not load recipes')
+      setRecipes(result.data)
+      setRecipesLoaded(true)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not load recipes')
+    } finally {
+      setRecipesLoading(false)
+    }
+  }
 
   async function addEntry() {
     const parsedCalories = Number(calories)
@@ -110,9 +165,45 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       setProtein('')
       setFats('')
       setCarbs('')
-      if (!compact) setAddOpen(false)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not save food item')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function saveSelectedRecipes() {
+    if (!selectedRecipeIds.size) {
+      setError('Select at least one recipe')
+      return
+    }
+
+    setSaving(true)
+    setError(undefined)
+    try {
+      const payloads = nutritionEntriesFromRecipes(recipes, date, selectedRecipeIds, recipeQuantities)
+      const savedEntries: NutritionEntry[] = []
+      let latestCheckin: DailyCheckin | undefined
+
+      for (const payload of payloads) {
+        const response = await fetch('/api/nutrition-entries', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        const result = await response.json() as { data?: { entry?: NutritionEntry; checkin?: DailyCheckin }; error?: { message?: string } }
+        if (!response.ok || !result.data?.entry || !result.data.checkin) throw new Error(result.error?.message || `Could not log ${payload.item_name}`)
+        savedEntries.push(result.data.entry)
+        latestCheckin = result.data.checkin
+      }
+
+      setEntries((current) => [...current, ...savedEntries])
+      if (latestCheckin) onCheckinChange?.(latestCheckin)
+      setSelectedRecipeIds(new Set())
+      setRecipeQuantities({})
+      setAddOpen(false)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not save selected recipes')
     } finally {
       setSaving(false)
     }
@@ -121,6 +212,43 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     await addEntry()
+  }
+
+  async function submitRecipe(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setRecipeSaving(true)
+    setError(undefined)
+    try {
+      const response = await fetch('/api/recipes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: recipeValues.name,
+          aliases: recipeValues.aliases || undefined,
+          category: recipeValues.category || undefined,
+          serving_description: recipeValues.serving_description || undefined,
+          calories: Number(recipeValues.calories),
+          protein_grams: Number(recipeValues.protein_grams),
+          fat_grams: recipeValues.fat_grams === '' ? undefined : Number(recipeValues.fat_grams),
+          carb_grams: recipeValues.carb_grams === '' ? undefined : Number(recipeValues.carb_grams),
+          ingredients: recipeValues.ingredients || undefined,
+          notes: recipeValues.notes || undefined,
+        }),
+      })
+      const result = await response.json() as { data?: Recipe; error?: { message?: string } }
+      if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not save recipe')
+      const saved = result.data
+      setRecipes((current) => [...current, saved].sort((a, b) => a.name.localeCompare(b.name)))
+      setRecipesLoaded(true)
+      setSelectedRecipeIds((current) => new Set(current).add(saved.id))
+      setRecipeQuantities((current) => ({ ...current, [saved.id]: 1 }))
+      setRecipeValues(emptyRecipeValues)
+      setRecipeDialogOpen(false)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not save recipe')
+    } finally {
+      setRecipeSaving(false)
+    }
   }
 
   async function deleteEntry(entryId: number, itemName: string) {
@@ -144,8 +272,25 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     setAddOpen(true)
   }
 
+  function setRecipeSelected(recipeId: number, selected: boolean) {
+    setSelectedRecipeIds((current) => {
+      const next = new Set(current)
+      if (selected) next.add(recipeId)
+      else next.delete(recipeId)
+      return next
+    })
+    if (selected) setRecipeQuantities((current) => ({ ...current, [recipeId]: current[recipeId] || 1 }))
+  }
+
+  function setRecipeQuantity(recipeId: number, quantity: number) {
+    setRecipeQuantities((current) => ({ ...current, [recipeId]: Math.max(1, Math.min(20, quantity)) }))
+  }
+
+  function updateRecipeValue(name: string, value: string) {
+    setRecipeValues((current) => ({ ...current, [name]: value }))
+  }
+
   const entryFields = <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} fats={fats} carbs={carbs} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} onFatsChange={setFats} onCarbsChange={setCarbs} />
-  const groupedEntries = groupedNutritionEntries(entries)
 
   const body = (
     <div className="space-y-4">
@@ -157,7 +302,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       </div>
 
       {compact ? (
-        <div className="grid gap-3 lg:grid-cols-[1fr_7rem_7rem_7rem_7rem_auto]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(12rem,1fr)_7rem_7rem_7rem_7rem_auto]">
           {entryFields}
           <Button type="button" loading={saving} className="self-end" onClick={addEntry}>Add</Button>
         </div>
@@ -196,23 +341,72 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       </Card>
 
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogPopup className="max-w-xl">
-          <Form onSubmit={submit} className="flex min-h-0 flex-col">
+        <DialogPopup className="max-w-3xl">
+          <div className="flex min-h-0 flex-col">
             <DialogHeader>
               <DialogTitle>Add food</DialogTitle>
-              <DialogDescription>Record one item with calories and macros for today.</DialogDescription>
+              <DialogDescription>Select saved recipes and set quantities for today.</DialogDescription>
             </DialogHeader>
-            <DialogPanel className="grid gap-4">
-              <div className="grid gap-3 sm:grid-cols-2">{entryFields}</div>
+            <DialogPanel className="space-y-4">
+              <div className="flex flex-col gap-2 rounded-xl border bg-secondary/20 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium">Selected: {selectedRecipeIds.size}</p>
+                  <p className="text-xs text-muted-foreground">{selectedTotals.calories} kcal · {selectedTotals.protein} g protein · {selectedTotals.fats} g fat · {selectedTotals.carbs} g carbs</p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={() => setRecipeDialogOpen(true)}><Plus /> New recipe</Button>
+              </div>
+
+              {recipesLoading ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">Loading recipes...</p> : null}
+
+              {!recipesLoading && recipes.length ? (
+                <div className="grid max-h-[52vh] gap-3 overflow-y-auto pr-1">
+                  {recipes.map((recipe) => {
+                    const selected = selectedRecipeIds.has(recipe.id)
+                    const quantity = recipeQuantities[recipe.id] || 1
+                    return (
+                      <div key={recipe.id} className="grid gap-3 rounded-xl border bg-background p-3 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+                        <Checkbox checked={selected} onCheckedChange={(checked) => setRecipeSelected(recipe.id, checked === true)} aria-label={`Select ${recipe.name}`} />
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium">{recipe.name}</p>
+                            {recipe.category && <Badge variant="secondary">{recipe.category}</Badge>}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{recipe.serving_description || '1 serving'} · {recipe.calories * quantity} kcal · {recipe.protein_grams * quantity} g protein · {recipe.fat_grams * quantity} g fat · {recipe.carb_grams * quantity} g carbs</p>
+                        </div>
+                        <QuantityControl
+                          label={`${recipe.name} quantity`}
+                          value={quantity}
+                          disabled={!selected}
+                          onChange={(next) => {
+                            setRecipeSelected(recipe.id, true)
+                            setRecipeQuantity(recipe.id, next)
+                          }}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : null}
+
+              {!recipesLoading && !recipes.length ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">No saved recipes yet. Create one here, then log it today.</p> : null}
               {error && <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
             </DialogPanel>
             <DialogFooter>
               <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
-              <Button type="submit" loading={saving}><Utensils /> Save food</Button>
+              <Button type="button" loading={saving} onClick={saveSelectedRecipes}><Utensils /> Log selected</Button>
             </DialogFooter>
-          </Form>
+          </div>
         </DialogPopup>
       </Dialog>
+
+      <RecipeCreateDialog
+        open={recipeDialogOpen}
+        values={recipeValues}
+        saving={recipeSaving}
+        onOpenChange={setRecipeDialogOpen}
+        onUpdate={updateRecipeValue}
+        onSubmit={submitRecipe}
+      />
     </>
   )
 }
@@ -238,6 +432,69 @@ function NutritionEntryFields({ itemName, calories, protein, fats, carbs, onItem
       <Field><FieldLabel>Carbs</FieldLabel><Input nativeInput type="number" min="0" step="1" inputMode="numeric" value={carbs} onChange={(event) => onCarbsChange(event.target.value)} placeholder="1" /></Field>
     </>
   )
+}
+
+function QuantityControl({ label, value, disabled, onChange }: {
+  label: string
+  value: number
+  disabled?: boolean
+  onChange: (value: number) => void
+}) {
+  return (
+    <div className="grid w-full grid-cols-[2.5rem_minmax(4.5rem,1fr)_2.5rem] items-center rounded-lg border bg-background p-1 sm:w-40" aria-label={label}>
+      <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${label}`} onClick={() => onChange(value - 1)} disabled={disabled || value <= 1}><Minus /></Button>
+      <Input nativeInput type="number" min="1" max="20" step="1" inputMode="numeric" aria-label={`${label} value`} value={value} disabled={disabled} onChange={(event) => onChange(Number(event.target.value) || 1)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
+      <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${label}`} onClick={() => onChange(value + 1)} disabled={disabled}><Plus /></Button>
+    </div>
+  )
+}
+
+function RecipeCreateDialog({ open, values, saving, onOpenChange, onUpdate, onSubmit }: {
+  open: boolean
+  values: Record<string, string>
+  saving: boolean
+  onOpenChange: (open: boolean) => void
+  onUpdate: (name: string, value: string) => void
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogPopup className="max-w-2xl">
+        <Form onSubmit={onSubmit} className="flex min-h-0 flex-col">
+          <DialogHeader>
+            <DialogTitle>New recipe</DialogTitle>
+            <DialogDescription>Save macros for one normal serving, then log it from the selected list.</DialogDescription>
+          </DialogHeader>
+          <DialogPanel className="grid gap-4">
+            <RecipeField label="Name"><Input nativeInput required value={values.name} onChange={(event) => onUpdate('name', event.target.value)} placeholder="Egg" /></RecipeField>
+            <RecipeField label="Aliases" description="Comma-separated names the agent may see">
+              <Input nativeInput value={values.aliases} onChange={(event) => onUpdate('aliases', event.target.value)} placeholder="anda, boiled egg" />
+            </RecipeField>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <RecipeField label="Calories"><Input nativeInput required type="number" min="0" max="20000" step="1" inputMode="numeric" value={values.calories} onChange={(event) => onUpdate('calories', event.target.value)} /></RecipeField>
+              <RecipeField label="Protein"><Input nativeInput required type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.protein_grams} onChange={(event) => onUpdate('protein_grams', event.target.value)} /></RecipeField>
+              <RecipeField label="Fats"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.fat_grams} onChange={(event) => onUpdate('fat_grams', event.target.value)} /></RecipeField>
+              <RecipeField label="Carbs"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.carb_grams} onChange={(event) => onUpdate('carb_grams', event.target.value)} /></RecipeField>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <RecipeField label="Serving"><Input nativeInput value={values.serving_description} onChange={(event) => onUpdate('serving_description', event.target.value)} placeholder="1 egg, 1 plate, 1 bowl" /></RecipeField>
+              <RecipeField label="Category"><Input nativeInput value={values.category} onChange={(event) => onUpdate('category', event.target.value)} placeholder="Snack, dish, drink" /></RecipeField>
+            </div>
+            <RecipeField label="Ingredients"><Textarea rows={4} value={values.ingredients} onChange={(event) => onUpdate('ingredients', event.target.value)} placeholder="Egg, salt..." /></RecipeField>
+            <RecipeField label="Notes"><Textarea rows={3} value={values.notes} onChange={(event) => onUpdate('notes', event.target.value)} placeholder="Usual home portion..." /></RecipeField>
+          </DialogPanel>
+          <DialogFooter>
+            <DialogClose render={<Button type="button" variant="outline" disabled={saving} />}>Cancel</DialogClose>
+            <Button type="submit" loading={saving}><Save /> Save recipe</Button>
+          </DialogFooter>
+        </Form>
+      </DialogPopup>
+    </Dialog>
+  )
+}
+
+function RecipeField({ label, description, children }: { label: string; description?: string; children: ReactNode }) {
+  return <Field><FieldLabel>{label}</FieldLabel>{children}{description && <FieldDescription>{description}</FieldDescription>}</Field>
 }
 
 function NutritionTotal({ label, value, goal, unit }: { label: string; value: number; goal?: number; unit: string }) {
