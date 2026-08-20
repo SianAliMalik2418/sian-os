@@ -12,15 +12,20 @@ export interface GroupedNutritionEntry {
 }
 
 export function nutritionEntryFromRecipe(recipe: Recipe, date: string, quantity = 1): NutritionEntryInput {
-  const servings = Math.max(1, Math.round(quantity))
+  const servings = Number.isFinite(quantity) ? Math.max(0.25, quantity) : 1
+  const label = formatServingCount(servings)
   return {
     date,
-    item_name: servings > 1 ? `${recipe.name} x${servings}` : recipe.name,
-    calories: recipe.calories * servings,
-    protein_grams: recipe.protein_grams * servings,
-    fat_grams: recipe.fat_grams * servings,
-    carb_grams: recipe.carb_grams * servings,
+    item_name: servings === 1 ? recipe.name : `${recipe.name} x${label}`,
+    calories: Math.round(recipe.calories * servings),
+    protein_grams: Math.round(recipe.protein_grams * servings),
+    fat_grams: Math.round(recipe.fat_grams * servings),
+    carb_grams: Math.round(recipe.carb_grams * servings),
   }
+}
+
+function formatServingCount(servings: number) {
+  return Number.isInteger(servings) ? String(servings) : servings.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
 }
 
 export function nutritionEntriesFromRecipes(recipes: Recipe[], date: string, selectedIds: Set<number>, quantities: Record<number, number>): NutritionEntryInput[] {

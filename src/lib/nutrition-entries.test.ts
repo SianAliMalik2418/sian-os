@@ -32,6 +32,17 @@ describe('nutrition entry helpers', () => {
     })
   })
 
+  it('keeps decimal saved recipe servings in the logged row', () => {
+    expect(nutritionEntryFromRecipe(recipe, '2026-08-17', 1.5)).toEqual({
+      date: '2026-08-17',
+      item_name: 'Egg x1.5',
+      calories: 150,
+      protein_grams: 9,
+      fat_grams: 8,
+      carb_grams: 2,
+    })
+  })
+
   it('groups repeated item rows by name and per-serving macros', () => {
     const entries: NutritionEntry[] = [
       entry({ id: 1, item_name: 'Bread', calories: 100, protein_grams: 4, fat_grams: 1, carb_grams: 20 }),

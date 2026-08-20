@@ -79,7 +79,7 @@ function RecipesPage() {
   }
 
   function setRecipeQuantity(recipeId: number, quantity: number) {
-    setQuantities((current) => ({ ...current, [recipeId]: Math.max(1, Math.min(20, quantity)) }))
+    setQuantities((current) => ({ ...current, [recipeId]: Math.max(0.25, Math.min(20, quantity)) }))
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -237,9 +237,9 @@ function RecipeCard({ recipe, quantity, logging, onQuantityChange, onLog, onEdit
             <p className="text-xs text-muted-foreground">Macros shown for selected quantity.</p>
           </div>
           <div className="grid w-full grid-cols-[2.5rem_minmax(5rem,1fr)_2.5rem] items-center rounded-lg border bg-background p-1 sm:w-44" aria-label={`${recipe.name} quantity`}>
-            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity - 1)} disabled={quantity <= 1}><Minus /></Button>
-            <Input nativeInput type="number" min="1" max="20" step="1" inputMode="numeric" aria-label={`${recipe.name} quantity value`} value={quantity} onChange={(event) => onQuantityChange(Number(event.target.value) || 1)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
-            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity + 1)}><Plus /></Button>
+            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity - 0.25)} disabled={quantity <= 0.25}><Minus /></Button>
+            <Input nativeInput type="number" min="0.25" max="20" step="0.25" inputMode="decimal" aria-label={`${recipe.name} quantity value`} value={quantity} onChange={(event) => onQuantityChange(Number(event.target.value) || 1)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
+            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity + 0.25)}><Plus /></Button>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">

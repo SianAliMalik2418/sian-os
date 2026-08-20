@@ -289,7 +289,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   }
 
   function setRecipeQuantity(recipeId: number, quantity: number) {
-    setRecipeQuantities((current) => ({ ...current, [recipeId]: Math.max(1, Math.min(20, quantity)) }))
+    setRecipeQuantities((current) => ({ ...current, [recipeId]: Math.max(0.25, Math.min(20, quantity)) }))
   }
 
   function updateRecipeValue(name: string, value: string) {
@@ -454,9 +454,9 @@ function QuantityControl({ label, value, disabled, onChange }: {
 }) {
   return (
     <div className="grid w-full grid-cols-[2.5rem_minmax(4.5rem,1fr)_2.5rem] items-center rounded-lg border bg-background p-1 sm:w-40" aria-label={label}>
-      <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${label}`} onClick={() => onChange(value - 1)} disabled={disabled || value <= 1}><Minus /></Button>
-      <Input nativeInput type="number" min="1" max="20" step="1" inputMode="numeric" aria-label={`${label} value`} value={value} disabled={disabled} onChange={(event) => onChange(Number(event.target.value) || 1)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
-      <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${label}`} onClick={() => onChange(value + 1)} disabled={disabled}><Plus /></Button>
+      <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${label}`} onClick={() => onChange(value - 0.25)} disabled={disabled || value <= 0.25}><Minus /></Button>
+      <Input nativeInput type="number" min="0.25" max="20" step="0.25" inputMode="decimal" aria-label={`${label} value`} value={value} disabled={disabled} onChange={(event) => onChange(Number(event.target.value) || 1)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
+      <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${label}`} onClick={() => onChange(value + 0.25)} disabled={disabled}><Plus /></Button>
     </div>
   )
 }

@@ -27,6 +27,8 @@ export async function handleApi(handler: () => Response | Promise<Response>) {
   } catch (error) {
     if (error instanceof Response) return error
     if (error instanceof HttpError) return apiError(error.status, error.code, error.message, error.details)
+    const databaseError = databaseConstraintError(error)
+    if (databaseError) return apiError(databaseError.status, databaseError.code, databaseError.message, databaseError.details)
     if (error instanceof ZodError) return apiError(400, 'VALIDATION_ERROR', 'Request validation failed', error.flatten())
     if (error instanceof SyntaxError) return apiError(400, 'INVALID_JSON', 'Request body must be valid JSON')
     console.error(error)
@@ -36,4 +38,29 @@ export async function handleApi(handler: () => Response | Promise<Response>) {
 
 export async function readJson(request: Request) {
   return request.json()
+}
+
+function databaseConstraintError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+  if (!message.includes('UNIQUE constraint failed')) return null
+
+  if (message.includes('recipes.name')) {
+    return {
+      status: 409,
+      code: 'DUPLICATE_RECIPE',
+      message: 'A recipe with this name already exists',
+      details: {
+        fieldErrors: {
+          name: ['Use a different recipe name.'],
+        },
+      },
+    }
+  }
+
+  return {
+    status: 409,
+    code: 'DUPLICATE_RECORD',
+    message: 'A record with these values already exists',
+    details: undefined,
+  }
 }
