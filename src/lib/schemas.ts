@@ -15,10 +15,10 @@ export const checkinSchema = z.object({
   waist_inches: z.number().positive().max(200).optional(),
   sleep_hours: z.number().min(0).max(24).optional(),
   water_liters: z.number().min(0).max(30).optional(),
-  protein_grams: z.number().int().min(0).max(2000).optional(),
-  fat_grams: z.number().int().min(0).max(2000).optional(),
-  carb_grams: z.number().int().min(0).max(2000).optional(),
-  calories: z.number().int().min(0).max(20000).optional(),
+  protein_grams: z.number().min(0).max(2000).optional(),
+  fat_grams: z.number().min(0).max(2000).optional(),
+  carb_grams: z.number().min(0).max(2000).optional(),
+  calories: z.number().min(0).max(20000).optional(),
   nutrition_notes: optionalText,
   workout_text: optionalText,
   notes: optionalText,
@@ -42,10 +42,10 @@ export const profileSchema = z.object({
 export const nutritionEntrySchema = z.object({
   date,
   item_name: z.string().trim().min(1).max(200),
-  calories: z.number().int().min(0).max(20000),
-  protein_grams: z.number().int().min(0).max(2000).optional(),
-  fat_grams: z.number().int().min(0).max(2000).optional(),
-  carb_grams: z.number().int().min(0).max(2000).optional(),
+  calories: z.number().min(0).max(20000),
+  protein_grams: z.number().min(0).max(2000).optional(),
+  fat_grams: z.number().min(0).max(2000).optional(),
+  carb_grams: z.number().min(0).max(2000).optional(),
 }).strict()
 
 export const recipeSchema = z.object({

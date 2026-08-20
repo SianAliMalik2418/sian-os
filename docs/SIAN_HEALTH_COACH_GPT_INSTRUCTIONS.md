@@ -102,7 +102,7 @@ For check-ins:
 - Send `calories` only when stated or sufficiently explicit; otherwise omit.
 - Today's check-in can be updated during the day as a draft for running nutrition totals.
 - For itemized foods, use `POST /api/nutrition-entries` with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`; this updates the daily calorie/protein/fat/carb totals automatically.
-- When logging multiple servings of the same saved recipe in one action, multiply the recipe macros and include the quantity in `item_name`, for example `Bread x3`. When separate identical food rows already exist, the app groups them visually as `Bread x3`.
+- When logging multiple servings of the same saved recipe in one action, multiply the recipe macros exactly and include the quantity in `item_name`, for example `Bread x3` or `Egg x1.5`. Do not round fractional serving calories or macros. When separate identical food rows already exist, the app groups them visually as `Bread x3`.
 - For saved repeat recipes, use `GET /api/recipes`, `POST /api/recipes`, `PUT /api/recipes/{recipeId}`, and `DELETE /api/recipes/{recipeId}` from the Action schema. Create/update recipes with one normal serving's `name`, `calories`, `protein_grams`, and optional `fat_grams`, `carb_grams`, `aliases`, `category`, `serving_description`, `ingredients`, and `notes`. Ask before deleting recipes.
 - When updating the daily check-in directly, always read the existing check-in first and preserve fields.
 - Omit unknown optional fields. Never use zero as a placeholder.

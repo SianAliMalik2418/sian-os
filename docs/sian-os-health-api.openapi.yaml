@@ -519,19 +519,19 @@ components:
           minimum: 0
           maximum: 30
         protein_grams:
-          type: integer
+          type: number
           minimum: 0
           maximum: 2000
         fat_grams:
-          type: integer
+          type: number
           minimum: 0
           maximum: 2000
         carb_grams:
-          type: integer
+          type: number
           minimum: 0
           maximum: 2000
         calories:
-          type: integer
+          type: number
           minimum: 0
           maximum: 20000
           description: Optional estimated kcal. Omit if not stated.
@@ -627,19 +627,19 @@ components:
           maxLength: 200
           description: Food item or portion label, such as "egg", "2 rotis", or "Bread x3" for multiple servings of one saved recipe.
         calories:
-          type: integer
+          type: number
           minimum: 0
           maximum: 20000
         protein_grams:
-          type: integer
+          type: number
           minimum: 0
           maximum: 2000
         fat_grams:
-          type: integer
+          type: number
           minimum: 0
           maximum: 2000
         carb_grams:
-          type: integer
+          type: number
           minimum: 0
           maximum: 2000
       required:
@@ -655,11 +655,11 @@ components:
             id:
               type: integer
             protein_grams:
-              type: integer
+              type: number
             fat_grams:
-              type: integer
+              type: number
             carb_grams:
-              type: integer
+              type: number
             created_at:
               type: string
             updated_at:

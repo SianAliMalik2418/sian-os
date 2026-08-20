@@ -17,10 +17,10 @@ export function nutritionEntryFromRecipe(recipe: Recipe, date: string, quantity 
   return {
     date,
     item_name: servings === 1 ? recipe.name : `${recipe.name} x${label}`,
-    calories: Math.round(recipe.calories * servings),
-    protein_grams: Math.round(recipe.protein_grams * servings),
-    fat_grams: Math.round(recipe.fat_grams * servings),
-    carb_grams: Math.round(recipe.carb_grams * servings),
+    calories: recipe.calories * servings,
+    protein_grams: recipe.protein_grams * servings,
+    fat_grams: recipe.fat_grams * servings,
+    carb_grams: recipe.carb_grams * servings,
   }
 }
 

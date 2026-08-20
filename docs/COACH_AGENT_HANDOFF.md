@@ -160,7 +160,7 @@ There is deliberately no public arbitrary-SQL endpoint.
 
 Today's check-in may be used as a running draft. The Home page and Data Steward may update `calories`, `protein_grams`, `fat_grams`, and `carb_grams` during the day through itemized foods, as long as existing fields are preserved on every direct check-in upsert.
 
-Prefer itemized nutrition entries for foods. `POST /api/nutrition-entries` accepts one row with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`; the API automatically recalculates daily calorie/protein/fat/carb totals. For multiple servings of one saved recipe, multiply the recipe macros and label the row with the count, such as `Bread x3`.
+Prefer itemized nutrition entries for foods. `POST /api/nutrition-entries` accepts one row with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`; decimal values are allowed for fractional servings. The API automatically recalculates daily calorie/protein/fat/carb totals. For multiple servings of one saved recipe, multiply the recipe macros and label the row with the count, such as `Bread x3` or `Egg x1.5`.
 
 ```json
 {
@@ -185,10 +185,10 @@ Rules:
 - `waist_inches` is optional inches, greater than 0 and at most 200;
 - `sleep_hours` is optional numeric hours from 0 to 24;
 - `water_liters` is 0–30;
-- `protein_grams` is an integer from 0–2000;
-- `fat_grams` is an integer from 0–2000;
-- `carb_grams` is an integer from 0–2000;
-- `calories` is an optional integer from 0–20000;
+- `protein_grams` is a number from 0 to 2000;
+- `fat_grams` is a number from 0 to 2000;
+- `carb_grams` is a number from 0 to 2000;
+- `calories` is an optional number from 0 to 20000;
 - `nutrition_notes` is legacy optional text; do not use it for routine food logging;
 - `workout_text` is optional free text for reviewer-facing workout notes derived from Lyfta; Lyfta remains the detailed workout source of truth;
 - there are no readiness or mood fields;

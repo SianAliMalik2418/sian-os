@@ -85,16 +85,16 @@ Field notes:
 
 - `sleep_hours` is optional numeric hours slept, from 0 to 24.
 - `waist_inches` is an optional waist measurement in inches.
-- `protein_grams`, `fat_grams`, and `carb_grams` are optional integer gram totals, normally recalculated from itemized nutrition rows.
+- `protein_grams`, `fat_grams`, and `carb_grams` are optional numeric gram totals, normally recalculated from itemized nutrition rows.
 - `nutrition_notes` is a legacy free-text field; do not use it for routine food logging.
 - `workout_text` is free text for reviewer-facing workout notes derived from Lyfta. Lyfta remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, notes, and progression.
-- `calories` is an optional integer estimate in kcal.
+- `calories` is an optional numeric estimate in kcal.
 
 `DELETE /api/checkins?date=YYYY-MM-DD` permanently removes one daily check-in. Progress photos on that date are retained.
 
 ## Other writes
 
-- `POST /api/nutrition-entries` — add one food row with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`. This automatically updates the daily check-in nutrition totals.
+- `POST /api/nutrition-entries` — add one food row with `date`, `item_name`, `calories`, and optional `protein_grams`, `fat_grams`, and `carb_grams`. Decimal values are allowed for fractional servings. This automatically updates the daily check-in nutrition totals.
 - `DELETE /api/nutrition-entries/:id` — delete one food row and recalculate the daily totals.
 - `PUT /api/agent/state` — upsert limited agent state, currently only `{ "key": "last_weekly_report_date", "value": "YYYY-MM-DD" }`; send `null` to clear it.
 - `PUT /api/profile` — upsert profile fields, including `calorie_goal` and `protein_goal` for daily targets.

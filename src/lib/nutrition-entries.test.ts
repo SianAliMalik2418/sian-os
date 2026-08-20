@@ -38,8 +38,19 @@ describe('nutrition entry helpers', () => {
       item_name: 'Egg x1.5',
       calories: 150,
       protein_grams: 9,
-      fat_grams: 8,
-      carb_grams: 2,
+      fat_grams: 7.5,
+      carb_grams: 1.5,
+    })
+  })
+
+  it('does not round decimal macro totals from fractional servings', () => {
+    expect(nutritionEntryFromRecipe({ ...recipe, calories: 1, protein_grams: 1, fat_grams: 1, carb_grams: 1 }, '2026-08-17', 1.5)).toEqual({
+      date: '2026-08-17',
+      item_name: 'Egg x1.5',
+      calories: 1.5,
+      protein_grams: 1.5,
+      fat_grams: 1.5,
+      carb_grams: 1.5,
     })
   })
 

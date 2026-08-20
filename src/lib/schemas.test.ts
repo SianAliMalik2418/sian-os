@@ -19,6 +19,16 @@ describe('daily check-in schema', () => {
     })).toMatchObject({ date: '2026-07-30', waist_inches: 31.5, sleep_hours: 7.5, fat_grams: 70, carb_grams: 300 })
   })
 
+  it('accepts decimal daily nutrition totals from itemized foods', () => {
+    expect(checkinSchema.parse({
+      date: '2026-07-30',
+      protein_grams: 1.5,
+      fat_grams: 1.5,
+      carb_grams: 1.5,
+      calories: 1.5,
+    })).toMatchObject({ calories: 1.5, protein_grams: 1.5, fat_grams: 1.5, carb_grams: 1.5 })
+  })
+
   it.each(['sleep_time', 'wake_time', 'sleep_quality', 'energy', 'motivation', 'recovery', 'soreness', 'stress', 'mood'])('rejects removed field %s', (field) => {
     expect(() => checkinSchema.parse({ date: '2026-07-30', [field]: 5 })).toThrow()
   })
@@ -38,6 +48,17 @@ describe('nutrition entry schema', () => {
       fat_grams: 5,
       carb_grams: 1,
     })).toMatchObject({ item_name: 'Egg', calories: 100, protein_grams: 6, fat_grams: 5, carb_grams: 1 })
+  })
+
+  it('accepts decimal nutrition totals from fractional servings', () => {
+    expect(nutritionEntrySchema.parse({
+      date: '2026-08-16',
+      item_name: 'Tiny item x1.5',
+      calories: 1.5,
+      protein_grams: 1.5,
+      fat_grams: 1.5,
+      carb_grams: 1.5,
+    })).toMatchObject({ calories: 1.5, protein_grams: 1.5, fat_grams: 1.5, carb_grams: 1.5 })
   })
 })
 
