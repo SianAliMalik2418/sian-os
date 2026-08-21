@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Textarea } from '@/components/ui/textarea'
 import { groupedNutritionEntries, nutritionEntriesFromRecipes } from '@/lib/nutrition-entries'
+import { clampServingQuantity, servingQuantityFromInput } from '@/lib/servings'
 import type { DailyCheckin, NutritionEntry, Recipe } from '@/lib/types'
 
 const emptyRecipeValues = {
@@ -289,7 +290,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   }
 
   function setRecipeQuantity(recipeId: number, quantity: number) {
-    setRecipeQuantities((current) => ({ ...current, [recipeId]: Math.max(0.25, Math.min(20, quantity)) }))
+    setRecipeQuantities((current) => ({ ...current, [recipeId]: clampServingQuantity(quantity) }))
   }
 
   function updateRecipeValue(name: string, value: string) {
@@ -452,10 +453,26 @@ function QuantityControl({ label, value, disabled, onChange }: {
   disabled?: boolean
   onChange: (value: number) => void
 }) {
+  const [draft, setDraft] = useState(String(value))
+
+  useEffect(() => {
+    setDraft(String(value))
+  }, [value])
+
+  function updateDraft(nextDraft: string) {
+    setDraft(nextDraft)
+    const quantity = servingQuantityFromInput(nextDraft)
+    if (quantity !== undefined) onChange(quantity)
+  }
+
+  function resetBlankDraft() {
+    if (draft.trim() === '') setDraft(String(value))
+  }
+
   return (
     <div className="grid w-full grid-cols-[2.5rem_minmax(4.5rem,1fr)_2.5rem] items-center rounded-lg border bg-background p-1 sm:w-40" aria-label={label}>
       <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${label}`} onClick={() => onChange(value - 0.25)} disabled={disabled || value <= 0.25}><Minus /></Button>
-      <Input nativeInput type="number" min="0.25" max="20" step="0.25" inputMode="decimal" aria-label={`${label} value`} value={value} disabled={disabled} onChange={(event) => onChange(Number(event.target.value) || 1)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
+      <Input nativeInput type="number" min="0.25" max="20" step="0.25" inputMode="decimal" aria-label={`${label} value`} value={draft} disabled={disabled} onBlur={resetBlankDraft} onChange={(event) => updateDraft(event.target.value)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
       <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${label}`} onClick={() => onChange(value + 0.25)} disabled={disabled}><Plus /></Button>
     </div>
   )

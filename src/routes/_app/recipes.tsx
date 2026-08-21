@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { MoreHorizontal, Minus, Pencil, Plus, Save, Search, Trash2, Utensils, X } from 'lucide-react'
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
@@ -12,6 +12,7 @@ import { Menu, MenuItem, MenuPopup, MenuSeparator, MenuTrigger } from '@/compone
 import { Textarea } from '@/components/ui/textarea'
 import { getRecipesData } from '@/lib/app.functions'
 import { nutritionEntryFromRecipe } from '@/lib/nutrition-entries'
+import { clampServingQuantity, servingQuantityFromInput } from '@/lib/servings'
 import type { Recipe } from '@/lib/types'
 
 export const Route = createFileRoute('/_app/recipes')({
@@ -79,7 +80,7 @@ function RecipesPage() {
   }
 
   function setRecipeQuantity(recipeId: number, quantity: number) {
-    setQuantities((current) => ({ ...current, [recipeId]: Math.max(0.25, Math.min(20, quantity)) }))
+    setQuantities((current) => ({ ...current, [recipeId]: clampServingQuantity(quantity) }))
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -209,6 +210,22 @@ function RecipeCard({ recipe, quantity, logging, onQuantityChange, onLog, onEdit
   onEdit: () => void
   onDelete: () => void
 }) {
+  const [quantityDraft, setQuantityDraft] = useState(String(quantity))
+
+  useEffect(() => {
+    setQuantityDraft(String(quantity))
+  }, [quantity])
+
+  function updateQuantityDraft(nextDraft: string) {
+    setQuantityDraft(nextDraft)
+    const nextQuantity = servingQuantityFromInput(nextDraft)
+    if (nextQuantity !== undefined) onQuantityChange(nextQuantity)
+  }
+
+  function resetBlankQuantityDraft() {
+    if (quantityDraft.trim() === '') setQuantityDraft(String(quantity))
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -238,7 +255,7 @@ function RecipeCard({ recipe, quantity, logging, onQuantityChange, onLog, onEdit
           </div>
           <div className="grid w-full grid-cols-[2.5rem_minmax(5rem,1fr)_2.5rem] items-center rounded-lg border bg-background p-1 sm:w-44" aria-label={`${recipe.name} quantity`}>
             <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity - 0.25)} disabled={quantity <= 0.25}><Minus /></Button>
-            <Input nativeInput type="number" min="0.25" max="20" step="0.25" inputMode="decimal" aria-label={`${recipe.name} quantity value`} value={quantity} onChange={(event) => onQuantityChange(Number(event.target.value) || 1)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
+            <Input nativeInput type="number" min="0.25" max="20" step="0.25" inputMode="decimal" aria-label={`${recipe.name} quantity value`} value={quantityDraft} onBlur={resetBlankQuantityDraft} onChange={(event) => updateQuantityDraft(event.target.value)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
             <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity + 0.25)}><Plus /></Button>
           </div>
         </div>
