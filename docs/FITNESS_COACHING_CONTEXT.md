@@ -18,7 +18,7 @@ Use the following precedence when information conflicts:
 
 1. Sian's newest explicit statement or correction.
 2. Confirmed decisions recorded in this document.
-3. Current measured data in Sian OS or completed workout data in Lyfta.
+3. Current measured data in Sian OS, including Sian OS Lyfta-backed workout data.
 4. Historical baselines in this document.
 5. Coach suggestions, which are not decisions until Sian agrees.
 
@@ -30,7 +30,7 @@ When Sian and the coach agree to a new plan, exception, target, schedule, tool, 
 4. Separate confirmed facts from proposals and open questions.
 5. Never record passwords, API keys, authentication tokens, session cookies, or guessed health data here.
 
-Routine measurements and daily logs belong in Sian OS or Lyfta, not in this document. This document records the rules and meaning of those systems.
+Routine measurements and daily logs belong in Sian OS. Detailed workout records remain upstream in Lyfta, but agents should read them through Sian OS. This document records the rules and meaning of those systems.
 
 ## Personal context
 
@@ -93,8 +93,8 @@ Strict coaching means clear standards and honest consequences. It does not mean 
 
 - Confirmed restart date: Friday, 2026-08-07.
 - The former weekly split and re-entry prescription are superseded as active guidance.
-- The current workout routine, exercises, sets, reps, loads, and progression must be read from Lyfta.
-- If Lyfta does not expose the active planned routine through the available API, the coach must say that clearly instead of using the historical split.
+- The current workout routine, exercises, sets, reps, loads, and progression must be read through Sian OS Lyfta-backed workout data.
+- If the Sian OS Lyfta endpoint does not expose the active planned routine, the coach must say that clearly instead of using the historical split.
 
 On 2026-08-06, gym clothes, shoes, bag, water bottle, and alarm must be prepared before bed.
 
@@ -126,7 +126,7 @@ Anime or optional entertainment belongs before Isha/evening shutdown and may not
 
 ### Source of truth
 
-Lyfta is the authoritative source for:
+Lyfta is the upstream authoritative source for:
 
 - completed workouts;
 - exercises;
@@ -136,20 +136,20 @@ Lyfta is the authoritative source for:
 - workout notes recorded in Lyfta;
 - exercise history and strength progression.
 
-Sian OS is not the authoritative detailed workout tracker. Structured workout features have been removed from Sian OS and must not be reintroduced as a competing workout log unless Sian explicitly reverses this decision.
+Sian OS now provides a read-only Lyfta-backed workout view for agents and the app. This does not make Sian OS a competing workout tracker; Lyfta remains upstream authoritative unless Sian explicitly reverses this decision.
 
 Sian OS may store reviewer-facing workout notes in a daily check-in `workout_text` field. The daily logger should fetch the relevant Lyfta workout, summarize the useful workout details into `workout_text`, and preserve Lyfta as the authoritative record if there is any conflict.
 
 The workout-note summary in Sian OS should be concise enough for daily review and may include workout name, date, completion status, exercises, working sets or top sets, loads, reps, RPE/RIR when present, and relevant Lyfta notes. Do not store secrets, API keys, session cookies, or unnecessary private data in `workout_text`.
 
-Lyfta API access has been approved for workout retrieval. Store any Lyfta API key only as a secure runtime secret, such as `LYFTA_API_KEY`. Do not commit it, print it, put it in Sian OS payloads, or record it in this document. Verify the current Lyfta API route and response shape before implementation.
+Lyfta API access has been approved for workout retrieval through Sian OS. Store any Lyfta API key only as a secure runtime secret, such as `LYFTA_API_KEY`. Do not commit it, print it, put it in Sian OS payloads, or record it in this document.
 
 ### Routine source
 
 - The active workout routine lives only in Lyfta.
 - Do not answer routine questions from this document, historical notes, or memory.
-- Use Lyfta for current split, exercises, sets, reps, loads, and progression.
-- If Lyfta data is unavailable or only shows completed workouts rather than the active planned routine, say so directly.
+- Use Sian OS Lyfta-backed workout data for current split, exercises, sets, reps, loads, and progression.
+- If Sian OS Lyfta-backed data is unavailable or only shows completed workouts rather than the active planned routine, say so directly.
 - Normal session window: 8:15–9:00 am.
 - Normal duration: 30–45 minutes.
 - 9:00 am is the workout cutoff unless Sian and the coach explicitly agree to a schedule change.
@@ -341,7 +341,7 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 
 | Information | Authoritative location |
 | --- | --- |
-| Workout sessions, exercises, sets, reps, load, RPE/RIR | Lyfta |
+| Workout sessions, exercises, sets, reps, load, RPE/RIR | Sian OS Lyfta-backed endpoint, upstream source Lyfta |
 | Sleep hours | Sian OS daily check-in |
 | Daily body weight when measured | Sian OS daily check-in |
 | Waist when measured | Sian OS daily check-in |
@@ -357,7 +357,7 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Coaching rules, platform decisions, exceptions, and long-term context | This document |
 | Subjective explanation for the current day | Coaching conversation, then Data Steward records a confirmed summary in Sian OS when appropriate |
 
-Do not make Sian OS a competing workout log. The daily logger should copy a useful review summary from Lyfta into the daily check-in, but Lyfta remains authoritative for exercises, sets, reps, loads, RPE/RIR, routines, notes, and progression.
+Do not make Sian OS a competing workout log. The daily logger should copy a useful review summary from Sian OS Lyfta-backed data into the daily check-in, but Lyfta remains upstream authoritative for exercises, sets, reps, loads, RPE/RIR, routines, notes, and progression.
 
 ## Two-agent coaching workflow
 
@@ -379,7 +379,7 @@ The Coach Agent:
 - judges daily execution;
 - guides Sian and challenges excuses;
 - analyzes daily, weekly, and longer-term progress;
-- reads Sian OS wellness records and Lyfta workout records;
+- reads Sian OS wellness records and Sian OS Lyfta-backed workout records;
 - gives one evidence-based daily verdict and the next non-negotiable action;
 - does not inspect application code or debug Sian OS;
 - does not write, edit, or delete operational records;
@@ -397,7 +397,7 @@ The Data Steward Agent:
 - verifies every stored result;
 - reports what was written, preserved, and left unknown;
 - does not coach, judge, change the plan, or inspect application code;
-- writes only reviewer-facing workout notes from Lyfta into Sian OS and preserves Lyfta as the detailed source of truth.
+- writes only reviewer-facing workout notes from Sian OS Lyfta-backed data into Sian OS check-ins and preserves Lyfta as the upstream detailed source of truth.
 
 The role contract lives in `AGENTS.md` and the Custom GPT instruction files.
 
@@ -414,7 +414,7 @@ When Sian submits daily facts and asks for coaching in one message:
 
 This sequence runs when Sian initiates a daily check-in. No autonomous background schedule is currently configured.
 
-Never infer a workout from a scheduled day. Never infer that no workout occurred merely because Sian OS has no workout note; Lyfta is the detailed workout source of truth.
+Never infer a workout from a scheduled day. Never infer that no workout occurred merely because Sian OS has no workout note; use the Sian OS Lyfta-backed endpoint for workout evidence.
 
 ## Daily reporting format
 
@@ -496,9 +496,9 @@ Operational data changes over time. Verify current Sian OS and Lyfta state rathe
 
 ## Open questions
 
-- Lyfta API access currently supports workout evidence; verify whether the configured API exposes active planned routines/templates before answering routine questions from automation.
+- Sian OS Lyfta-backed workout access currently supports workout evidence; verify whether it exposes active planned routines/templates before answering routine questions from automation.
 - The approximate 60 kg baseline still needs a current morning weigh-in when Sian chooses to measure.
-- Lyfta API route and response details need implementation-time verification before automatic workout import is built.
+- Sian OS owns the agent-facing Lyfta workout route. Agents should not call Lyfta directly.
 - Targets may need adjustment after several weeks of real sleep, weight, food, and workout data.
 
 ## Evidence anchors
@@ -527,8 +527,8 @@ These references support the standing targets but do not replace individualized 
 | 2026-07-30 | The earlier 9:30 pm bedtime target is too late for a 4:25 am wake time. | Active target is 8:45 pm lights out, with 9:00 pm as the normal hard ceiling. |
 | 2026-08-05 | Split fitness operations into a Coach Agent and a Data Steward Agent. | The Data Steward records and verifies confirmed facts first; the Coach then rereads the records, checks the active workout source, judges the day, analyzes progress, and guides Sian. Neither role inspects application code during fitness operations. |
 | 2026-08-10 | Sian OS daily check-ins may include estimated calories and workout-summary text. | Calories become a structured check-in field; workout text is allowed for daily review context, while the active workout tracker remains authoritative for detailed workout records and progression. |
-| 2026-08-11 | Lyfta replaces Hevy as the workout source of truth, and API-based Lyfta workout retrieval is approved. | The daily logger should fetch Lyfta workout details and store reviewer-facing workout notes in Sian OS `workout_text`; Lyfta remains authoritative for detailed workout records and progression. The Lyfta API key must be stored only as a secure runtime secret and never committed or written into docs. |
-| 2026-08-11 | Workout routine answers must come only from Lyfta. | The old Upper/Lower split and re-entry plan must not be used as the current routine. If Lyfta does not expose the active routine/template through available Actions, the coach must say it cannot verify the current routine instead of guessing. |
+| 2026-08-11 | Lyfta replaces Hevy as the workout source of truth, and API-based Lyfta workout retrieval is approved. | Superseded on 2026-08-24 for agent access path: agents now read Lyfta-backed records through Sian OS. Lyfta remains upstream authoritative for detailed workout records and progression. The Lyfta API key must be stored only as a secure runtime secret and never committed or written into docs. |
+| 2026-08-11 | Workout routine answers must come only from Lyfta evidence. | Superseded on 2026-08-24 for agent access path: the old Upper/Lower split and re-entry plan must not be used as the current routine, and agents should read Lyfta-backed evidence through Sian OS. |
 | 2026-08-12 | Sian OS adds a saved recipe library for repeat nutrition items. | The Data Steward must check saved recipes before estimating calories and macros from food descriptions; saved recipe values override estimates when the logged food clearly matches. |
 | 2026-08-13 | Sian OS check-ins record sleep as numeric hours instead of sleep and wake times. | The Data Steward should send `sleep_hours` directly when stated; the app no longer calculates sleep from separate time fields. |
 | 2026-08-13 | Sian OS daily check-ins may include estimated fats and carbs. | Fats and carbs become optional structured check-in fields for nutrition detail; they are not active macro targets unless separately confirmed. |
@@ -538,3 +538,4 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-16 | Add itemized macro nutrition entries to Home and Check-in. | Food items should be logged as rows with item name, calories, protein, fats, and carbs; these rows recalculate daily nutrition totals for the coach and progress cards. Routine food logging no longer uses the check-in nutrition notes field. |
 | 2026-08-17 | Saved recipes can log one serving into today's nutrition entries. | Recipes now store calories, protein, fats, and carbs for one normal serving; using a recipe as food should create an itemized nutrition row and update daily macro totals. |
 | 2026-08-24 | Saved recipe bundles are quick nutrition logging templates. | When logging a bundle, expand it into saved recipes, allow one-day quantity/removal/addition changes, then write itemized nutrition rows without changing the saved bundle defaults. |
+| 2026-08-24 | GPTs and agents should read Lyfta workout records through Sian OS. | Sian OS exposes `/api/lyfta/workouts`; the Custom GPT no longer needs a separate Lyfta Action. Lyfta remains the upstream workout tracker and Sian OS owns the read path for coaching automation. |

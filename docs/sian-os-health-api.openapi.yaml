@@ -510,6 +510,43 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
+  /api/lyfta/workouts:
+    get:
+      operationId: getLyftaWorkouts
+      summary: Get Lyfta-backed workout records through Sian OS.
+      description: |
+        Read-only workout records pulled by Sian OS from Lyfta. GPTs should use
+        this endpoint instead of calling Lyfta directly. If available is false,
+        do not guess workout records or routines.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: Lyfta-backed workout data or an unavailable result.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/LyftaWorkoutsResult"
+
   /api/reports:
     get:
       operationId: getReports
@@ -932,6 +969,125 @@ components:
           type: string
         updated_at:
           type: string
+
+    LyftaSet:
+      type: object
+      properties:
+        id:
+          type: string
+        weight:
+          type:
+            - string
+            - "null"
+        reps:
+          type:
+            - string
+            - "null"
+        rir:
+          type:
+            - string
+            - "null"
+        duration:
+          type:
+            - string
+            - "null"
+        distance:
+          type:
+            - string
+            - "null"
+        completed:
+          type:
+            - boolean
+            - "null"
+        recordType:
+          type:
+            - string
+            - "null"
+        recordLevel:
+          type:
+            - string
+            - "null"
+        recordValue:
+          type:
+            - string
+            - "null"
+
+    LyftaExercise:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type:
+            - string
+            - "null"
+        sets:
+          type: array
+          items:
+            $ref: "#/components/schemas/LyftaSet"
+
+    LyftaWorkout:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        performedAt:
+          type:
+            - string
+            - "null"
+        duration:
+          type:
+            - string
+            - "null"
+        totalVolume:
+          type:
+            - string
+            - "null"
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/LyftaExercise"
+
+    LyftaPagination:
+      type: object
+      properties:
+        count:
+          type:
+            - number
+            - "null"
+        totalRecords:
+          type:
+            - number
+            - "null"
+        totalPages:
+          type:
+            - number
+            - "null"
+        currentPage:
+          type: integer
+        limit:
+          type: integer
+
+    LyftaWorkoutsResult:
+      type: object
+      properties:
+        available:
+          type: boolean
+        reason:
+          type: string
+          description: Present when available is false.
+        workouts:
+          type: array
+          items:
+            $ref: "#/components/schemas/LyftaWorkout"
+        pagination:
+          oneOf:
+            - $ref: "#/components/schemas/LyftaPagination"
+            - type: "null"
 
     ProfileInput:
       type: object

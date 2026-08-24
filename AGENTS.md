@@ -33,9 +33,9 @@ Before fitness coaching, coaching-related product changes, wellness interpretati
 
 1. Read `docs/FITNESS_COACHING_CONTEXT.md`.
 2. Use Sian OS as the wellness source of truth.
-3. Use Lyfta as the detailed workout source of truth unless the owner explicitly changes that decision.
+3. Use Sian OS Lyfta-backed endpoints to read detailed workout records unless the owner explicitly changes that decision.
 
-Lyfta owns completed workouts, active routines when exposed, exercises, sets, reps, loads, RPE/RIR, notes, and progression. Sian OS may store only reviewer-facing Lyfta summaries in the daily check-in `workout_text` field.
+Lyfta remains the upstream workout tracker, but Sian OS now proxies read-only Lyfta workout data through `/api/lyfta/workouts`. GPTs and agents should call Sian OS, not Lyfta directly. Sian OS may store reviewer-facing Lyfta summaries in the daily check-in `workout_text` field.
 
 Sian OS owns check-ins, sleep hours, body weight, waist, water, itemized nutrition entries, derived daily macro totals, profile goals, saved recipes, saved recipe bundles, reports, agent state, and progress photos.
 
@@ -123,6 +123,7 @@ Read endpoints:
 - `GET /api/nutrition-entries?date=YYYY-MM-DD`
 - `GET /api/recipes`
 - `GET /api/recipe-bundles`
+- `GET /api/lyfta/workouts?limit=20&page=1`
 - `GET /api/reports?interval=daily|weekly|monthly&from=YYYY-MM-DD&to=YYYY-MM-DD`
 
 Write endpoints:
@@ -151,7 +152,7 @@ Daily logging:
 3. Resolve the date.
 4. Read existing check-in and food rows for that date.
 5. Check saved recipes and recipe bundles before estimating food.
-6. Fetch Lyfta workout details when a workout may exist.
+6. Fetch workout details through `/api/lyfta/workouts` when a workout may exist.
 7. Write confirmed non-food facts to `/api/checkins`.
 8. Write food items to `/api/nutrition-entries`.
 9. Re-read the affected date and report what was written, preserved, unknown, and verified.
@@ -162,7 +163,7 @@ Daily analysis:
 2. `GET /api/agent/context`
 3. `GET /api/checkins?limit=30`
 4. Use the latest completed/logged day unless the owner specifies another date.
-5. Read Lyfta evidence when workout details matter.
+5. Read Lyfta-backed Sian OS evidence when workout details matter.
 6. Give exactly one verdict: `On Track`, `Needs Correction`, `Off Plan`, or `Insufficient Data`.
 
 Weekly analysis runs only after seven newer logged days exist since `last_weekly_report_date`. After giving the weekly report, write the latest covered date to `/api/agent/state`.
