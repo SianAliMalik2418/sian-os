@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { setResponseHeader } from '@tanstack/react-start/server'
 import { dashboardSummary, db } from './db'
+import { listRecipeBundles } from './recipe-bundles'
 import { listRecipes } from './recipes'
 import { buildDailyReports } from './reports'
 import type { DailyCheckin, Profile, ProgressPhoto } from './types'
@@ -39,5 +40,6 @@ export const getReportsData = createServerFn({ method: 'GET' }).handler(async ()
 
 export const getRecipesData = createServerFn({ method: 'GET' }).handler(async () => {
   disableCaching()
-  return listRecipes()
+  const [recipes, bundles] = await Promise.all([listRecipes(), listRecipeBundles()])
+  return { recipes, bundles }
 })

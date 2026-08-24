@@ -57,6 +57,19 @@ function databaseConstraintError(error: unknown) {
     }
   }
 
+  if (message.includes('recipe_bundles.name')) {
+    return {
+      status: 409,
+      code: 'DUPLICATE_RECIPE_BUNDLE',
+      message: 'A recipe bundle with this name already exists',
+      details: {
+        fieldErrors: {
+          name: ['Use a different bundle name.'],
+        },
+      },
+    }
+  }
+
   return {
     status: 409,
     code: 'DUPLICATE_RECORD',

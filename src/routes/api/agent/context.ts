@@ -28,6 +28,8 @@ const recipeGuidance = {
   source: 'GET /api/recipes',
   rule: 'Before estimating nutrition from meal text, check savedRecipes by name and aliases. If a logged food clearly matches a saved recipe and serving, use that recipe calories, protein, fats, and carbs instead of estimating. Estimate only missing foods or unmatched recipes.',
   servingRule: 'Saved recipe calories, protein, fats, and carbs represent one normal serving unless serving_description says otherwise. If the owner logs multiple servings, multiply the saved values.',
+  bundleSource: 'GET /api/recipe-bundles',
+  bundleRule: 'Saved recipe bundles are repeat meals made from saved recipes and default quantities. When the owner logs a bundle, create one nutrition entry per included recipe. The owner may override included recipe quantities for that day without changing the saved bundle.',
   uncertaintyRule: 'If a match is ambiguous, state the assumption or ask for the serving instead of silently guessing.',
 }
 
@@ -52,12 +54,20 @@ export const Route = createFileRoute('/api/agent/context')({
       GET: async () => handleApi(async () => {
         const database = db()
         const today = new Date().toISOString().slice(0, 10)
-        const [profile, dashboard, checkins, nutritionEntries, recipes] = await Promise.all([
+        const [profile, dashboard, checkins, nutritionEntries, recipes, bundles] = await Promise.all([
           database.prepare('SELECT * FROM profile WHERE id = 1').first(),
           dashboardSummary(),
           database.prepare('SELECT * FROM daily_checkins ORDER BY date DESC LIMIT 30').all(),
           database.prepare('SELECT * FROM nutrition_entries WHERE date >= date(?, \'-30 days\') ORDER BY date DESC, id DESC LIMIT 500').bind(today).all(),
           database.prepare('SELECT id, name, aliases, category, serving_description, calories, protein_grams, fat_grams, carb_grams, ingredients, notes, updated_at FROM recipes ORDER BY name COLLATE NOCASE LIMIT 500').all(),
+          database.prepare(`
+            SELECT b.id AS bundle_id, b.name AS bundle_name, b.notes AS bundle_notes, i.recipe_id, i.default_quantity, i.position, r.name AS recipe_name
+            FROM recipe_bundles b
+            JOIN recipe_bundle_items i ON i.bundle_id = b.id
+            JOIN recipes r ON r.id = i.recipe_id
+            ORDER BY b.name COLLATE NOCASE, i.position, i.id
+            LIMIT 500
+          `).all(),
         ])
         return json({
           ok: true,
@@ -68,6 +78,7 @@ export const Route = createFileRoute('/api/agent/context')({
             recentCheckins: checkins.results,
             recentNutritionEntries: nutritionEntries.results,
             savedRecipes: recipes.results,
+            savedRecipeBundles: bundles.results,
             agent: {
               checkinWriteContract,
               weeklyReportGuidance,

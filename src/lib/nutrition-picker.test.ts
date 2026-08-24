@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shouldLoadRecipesForNutritionPicker } from './nutrition-picker'
+import { shouldLoadBundlesForNutritionPicker, shouldLoadRecipesForNutritionPicker } from './nutrition-picker'
 
 describe('nutrition picker helpers', () => {
   it('loads recipes when the compact picker is on the recipes tab', () => {
@@ -40,5 +40,15 @@ describe('nutrition picker helpers', () => {
       recipesLoaded: false,
       recipesLoading: false,
     })).toBe(false)
+  })
+
+  it('loads bundles when the picker is on the bundles tab', () => {
+    expect(shouldLoadBundlesForNutritionPicker({
+      compact: false,
+      addOpen: true,
+      mode: 'bundles',
+      bundlesLoaded: false,
+      bundlesLoading: false,
+    })).toBe(true)
   })
 })

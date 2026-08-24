@@ -1,4 +1,4 @@
-import { Minus, Plus, Save, Search, Trash2, Utensils } from 'lucide-react'
+import { Boxes, Minus, Plus, Save, Search, Trash2, Utensils } from 'lucide-react'
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,9 +12,9 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { groupedNutritionEntries, nutritionEntriesFromRecipes } from '@/lib/nutrition-entries'
-import { shouldLoadRecipesForNutritionPicker, type NutritionEntryMode } from '@/lib/nutrition-picker'
+import { shouldLoadBundlesForNutritionPicker, shouldLoadRecipesForNutritionPicker, type NutritionEntryMode } from '@/lib/nutrition-picker'
 import { clampServingQuantity, servingQuantityFromInput } from '@/lib/servings'
-import type { DailyCheckin, NutritionEntry, Recipe } from '@/lib/types'
+import type { DailyCheckin, NutritionEntry, Recipe, RecipeBundle } from '@/lib/types'
 
 const emptyRecipeValues = {
   name: '',
@@ -46,7 +46,11 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [recipesLoading, setRecipesLoading] = useState(false)
   const [recipesLoaded, setRecipesLoaded] = useState(false)
+  const [bundles, setBundles] = useState<RecipeBundle[]>([])
+  const [bundlesLoading, setBundlesLoading] = useState(false)
+  const [bundlesLoaded, setBundlesLoaded] = useState(false)
   const [recipeQuery, setRecipeQuery] = useState('')
+  const [bundleQuery, setBundleQuery] = useState('')
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<number>>(new Set())
   const [recipeQuantities, setRecipeQuantities] = useState<Record<number, number>>({})
   const [recipeDialogOpen, setRecipeDialogOpen] = useState(false)
@@ -91,12 +95,22 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     void loadRecipes()
   }, [addOpen, compact, entryMode, recipesLoaded, recipesLoading])
 
+  useEffect(() => {
+    if (!shouldLoadBundlesForNutritionPicker({ compact, addOpen, mode: entryMode, bundlesLoaded, bundlesLoading })) return
+    void loadBundles()
+  }, [addOpen, compact, entryMode, bundlesLoaded, bundlesLoading])
+
   const groupedEntries = groupedNutritionEntries(entries)
   const filteredRecipes = useMemo(() => {
     const needle = recipeQuery.trim().toLowerCase()
     if (!needle) return recipes
     return recipes.filter((recipe) => [recipe.name, recipe.aliases, recipe.category, recipe.ingredients].some((value) => value?.toLowerCase().includes(needle)))
   }, [recipeQuery, recipes])
+  const filteredBundles = useMemo(() => {
+    const needle = bundleQuery.trim().toLowerCase()
+    if (!needle) return bundles
+    return bundles.filter((bundle) => [bundle.name, bundle.notes, ...bundle.recipes.flatMap((recipe) => [recipe.name, recipe.aliases])].some((value) => value?.toLowerCase().includes(needle)))
+  }, [bundleQuery, bundles])
   const selectedRecipes = useMemo(() => recipes.filter((recipe) => selectedRecipeIds.has(recipe.id)), [recipes, selectedRecipeIds])
   const selectedTotals = selectedRecipes.reduce((totals, recipe) => {
     const quantity = recipeQuantities[recipe.id] || 1
@@ -120,6 +134,22 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       setError(caught instanceof Error ? caught.message : 'Could not load recipes')
     } finally {
       setRecipesLoading(false)
+    }
+  }
+
+  async function loadBundles() {
+    setBundlesLoading(true)
+    setError(undefined)
+    try {
+      const response = await fetch('/api/recipe-bundles')
+      const result = await response.json() as { data?: RecipeBundle[]; error?: { message?: string } }
+      if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not load bundles')
+      setBundles(result.data)
+      setBundlesLoaded(true)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not load bundles')
+    } finally {
+      setBundlesLoading(false)
     }
   }
 
@@ -297,6 +327,18 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     setRecipeQuantities((current) => ({ ...current, [recipeId]: clampServingQuantity(quantity) }))
   }
 
+  function useBundle(bundle: RecipeBundle) {
+    setRecipes((current) => {
+      const byId = new Map(current.map((recipe) => [recipe.id, recipe]))
+      for (const recipe of bundle.recipes) byId.set(recipe.id, recipe)
+      return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name))
+    })
+    setRecipesLoaded(true)
+    setSelectedRecipeIds(new Set(bundle.recipes.map((recipe) => recipe.id)))
+    setRecipeQuantities(Object.fromEntries(bundle.recipes.map((recipe) => [recipe.id, recipe.default_quantity])))
+    setEntryMode('recipes')
+  }
+
   function updateRecipeValue(name: string, value: string) {
     setRecipeValues((current) => ({ ...current, [name]: value }))
   }
@@ -368,11 +410,53 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     </>
   )
 
+  const bundlePicker = (
+    <>
+      <div className="flex items-center gap-2 rounded-xl border bg-background px-3 py-2">
+        <Search className="size-4 text-muted-foreground" />
+        <Input nativeInput value={bundleQuery} onChange={(event) => setBundleQuery(event.target.value)} placeholder="Search bundles, recipes..." className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
+      </div>
+
+      {bundlesLoading ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">Loading bundles...</p> : null}
+
+      {!bundlesLoading && filteredBundles.length ? (
+        <div className="grid max-h-[52vh] gap-3 overflow-y-auto pr-1">
+          {filteredBundles.map((bundle) => {
+            const totals = bundle.recipes.reduce((sum, recipe) => {
+              sum.calories += recipe.calories * recipe.default_quantity
+              sum.protein += recipe.protein_grams * recipe.default_quantity
+              sum.fats += recipe.fat_grams * recipe.default_quantity
+              sum.carbs += recipe.carb_grams * recipe.default_quantity
+              return sum
+            }, { calories: 0, protein: 0, fats: 0, carbs: 0 })
+            return (
+              <div key={bundle.id} className="grid gap-3 rounded-xl border bg-background p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium">{bundle.name}</p>
+                    <Badge variant="secondary">{bundle.recipes.length} items</Badge>
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">{totals.calories} kcal · {totals.protein} g protein · {totals.fats} g fat · {totals.carbs} g carbs</p>
+                  <p className="mt-2 text-xs text-muted-foreground">{bundle.recipes.map((recipe) => `${recipe.name} x${recipe.default_quantity}`).join(' · ')}</p>
+                </div>
+                <Button type="button" variant="outline" onClick={() => useBundle(bundle)}><Boxes /> Use bundle</Button>
+              </div>
+            )
+          })}
+        </div>
+      ) : null}
+
+      {!bundlesLoading && !bundles.length ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">No bundles yet. Create one from the Recipes page.</p> : null}
+      {!bundlesLoading && bundles.length > 0 && !filteredBundles.length ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">No bundles match that search.</p> : null}
+    </>
+  )
+
   const compactEntryForm = (
     <Tabs value={entryMode} onValueChange={(value) => setEntryMode(value as NutritionEntryMode)} className="rounded-xl border bg-secondary/20 p-3">
-      <TabsList className="grid w-full grid-cols-2 sm:w-fit">
+      <TabsList className="grid w-full grid-cols-3 sm:w-fit">
         <TabsTab value="manual">Manual</TabsTab>
         <TabsTab value="recipes">Recipes</TabsTab>
+        <TabsTab value="bundles">Bundles</TabsTab>
       </TabsList>
       <TabsPanel value="manual" className="pt-2">
         {manualEntryForm}
@@ -383,20 +467,27 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
           <Button type="button" loading={saving} onClick={saveSelectedRecipes}><Utensils /> Log selected</Button>
         </div>
       </TabsPanel>
+      <TabsPanel value="bundles" className="space-y-4 pt-2">
+        {bundlePicker}
+      </TabsPanel>
     </Tabs>
   )
 
   const addFoodDialogContent = (
     <Tabs value={entryMode} onValueChange={(value) => setEntryMode(value as NutritionEntryMode)} className="gap-4">
-      <TabsList className="grid w-full grid-cols-2 sm:w-fit">
+      <TabsList className="grid w-full grid-cols-3 sm:w-fit">
         <TabsTab value="manual">Manual</TabsTab>
         <TabsTab value="recipes">Recipes</TabsTab>
+        <TabsTab value="bundles">Bundles</TabsTab>
       </TabsList>
       <TabsPanel value="manual" className="pt-1">
         {manualEntryFields}
       </TabsPanel>
       <TabsPanel value="recipes" className="space-y-4 pt-1">
         {recipePicker}
+      </TabsPanel>
+      <TabsPanel value="bundles" className="space-y-4 pt-1">
+        {bundlePicker}
       </TabsPanel>
     </Tabs>
   )
@@ -479,7 +570,9 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
               <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
               {entryMode === 'manual'
                 ? <Button type="button" loading={saving} onClick={addEntry}>Add food</Button>
-                : <Button type="button" loading={saving} onClick={saveSelectedRecipes}><Utensils /> Log selected</Button>}
+                : entryMode === 'recipes'
+                  ? <Button type="button" loading={saving} onClick={saveSelectedRecipes}><Utensils /> Log selected</Button>
+                  : null}
             </DialogFooter>
           </div>
         </DialogPopup>

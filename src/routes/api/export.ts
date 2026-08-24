@@ -5,12 +5,14 @@ import { handleApi, json } from '@/lib/http'
 
 async function buildExport() {
   const database = db()
-  const [profile, checkins, nutritionEntries, photos, recipes, agentState, audit] = await Promise.all([
+  const [profile, checkins, nutritionEntries, photos, recipes, recipeBundles, recipeBundleItems, agentState, audit] = await Promise.all([
     database.prepare('SELECT * FROM profile').all(),
     database.prepare('SELECT * FROM daily_checkins ORDER BY date').all(),
     database.prepare('SELECT * FROM nutrition_entries ORDER BY date, id').all(),
     database.prepare('SELECT * FROM progress_photos ORDER BY date, id').all(),
     database.prepare('SELECT * FROM recipes ORDER BY name COLLATE NOCASE').all(),
+    database.prepare('SELECT * FROM recipe_bundles ORDER BY name COLLATE NOCASE').all(),
+    database.prepare('SELECT * FROM recipe_bundle_items ORDER BY bundle_id, position, id').all(),
     database.prepare('SELECT * FROM agent_state ORDER BY key').all(),
     database.prepare('SELECT * FROM agent_audit_log ORDER BY id').all(),
   ])
@@ -24,6 +26,8 @@ async function buildExport() {
       nutritionEntries: nutritionEntries.results,
       progressPhotos: photos.results,
       recipes: recipes.results,
+      recipeBundles: recipeBundles.results,
+      recipeBundleItems: recipeBundleItems.results,
       agentState: agentState.results,
       agentAuditLog: audit.results,
     },

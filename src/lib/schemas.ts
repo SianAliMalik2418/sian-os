@@ -61,6 +61,17 @@ export const recipeSchema = z.object({
   notes: optionalText,
 }).strict()
 
+export const recipeBundleSchema = z.object({
+  name: z.string().trim().min(1).max(500),
+  notes: optionalText,
+  items: z.array(z.object({
+    recipe_id: z.number().int().min(1),
+    default_quantity: z.number().min(0.25).max(20),
+    position: z.number().int().min(0).max(500).optional(),
+  }).strict()).min(1).max(50),
+}).strict()
+
 export type CheckinInput = z.infer<typeof checkinSchema>
 export type NutritionEntryInput = z.infer<typeof nutritionEntrySchema>
 export type RecipeInput = z.infer<typeof recipeSchema>
+export type RecipeBundleInput = z.infer<typeof recipeBundleSchema>

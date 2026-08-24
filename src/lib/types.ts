@@ -61,6 +61,23 @@ export interface Recipe {
   updated_at: string
 }
 
+export interface RecipeBundleRecipe extends Recipe {
+  bundle_item_id: number
+  bundle_id: number
+  recipe_id: number
+  default_quantity: number
+  position: number
+}
+
+export interface RecipeBundle {
+  id: number
+  name: string
+  notes: string | null
+  recipes: RecipeBundleRecipe[]
+  created_at: string
+  updated_at: string
+}
+
 export interface NutritionEntry {
   id: number
   date: string
