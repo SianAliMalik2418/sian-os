@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { groupedNutritionEntries, nutritionEntriesFromRecipes } from '@/lib/nutrition-entries'
+import { recipePickerStateFromBundle } from '@/lib/recipe-bundle-entries'
 import { shouldLoadBundlesForNutritionPicker, shouldLoadRecipesForNutritionPicker, type NutritionEntryMode } from '@/lib/nutrition-picker'
 import { clampServingQuantity, servingQuantityFromInput } from '@/lib/servings'
 import type { DailyCheckin, NutritionEntry, Recipe, RecipeBundle } from '@/lib/types'
@@ -328,14 +329,12 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   }
 
   function useBundle(bundle: RecipeBundle) {
-    setRecipes((current) => {
-      const byId = new Map(current.map((recipe) => [recipe.id, recipe]))
-      for (const recipe of bundle.recipes) byId.set(recipe.id, recipe)
-      return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name))
-    })
-    setRecipesLoaded(true)
-    setSelectedRecipeIds(new Set(bundle.recipes.map((recipe) => recipe.id)))
-    setRecipeQuantities(Object.fromEntries(bundle.recipes.map((recipe) => [recipe.id, recipe.default_quantity])))
+    const next = recipePickerStateFromBundle(recipes, bundle, recipesLoaded)
+    setRecipes(next.recipes)
+    setRecipesLoaded(next.recipesLoaded)
+    setSelectedRecipeIds(next.selectedRecipeIds)
+    setRecipeQuantities(next.recipeQuantities)
+    setRecipeQuery('')
     setEntryMode('recipes')
   }
 
@@ -364,6 +363,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
         <div>
           <p className="text-sm font-medium">Selected: {selectedRecipeIds.size}</p>
           <p className="text-xs text-muted-foreground">{selectedTotals.calories} kcal · {selectedTotals.protein} g protein · {selectedTotals.fats} g fat · {selectedTotals.carbs} g carbs</p>
+          <p className="mt-1 text-xs text-muted-foreground">Change quantities, uncheck foods, or add more recipes before logging.</p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={() => setRecipeDialogOpen(true)}><Plus /> New recipe</Button>
       </div>
@@ -439,7 +439,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
                   <p className="mt-1 text-sm text-muted-foreground">{totals.calories} kcal · {totals.protein} g protein · {totals.fats} g fat · {totals.carbs} g carbs</p>
                   <p className="mt-2 text-xs text-muted-foreground">{bundle.recipes.map((recipe) => `${recipe.name} x${recipe.default_quantity}`).join(' · ')}</p>
                 </div>
-                <Button type="button" variant="outline" onClick={() => useBundle(bundle)}><Boxes /> Use bundle</Button>
+                <Button type="button" variant="outline" onClick={() => useBundle(bundle)}><Boxes /> Edit items</Button>
               </div>
             )
           })}

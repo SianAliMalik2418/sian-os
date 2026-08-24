@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nutritionEntriesFromRecipeBundle } from './recipe-bundle-entries'
+import { nutritionEntriesFromRecipeBundle, recipePickerStateFromBundle } from './recipe-bundle-entries'
 import type { RecipeBundle } from './types'
 
 const breakfast: RecipeBundle = {
@@ -46,6 +46,15 @@ describe('recipe bundle helpers', () => {
       carb_grams: 16,
     })
     expect(breakfast.recipes.find((recipe) => recipe.id === 11)?.default_quantity).toBe(1)
+  })
+
+  it('prefills bundle recipes without treating the recipe picker as fully loaded', () => {
+    const next = recipePickerStateFromBundle([], breakfast, false)
+
+    expect(next.recipes.map((recipe) => recipe.name)).toEqual(['Shake', 'Shami'])
+    expect([...next.selectedRecipeIds].sort()).toEqual([10, 11])
+    expect(next.recipeQuantities).toEqual({ 10: 1, 11: 1 })
+    expect(next.recipesLoaded).toBe(false)
   })
 })
 
