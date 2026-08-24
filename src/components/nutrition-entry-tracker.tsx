@@ -9,8 +9,10 @@ import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { groupedNutritionEntries, nutritionEntriesFromRecipes } from '@/lib/nutrition-entries'
+import { shouldLoadRecipesForNutritionPicker, type CompactNutritionMode } from '@/lib/nutrition-picker'
 import { clampServingQuantity, servingQuantityFromInput } from '@/lib/servings'
 import type { DailyCheckin, NutritionEntry, Recipe } from '@/lib/types'
 
@@ -53,6 +55,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string>()
   const [addOpen, setAddOpen] = useState(false)
+  const [compactMode, setCompactMode] = useState<CompactNutritionMode>('manual')
 
   const calorieTotal = entries.reduce((total, entry) => total + entry.calories, 0)
   const proteinTotal = entries.reduce((total, entry) => total + entry.protein_grams, 0)
@@ -84,9 +87,9 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   }, [date, initialEntries])
 
   useEffect(() => {
-    if (!addOpen || compact || recipesLoaded || recipesLoading) return
+    if (!shouldLoadRecipesForNutritionPicker({ compact, addOpen, compactMode, recipesLoaded, recipesLoading })) return
     void loadRecipes()
-  }, [addOpen, compact, recipesLoaded, recipesLoading])
+  }, [addOpen, compact, compactMode, recipesLoaded, recipesLoading])
 
   const groupedEntries = groupedNutritionEntries(entries)
   const filteredRecipes = useMemo(() => {
@@ -299,6 +302,83 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
 
   const entryFields = <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} fats={fats} carbs={carbs} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} onFatsChange={setFats} onCarbsChange={setCarbs} />
 
+  const manualEntryForm = (
+    <div className="grid gap-3 lg:grid-cols-[minmax(12rem,1fr)_7rem_7rem_7rem_7rem_auto]">
+      {entryFields}
+      <Button type="button" loading={saving} className="self-end" onClick={addEntry}>Add</Button>
+    </div>
+  )
+
+  const recipePicker = (
+    <>
+      <div className="flex flex-col gap-2 rounded-xl border bg-secondary/20 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-medium">Selected: {selectedRecipeIds.size}</p>
+          <p className="text-xs text-muted-foreground">{selectedTotals.calories} kcal · {selectedTotals.protein} g protein · {selectedTotals.fats} g fat · {selectedTotals.carbs} g carbs</p>
+        </div>
+        <Button type="button" variant="outline" size="sm" onClick={() => setRecipeDialogOpen(true)}><Plus /> New recipe</Button>
+      </div>
+
+      <div className="flex items-center gap-2 rounded-xl border bg-background px-3 py-2">
+        <Search className="size-4 text-muted-foreground" />
+        <Input nativeInput value={recipeQuery} onChange={(event) => setRecipeQuery(event.target.value)} placeholder="Search recipes, aliases, ingredients..." className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
+      </div>
+
+      {recipesLoading ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">Loading recipes...</p> : null}
+
+      {!recipesLoading && filteredRecipes.length ? (
+        <div className="grid max-h-[52vh] gap-3 overflow-y-auto pr-1">
+          {filteredRecipes.map((recipe) => {
+            const selected = selectedRecipeIds.has(recipe.id)
+            const quantity = recipeQuantities[recipe.id] || 1
+            return (
+              <div key={recipe.id} className="grid gap-3 rounded-xl border bg-background p-3 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+                <Checkbox checked={selected} onCheckedChange={(checked) => setRecipeSelected(recipe.id, checked === true)} aria-label={`Select ${recipe.name}`} />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium">{recipe.name}</p>
+                    {recipe.category && <Badge variant="secondary">{recipe.category}</Badge>}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{recipe.serving_description || '1 serving'} · {recipe.calories * quantity} kcal · {recipe.protein_grams * quantity} g protein · {recipe.fat_grams * quantity} g fat · {recipe.carb_grams * quantity} g carbs</p>
+                </div>
+                <QuantityControl
+                  label={`${recipe.name} quantity`}
+                  value={quantity}
+                  disabled={!selected}
+                  onChange={(next) => {
+                    setRecipeSelected(recipe.id, true)
+                    setRecipeQuantity(recipe.id, next)
+                  }}
+                />
+              </div>
+            )
+          })}
+        </div>
+      ) : null}
+
+      {!recipesLoading && !recipes.length ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">No saved recipes yet. Create one here, then log it today.</p> : null}
+      {!recipesLoading && recipes.length > 0 && !filteredRecipes.length ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">No recipes match that search.</p> : null}
+    </>
+  )
+
+  const compactEntryForm = (
+    <Tabs value={compactMode} onValueChange={(value) => setCompactMode(value as CompactNutritionMode)} className="rounded-xl border bg-secondary/20 p-3">
+      <TabsList className="grid w-full grid-cols-2 sm:w-fit">
+        <TabsTab value="manual">Manual</TabsTab>
+        <TabsTab value="recipes">Recipes</TabsTab>
+      </TabsList>
+      <TabsPanel value="manual" className="pt-2">
+        {manualEntryForm}
+      </TabsPanel>
+      <TabsPanel value="recipes" className="space-y-4 pt-2">
+        {recipePicker}
+        <div className="flex justify-end">
+          <Button type="button" loading={saving} onClick={saveSelectedRecipes}><Utensils /> Log selected</Button>
+        </div>
+      </TabsPanel>
+    </Tabs>
+  )
+
   const body = (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -309,10 +389,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       </div>
 
       {compact ? (
-        <div className="grid gap-3 lg:grid-cols-[minmax(12rem,1fr)_7rem_7rem_7rem_7rem_auto]">
-          {entryFields}
-          <Button type="button" loading={saving} className="self-end" onClick={addEntry}>Add</Button>
-        </div>
+        compactEntryForm
       ) : null}
 
       {groupedEntries.length ? (
@@ -333,7 +410,25 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     </div>
   )
 
-  if (compact) return body
+  const recipeCreateDialog = (
+    <RecipeCreateDialog
+      open={recipeDialogOpen}
+      values={recipeValues}
+      saving={recipeSaving}
+      onOpenChange={setRecipeDialogOpen}
+      onUpdate={updateRecipeValue}
+      onSubmit={submitRecipe}
+    />
+  )
+
+  if (compact) {
+    return (
+      <>
+        {body}
+        {recipeCreateDialog}
+      </>
+    )
+  }
 
   return (
     <>
@@ -355,53 +450,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
               <DialogDescription>Select saved recipes and set quantities for today.</DialogDescription>
             </DialogHeader>
             <DialogPanel className="space-y-4">
-              <div className="flex flex-col gap-2 rounded-xl border bg-secondary/20 p-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-medium">Selected: {selectedRecipeIds.size}</p>
-                  <p className="text-xs text-muted-foreground">{selectedTotals.calories} kcal · {selectedTotals.protein} g protein · {selectedTotals.fats} g fat · {selectedTotals.carbs} g carbs</p>
-                </div>
-                <Button type="button" variant="outline" size="sm" onClick={() => setRecipeDialogOpen(true)}><Plus /> New recipe</Button>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-xl border bg-background px-3 py-2">
-                <Search className="size-4 text-muted-foreground" />
-                <Input nativeInput value={recipeQuery} onChange={(event) => setRecipeQuery(event.target.value)} placeholder="Search recipes, aliases, ingredients..." className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
-              </div>
-
-              {recipesLoading ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">Loading recipes...</p> : null}
-
-              {!recipesLoading && filteredRecipes.length ? (
-                <div className="grid max-h-[52vh] gap-3 overflow-y-auto pr-1">
-                  {filteredRecipes.map((recipe) => {
-                    const selected = selectedRecipeIds.has(recipe.id)
-                    const quantity = recipeQuantities[recipe.id] || 1
-                    return (
-                      <div key={recipe.id} className="grid gap-3 rounded-xl border bg-background p-3 sm:grid-cols-[auto_1fr_auto] sm:items-center">
-                        <Checkbox checked={selected} onCheckedChange={(checked) => setRecipeSelected(recipe.id, checked === true)} aria-label={`Select ${recipe.name}`} />
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium">{recipe.name}</p>
-                            {recipe.category && <Badge variant="secondary">{recipe.category}</Badge>}
-                          </div>
-                          <p className="text-sm text-muted-foreground">{recipe.serving_description || '1 serving'} · {recipe.calories * quantity} kcal · {recipe.protein_grams * quantity} g protein · {recipe.fat_grams * quantity} g fat · {recipe.carb_grams * quantity} g carbs</p>
-                        </div>
-                        <QuantityControl
-                          label={`${recipe.name} quantity`}
-                          value={quantity}
-                          disabled={!selected}
-                          onChange={(next) => {
-                            setRecipeSelected(recipe.id, true)
-                            setRecipeQuantity(recipe.id, next)
-                          }}
-                        />
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : null}
-
-              {!recipesLoading && !recipes.length ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">No saved recipes yet. Create one here, then log it today.</p> : null}
-              {!recipesLoading && recipes.length > 0 && !filteredRecipes.length ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">No recipes match that search.</p> : null}
+              {recipePicker}
               {error && <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
             </DialogPanel>
             <DialogFooter>
@@ -412,14 +461,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
         </DialogPopup>
       </Dialog>
 
-      <RecipeCreateDialog
-        open={recipeDialogOpen}
-        values={recipeValues}
-        saving={recipeSaving}
-        onOpenChange={setRecipeDialogOpen}
-        onUpdate={updateRecipeValue}
-        onSubmit={submitRecipe}
-      />
+      {recipeCreateDialog}
     </>
   )
 }
