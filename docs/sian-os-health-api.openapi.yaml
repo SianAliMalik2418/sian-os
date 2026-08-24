@@ -7,8 +7,9 @@ info:
     Public single-owner wellness API for Sian OS.
 
     Use Lyfta as the detailed workout source of truth. Use Sian OS for daily wellness
-    check-ins, body weight, waist, sleep, hydration, itemized nutrition macros, brief
-    workout status text, reports, editable nutrition goals in profile, profile context, and agent cadence state.
+    check-ins, body weight, waist, sleep, hydration, itemized nutrition macros, saved
+    recipes, saved recipe bundles, brief workout status text, reports, editable
+    nutrition goals in profile, profile context, and agent cadence state.
 
     Important write rule: POST /api/checkins and PUT /api/profile are full upserts.
     Omitted optional fields are cleared, so read the existing record first and preserve
@@ -16,6 +17,9 @@ info:
 
     Prefer itemized nutrition entries for food logging. Nutrition entries automatically
     recalculate daily check-in calorie, protein, fat, and carb totals.
+
+    Recipe bundles are quick templates. When logging a bundle, expand it into saved
+    recipes and apply the owner's one-day changes before creating nutrition entries.
 
 servers:
   - url: https://sian-os.sianalimalik2418.workers.dev
@@ -415,6 +419,97 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
+  /api/recipe-bundles:
+    get:
+      operationId: getRecipeBundles
+      summary: Get saved recipe bundles.
+      description: Use bundles as quick meal templates before logging repeat meals.
+      responses:
+        "200":
+          description: Saved recipe bundles.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/RecipeBundle"
+
+    post:
+      operationId: createRecipeBundle
+      summary: Create a saved recipe bundle.
+      description: Saves a meal template made from existing recipes and default quantities. Do not use this for one-day food logging.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecipeBundleInput"
+      responses:
+        "201":
+          description: Recipe bundle saved.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/RecipeBundle"
+
+  /api/recipe-bundles/{bundleId}:
+    put:
+      operationId: updateRecipeBundle
+      summary: Update a saved recipe bundle.
+      description: Replaces the bundle name, notes, and default recipe list. Do not use this for one-day quantity changes during food logging.
+      parameters:
+        - name: bundleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecipeBundleInput"
+      responses:
+        "200":
+          description: Recipe bundle updated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/RecipeBundle"
+
+    delete:
+      operationId: deleteRecipeBundle
+      summary: Delete one saved recipe bundle.
+      description: Permanently removes one recipe bundle. Ask the owner before using this destructive operation.
+      parameters:
+        - name: bundleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recipe bundle deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   /api/reports:
     get:
       operationId: getReports
@@ -755,6 +850,84 @@ components:
           type:
             - string
             - "null"
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    RecipeBundleItemInput:
+      type: object
+      additionalProperties: false
+      properties:
+        recipe_id:
+          type: integer
+          minimum: 1
+          description: Existing saved recipe ID.
+        default_quantity:
+          type: number
+          minimum: 0.25
+          maximum: 20
+          description: Default serving count for this recipe inside the bundle.
+        position:
+          type: integer
+          minimum: 0
+          description: Optional display order. Omit to use the submitted item order.
+      required:
+        - recipe_id
+        - default_quantity
+
+    RecipeBundleInput:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 500
+        notes:
+          type: string
+          maxLength: 2000
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/RecipeBundleItemInput"
+      required:
+        - name
+        - items
+
+    RecipeBundleRecipe:
+      allOf:
+        - $ref: "#/components/schemas/Recipe"
+        - type: object
+          properties:
+            bundle_item_id:
+              type: integer
+            bundle_id:
+              type: integer
+            recipe_id:
+              type: integer
+            default_quantity:
+              type: number
+            position:
+              type: integer
+
+    RecipeBundle:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        notes:
+          type:
+            - string
+            - "null"
+        recipes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecipeBundleRecipe"
         created_at:
           type: string
         updated_at:

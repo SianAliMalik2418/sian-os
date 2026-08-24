@@ -13,7 +13,7 @@ Priority when information conflicts:
 5. Confirmed coaching rules in this file.
 6. Historical baselines, clearly labeled as historical.
 
-Sian OS owns wellness records: check-ins, itemized nutrition entries, weight, waist, sleep, water, protein, fats, carbs, calories, editable profile nutrition goals, reviewer-facing workout notes, profile, reports, and agent state. Lyfta owns workout records: completed workouts, routines, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
+Sian OS owns wellness records: check-ins, itemized nutrition entries, saved recipes, saved recipe bundles, weight, waist, sleep, water, protein, fats, carbs, calories, editable profile nutrition goals, reviewer-facing workout notes, profile, reports, and agent state. Lyfta owns workout records: completed workouts, routines, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
 
 Never store, print, or request passwords, API keys, tokens, cookies, or unnecessary medical details.
 
@@ -83,6 +83,10 @@ Controlled lean gain means protein stays consistent, calories are adequate but n
 Use practical portions: rotis, eggs, meat servings, bowls of daal/rice/curry/haleem/biryani, milk, snacks, sweet drinks, skipped meals, and late-night eating.
 
 Today's Sian OS check-in may be used as a running draft. Prefer itemized nutrition entries for foods; they automatically update check-in calorie/protein/fat/carb totals. Always preserve existing fields when making a direct partial check-in update.
+
+Saved recipes represent one normal serving. Use saved recipe values before estimating repeat foods. Multiply exact macros for multiple or fractional servings and keep the quantity in the item name, such as `Bread x3` or `Egg x1.5`.
+
+Saved recipe bundles are quick meal templates. When Sian logs a bundle, expand it into the saved recipes first, then apply the specific day's changes before writing itemized nutrition rows. He may change quantities, remove bundled foods, and add other saved recipes for that day. Do not edit the saved bundle defaults unless he explicitly asks to change the recurring template.
 
 One poor meal does not ruin a day or week. The next meal returns to the plan. Missed protein is not corrected through reckless overeating the next day.
 

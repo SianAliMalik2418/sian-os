@@ -4,11 +4,11 @@
 >
 > Owner: Sian Malik
 >
-> Last updated: 2026-08-14
+> Last updated: 2026-08-24
 >
 > Status: Active
 
-This document is the durable source of truth for Sian's fitness-coaching relationship, goals, constraints, rules, platform choices, and confirmed decisions. It complements the technical [`COACH_AGENT_HANDOFF.md`](./COACH_AGENT_HANDOFF.md), which documents Sian OS APIs and Cloudflare operations.
+This document is the durable source of truth for Sian's fitness-coaching relationship, goals, constraints, rules, platform choices, and confirmed decisions. Technical repo, API, Cloudflare, role-routing, migration, and deployment rules live in [`../AGENTS.md`](../AGENTS.md).
 
 This file contains personal routine and wellness context. Its presence in a public repository should remain an intentional choice.
 
@@ -234,13 +234,17 @@ Controlled lean gain means:
 
 ### Recipe source of truth
 
-Sian OS owns itemized daily nutrition entries and a saved recipe library for repeat foods, dishes, snacks, and drinks. Each daily nutrition entry may include a food item name, calories, protein, fats, and carbs. Each saved recipe may include a photo, ingredients, aliases, serving description, calories, protein, fats, and carbs for one normal serving.
+Sian OS owns itemized daily nutrition entries, a saved recipe library, and saved recipe bundles for repeat meals. Each daily nutrition entry may include a food item name, calories, protein, fats, and carbs. Each saved recipe may include ingredients, aliases, serving description, calories, protein, fats, and carbs for one normal serving. Recipe photos are no longer part of the active frontend workflow.
+
+Saved recipe bundles are logging templates, not fixed meals. A breakfast bundle can preselect common saved recipes, but the daily logger must still allow one-day changes before writing nutrition rows: change quantities, remove bundled recipes, and add other recipes. Those one-day changes must not edit the saved bundle unless Sian explicitly asks to change the recurring template.
 
 When logging nutrition:
 
 - first check Sian OS saved recipes by name and aliases;
+- check saved recipe bundles when Sian names a repeat meal such as breakfast;
 - if a logged food clearly matches a saved recipe, use the saved calories, protein, fats, and carbs instead of estimating;
 - multiply saved values when Sian states multiple servings, and label the nutrition row with the count such as `Bread x3`;
+- keep fractional quantities and fractional calculated macros when the serving is fractional, such as `Egg x1.5`;
 - estimate only foods or servings that are not covered by saved recipes;
 - if the match or serving is ambiguous, state the assumption or ask for clarification instead of silently guessing.
 
@@ -338,13 +342,15 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Information | Authoritative location |
 | --- | --- |
 | Workout sessions, exercises, sets, reps, load, RPE/RIR | Lyfta |
-| Sleep and wake time | Sian OS daily check-in |
+| Sleep hours | Sian OS daily check-in |
 | Daily body weight when measured | Sian OS daily check-in |
 | Waist when measured | Sian OS daily check-in |
 | Water | Sian OS daily check-in |
 | Protein, fats, carbs, and calories | Sian OS nutrition entries, then derived Sian OS daily check-in totals |
 | Daily calorie and protein targets | Sian OS profile |
 | Estimated calories, protein, fats, and carbs by food item | Sian OS nutrition entries |
+| Repeat recipe macros and aliases | Sian OS saved recipes |
+| Repeat meal templates | Sian OS saved recipe bundles |
 | Reviewer-facing workout notes derived from Lyfta | Sian OS daily check-in workout textarea |
 | Progress photos | Sian OS check-in dialog/R2 |
 | Derived daily/weekly/monthly wellness reports | Sian OS Reports page |
@@ -379,7 +385,7 @@ The Coach Agent:
 - does not write, edit, or delete operational records;
 - may update this canonical document only after a coaching decision is explicitly confirmed.
 
-The detailed role contract is [`agents/COACH_AGENT.md`](./agents/COACH_AGENT.md).
+The role contract lives in `AGENTS.md` and the Custom GPT instruction files.
 
 ### Data Steward Agent
 
@@ -393,7 +399,7 @@ The Data Steward Agent:
 - does not coach, judge, change the plan, or inspect application code;
 - writes only reviewer-facing workout notes from Lyfta into Sian OS and preserves Lyfta as the detailed source of truth.
 
-The detailed role contract is [`agents/DATA_STEWARD_AGENT.md`](./agents/DATA_STEWARD_AGENT.md).
+The role contract lives in `AGENTS.md` and the Custom GPT instruction files.
 
 ### Daily sequence
 
@@ -531,3 +537,4 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-16 | Add running Home-page calorie and protein progress with editable profile goals. | Today's check-in can act as a draft updated during the day; default targets are 2200 kcal and 100 g protein unless profile values are changed. |
 | 2026-08-16 | Add itemized macro nutrition entries to Home and Check-in. | Food items should be logged as rows with item name, calories, protein, fats, and carbs; these rows recalculate daily nutrition totals for the coach and progress cards. Routine food logging no longer uses the check-in nutrition notes field. |
 | 2026-08-17 | Saved recipes can log one serving into today's nutrition entries. | Recipes now store calories, protein, fats, and carbs for one normal serving; using a recipe as food should create an itemized nutrition row and update daily macro totals. |
+| 2026-08-24 | Saved recipe bundles are quick nutrition logging templates. | When logging a bundle, expand it into saved recipes, allow one-day quantity/removal/addition changes, then write itemized nutrition rows without changing the saved bundle defaults. |
