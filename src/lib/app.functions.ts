@@ -1,6 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
 import { setResponseHeader } from '@tanstack/react-start/server'
+import { env } from 'cloudflare:workers'
 import { dashboardSummary, db } from './db'
+import { fetchLyftaWorkouts } from './lyfta'
 import { listRecipeBundles } from './recipe-bundles'
 import { listRecipes } from './recipes'
 import { buildDailyReports } from './reports'
@@ -42,4 +44,9 @@ export const getRecipesData = createServerFn({ method: 'GET' }).handler(async ()
   disableCaching()
   const [recipes, bundles] = await Promise.all([listRecipes(), listRecipeBundles()])
   return { recipes, bundles }
+})
+
+export const getLyftaWorkoutsData = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  return fetchLyftaWorkouts({ apiKey: env.LYFTA_API_KEY, limit: 20, page: 1 })
 })

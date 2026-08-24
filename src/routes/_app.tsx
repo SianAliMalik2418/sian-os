@@ -2,12 +2,12 @@ import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
 import { Activity, ChartNoAxesCombined, NotebookTabs, UserRound } from 'lucide-react'
 import { DailyCheckinDialogProvider } from '@/components/daily-checkin-dialog'
 import { Button } from '@/components/ui/button'
-import { getProfileData, getProgressPhotos, getTodayCheckin } from '@/lib/app.functions'
+import { getProfileData, getTodayCheckin } from '@/lib/app.functions'
 
 export const Route = createFileRoute('/_app')({
   loader: async () => {
-    const [existing, photos, profile] = await Promise.all([getTodayCheckin(), getProgressPhotos(), getProfileData()])
-    return { existing, photos, profile }
+    const [existing, profile] = await Promise.all([getTodayCheckin(), getProfileData()])
+    return { existing, profile }
   },
   component: AppLayout,
 })
@@ -21,7 +21,7 @@ const navigation = [
 
 function AppLayout() {
   const data = Route.useLoaderData()
-  return <DailyCheckinDialogProvider existing={data.existing} photos={data.photos} profile={data.profile}><AppShell /></DailyCheckinDialogProvider>
+  return <DailyCheckinDialogProvider existing={data.existing} profile={data.profile}><AppShell /></DailyCheckinDialogProvider>
 }
 
 function AppShell() {

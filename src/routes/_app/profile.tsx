@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { HeartPulse, Pencil, Save, Target, UserRound, X } from 'lucide-react'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { ArrowRight, Dumbbell, HeartPulse, Images, Pencil, Save, Target, UserRound, X } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
@@ -84,9 +84,41 @@ function ProfilePage() {
       {editing ? (
         <ProfileEditor values={values} saving={saving} onUpdate={update} onSubmit={submit} onCancel={cancelEditing} error={error} />
       ) : (
-        <ProfileOverview profile={profile} onEdit={beginEditing} />
+        <>
+          <ProfileMiniPages />
+          <ProfileOverview profile={profile} onEdit={beginEditing} />
+        </>
       )}
     </div>
+  )
+}
+
+function ProfileMiniPages() {
+  return (
+    <Card>
+      <CardHeader>
+        <div><CardTitle>Mini pages</CardTitle><CardDescription>Personal tools and logs connected to your profile</CardDescription></div>
+        <CardAction><Images className="size-5 text-primary" /></CardAction>
+      </CardHeader>
+      <CardPanel className="grid gap-3 sm:grid-cols-2">
+        <Button render={<Link to="/lyfta" />} variant="ghost" className="h-auto w-full justify-start rounded-xl border bg-secondary/30 p-4 text-left">
+          <Dumbbell className="size-5 text-primary" />
+          <span className="min-w-0 flex-1">
+            <span className="block font-heading text-base font-semibold text-foreground">Lyfta</span>
+            <span className="mt-1 block text-sm font-normal text-muted-foreground">Read-only workout history and set details</span>
+          </span>
+          <ArrowRight className="ml-auto size-4 text-muted-foreground" />
+        </Button>
+        <Button render={<Link to="/gallery" />} variant="ghost" className="h-auto w-full justify-start rounded-xl border bg-secondary/30 p-4 text-left">
+          <Images className="size-5 text-primary" />
+          <span className="min-w-0 flex-1">
+            <span className="block font-heading text-base font-semibold text-foreground">Gallery</span>
+            <span className="mt-1 block text-sm font-normal text-muted-foreground">Progress photos grouped by date</span>
+          </span>
+          <ArrowRight className="ml-auto size-4 text-muted-foreground" />
+        </Button>
+      </CardPanel>
+    </Card>
   )
 }
 

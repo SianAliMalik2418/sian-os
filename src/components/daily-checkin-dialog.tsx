@@ -1,6 +1,6 @@
 import { useRouter } from '@tanstack/react-router'
-import { Camera, Check, Clock3, Save, Trash2 } from 'lucide-react'
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { Check, Clock3, Save } from 'lucide-react'
+import { createContext, useCallback, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offline-checkins'
 import type { CheckinInput } from '@/lib/schemas'
-import type { DailyCheckin, Profile, ProgressPhoto } from '@/lib/types'
+import type { DailyCheckin, Profile } from '@/lib/types'
 
 const numericFields = ['weight_kg', 'waist_inches', 'sleep_hours', 'water_liters', 'protein_grams', 'fat_grams', 'carb_grams', 'calories'] as const
 const today = () => new Date().toISOString().slice(0, 10)
@@ -25,20 +25,16 @@ export function useDailyCheckinDialog() {
   return context
 }
 
-export function DailyCheckinDialogProvider({ existing, photos, profile, children }: { existing: DailyCheckin | null; photos: ProgressPhoto[]; profile: Profile | null; children: ReactNode }) {
+export function DailyCheckinDialogProvider({ existing, profile, children }: { existing: DailyCheckin | null; profile: Profile | null; children: ReactNode }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<DailyCheckin | null>(existing)
   const [values, setValues] = useState<Record<string, string>>(() => valuesFromCheckin(existing))
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [photoSaving, setPhotoSaving] = useState(false)
-  const [photoLabel, setPhotoLabel] = useState('')
-  const [photoDeleteId, setPhotoDeleteId] = useState<number>()
   const [error, setError] = useState<string>()
   const [syncMessage, setSyncMessage] = useState<string>()
   const [pendingCount, setPendingCount] = useState(0)
-  const fileRef = useRef<HTMLInputElement>(null)
 
   const refreshPendingCount = useCallback(() => {
     setPendingCount(readQueuedCheckins().length)
@@ -72,10 +68,6 @@ export function DailyCheckinDialogProvider({ existing, photos, profile, children
     return () => window.clearTimeout(timeout)
   }, [pendingCount, syncMessage])
 
-  const selectedPhotos = useMemo(
-    () => photos.filter((photo) => photo.date === values.date),
-    [photos, values.date],
-  )
   const calorieGoal = profile?.calorie_goal || 2200
   const proteinGoal = profile?.protein_goal || 100
 
@@ -83,8 +75,6 @@ export function DailyCheckinDialogProvider({ existing, photos, profile, children
     setOpen(true)
     setError(undefined)
     setSyncMessage(undefined)
-    setPhotoLabel('')
-    if (fileRef.current) fileRef.current.value = ''
 
     const queued = readQueuedCheckins().find((item) => item.payload.date === date)
     if (queued) {
@@ -168,45 +158,6 @@ export function DailyCheckinDialogProvider({ existing, photos, profile, children
     }
   }
 
-  async function uploadPhoto() {
-    const file = fileRef.current?.files?.[0]
-    if (!file) {
-      setError('Choose a photo to upload')
-      return
-    }
-    setPhotoSaving(true)
-    setError(undefined)
-    const form = new FormData()
-    form.set('date', values.date)
-    form.set('label', photoLabel)
-    form.set('photo', file)
-
-    try {
-      const response = await fetch('/api/progress-photos', { method: 'POST', body: form })
-      const result = await response.json() as { error?: { message?: string } }
-      if (!response.ok) throw new Error(result.error?.message || 'Could not upload photo')
-      setPhotoLabel('')
-      if (fileRef.current) fileRef.current.value = ''
-      await router.invalidate()
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not upload photo')
-    } finally {
-      setPhotoSaving(false)
-    }
-  }
-
-  async function deletePhoto(id: number) {
-    setError(undefined)
-    const response = await fetch(`/api/progress-photos/${id}`, { method: 'DELETE' })
-    if (!response.ok) {
-      const result = await response.json() as { error?: { message?: string } }
-      setError(result.error?.message || 'Could not delete photo')
-      return
-    }
-    setPhotoDeleteId(undefined)
-    await router.invalidate()
-  }
-
   return (
     <DailyCheckinDialogContext.Provider value={{ openCheckin }}>
       {children}
@@ -267,16 +218,6 @@ export function DailyCheckinDialogProvider({ existing, photos, profile, children
                 <Textarea value={values.notes || ''} onChange={(event) => update('notes', event.target.value)} placeholder="Anything else worth remembering today…" rows={4} />
               </CheckinField>
 
-              <section className="rounded-2xl border p-4">
-                <div className="mb-4"><p className="font-heading font-semibold">Progress photos</p><p className="mt-1 text-xs text-muted-foreground">Photos use the selected check-in date.</p></div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <CheckinField label="Photo"><Input ref={fileRef} nativeInput type="file" accept="image/*" /></CheckinField>
-                  <CheckinField label="Label"><Input nativeInput value={photoLabel} onChange={(event) => setPhotoLabel(event.target.value)} placeholder="Front, side, month 3…" /></CheckinField>
-                </div>
-                <Button type="button" variant="outline" className="mt-3" loading={photoSaving} onClick={uploadPhoto}><Camera /> Upload photo</Button>
-                {selectedPhotos.length ? <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">{selectedPhotos.map((photo) => <figure key={photo.id} className="group relative overflow-hidden rounded-xl border bg-secondary"><img src={`/api/progress-photos/${photo.id}`} alt={photo.label || `Progress photo ${photo.date}`} className="aspect-[3/4] w-full object-cover" loading="lazy" /><figcaption className="p-2"><p className="truncate text-xs font-medium">{photo.label || 'Progress'}</p></figcaption><button type="button" onClick={() => setPhotoDeleteId(photo.id)} className="absolute right-2 top-2 rounded-lg bg-background/80 p-2 opacity-100 backdrop-blur sm:opacity-0 sm:transition sm:group-hover:opacity-100" aria-label="Delete photo"><Trash2 className="size-4" /></button></figure>)}</div> : <p className="mt-4 text-sm text-muted-foreground">No photos for this date.</p>}
-              </section>
-
               {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
               {syncMessage && <p role="status" className="rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary">{syncMessage}</p>}
             </DialogPanel>
@@ -289,13 +230,6 @@ export function DailyCheckinDialogProvider({ existing, photos, profile, children
         </DialogPopup>
       </Dialog>
 
-      <Dialog open={Boolean(photoDeleteId)} onOpenChange={(nextOpen) => !nextOpen && setPhotoDeleteId(undefined)}>
-        <DialogPopup className="max-w-md">
-          <DialogHeader><DialogTitle>Delete progress photo?</DialogTitle><DialogDescription>The original image and its metadata will be permanently removed.</DialogDescription></DialogHeader>
-          <DialogPanel><p className="text-sm text-muted-foreground">This action cannot be undone.</p></DialogPanel>
-          <DialogFooter><DialogClose render={<Button variant="outline" />}>Cancel</DialogClose><Button type="button" variant="destructive" onClick={() => photoDeleteId && deletePhoto(photoDeleteId)}><Trash2 /> Delete photo</Button></DialogFooter>
-        </DialogPopup>
-      </Dialog>
     </DailyCheckinDialogContext.Provider>
   )
 }

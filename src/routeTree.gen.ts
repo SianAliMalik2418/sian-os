@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppGalleryRouteImport } from './routes/_app/gallery'
+import { Route as AppLyftaRouteImport } from './routes/_app/lyfta'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppRecipesRouteImport } from './routes/_app/recipes'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
@@ -27,6 +29,7 @@ import { Route as ApiReportsRouteImport } from './routes/api/reports'
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
 import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
 import { Route as ApiAgentStateRouteImport } from './routes/api/agent/state'
+import { Route as ApiLyftaWorkoutsRouteImport } from './routes/api/lyfta/workouts'
 import { Route as ApiNutritionEntriesEntryIdRouteImport } from './routes/api/nutrition-entries/$entryId'
 import { Route as ApiProgressPhotosPhotoIdRouteImport } from './routes/api/progress-photos/$photoId'
 import { Route as ApiRecipeBundlesBundleIdRouteImport } from './routes/api/recipe-bundles/$bundleId'
@@ -40,6 +43,16 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGalleryRoute = AppGalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLyftaRoute = AppLyftaRouteImport.update({
+  id: '/lyfta',
+  path: '/lyfta',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProfileRoute = AppProfileRouteImport.update({
@@ -122,6 +135,11 @@ const ApiAgentStateRoute = ApiAgentStateRouteImport.update({
   path: '/api/agent/state',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLyftaWorkoutsRoute = ApiLyftaWorkoutsRouteImport.update({
+  id: '/api/lyfta/workouts',
+  path: '/api/lyfta/workouts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiNutritionEntriesEntryIdRoute =
   ApiNutritionEntriesEntryIdRouteImport.update({
     id: '/$entryId',
@@ -153,6 +171,8 @@ const ApiRecipesRecipeIdPhotoRoute = ApiRecipesRecipeIdPhotoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/gallery': typeof AppGalleryRoute
+  '/lyfta': typeof AppLyftaRoute
   '/profile': typeof AppProfileRoute
   '/recipes': typeof AppRecipesRoute
   '/reports': typeof AppReportsRoute
@@ -169,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
+  '/api/lyfta/workouts': typeof ApiLyftaWorkoutsRoute
   '/api/nutrition-entries/$entryId': typeof ApiNutritionEntriesEntryIdRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
   '/api/recipe-bundles/$bundleId': typeof ApiRecipeBundlesBundleIdRoute
@@ -176,6 +197,8 @@ export interface FileRoutesByFullPath {
   '/api/recipes/$recipeId/photo': typeof ApiRecipesRecipeIdPhotoRoute
 }
 export interface FileRoutesByTo {
+  '/gallery': typeof AppGalleryRoute
+  '/lyfta': typeof AppLyftaRoute
   '/profile': typeof AppProfileRoute
   '/recipes': typeof AppRecipesRoute
   '/reports': typeof AppReportsRoute
@@ -193,6 +216,7 @@ export interface FileRoutesByTo {
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
+  '/api/lyfta/workouts': typeof ApiLyftaWorkoutsRoute
   '/api/nutrition-entries/$entryId': typeof ApiNutritionEntriesEntryIdRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
   '/api/recipe-bundles/$bundleId': typeof ApiRecipeBundlesBundleIdRoute
@@ -202,6 +226,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_app/gallery': typeof AppGalleryRoute
+  '/_app/lyfta': typeof AppLyftaRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/recipes': typeof AppRecipesRoute
   '/_app/reports': typeof AppReportsRoute
@@ -219,6 +245,7 @@ export interface FileRoutesById {
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
+  '/api/lyfta/workouts': typeof ApiLyftaWorkoutsRoute
   '/api/nutrition-entries/$entryId': typeof ApiNutritionEntriesEntryIdRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
   '/api/recipe-bundles/$bundleId': typeof ApiRecipeBundlesBundleIdRoute
@@ -229,6 +256,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/gallery'
+    | '/lyfta'
     | '/profile'
     | '/recipes'
     | '/reports'
@@ -245,6 +274,7 @@ export interface FileRouteTypes {
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
+    | '/api/lyfta/workouts'
     | '/api/nutrition-entries/$entryId'
     | '/api/progress-photos/$photoId'
     | '/api/recipe-bundles/$bundleId'
@@ -252,6 +282,8 @@ export interface FileRouteTypes {
     | '/api/recipes/$recipeId/photo'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/gallery'
+    | '/lyfta'
     | '/profile'
     | '/recipes'
     | '/reports'
@@ -269,6 +301,7 @@ export interface FileRouteTypes {
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
+    | '/api/lyfta/workouts'
     | '/api/nutrition-entries/$entryId'
     | '/api/progress-photos/$photoId'
     | '/api/recipe-bundles/$bundleId'
@@ -277,6 +310,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/_app/gallery'
+    | '/_app/lyfta'
     | '/_app/profile'
     | '/_app/recipes'
     | '/_app/reports'
@@ -294,6 +329,7 @@ export interface FileRouteTypes {
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
+    | '/api/lyfta/workouts'
     | '/api/nutrition-entries/$entryId'
     | '/api/progress-photos/$photoId'
     | '/api/recipe-bundles/$bundleId'
@@ -316,6 +352,7 @@ export interface RootRouteChildren {
   ApiAgentContextRoute: typeof ApiAgentContextRoute
   ApiAgentQueryRoute: typeof ApiAgentQueryRoute
   ApiAgentStateRoute: typeof ApiAgentStateRoute
+  ApiLyftaWorkoutsRoute: typeof ApiLyftaWorkoutsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -332,6 +369,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/gallery': {
+      id: '/_app/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof AppGalleryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lyfta': {
+      id: '/_app/lyfta'
+      path: '/lyfta'
+      fullPath: '/lyfta'
+      preLoaderRoute: typeof AppLyftaRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/profile': {
@@ -446,6 +497,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgentStateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/lyfta/workouts': {
+      id: '/api/lyfta/workouts'
+      path: '/api/lyfta/workouts'
+      fullPath: '/api/lyfta/workouts'
+      preLoaderRoute: typeof ApiLyftaWorkoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/nutrition-entries/$entryId': {
       id: '/api/nutrition-entries/$entryId'
       path: '/$entryId'
@@ -485,6 +543,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppGalleryRoute: typeof AppGalleryRoute
+  AppLyftaRoute: typeof AppLyftaRoute
   AppProfileRoute: typeof AppProfileRoute
   AppRecipesRoute: typeof AppRecipesRoute
   AppReportsRoute: typeof AppReportsRoute
@@ -492,6 +552,8 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppGalleryRoute: AppGalleryRoute,
+  AppLyftaRoute: AppLyftaRoute,
   AppProfileRoute: AppProfileRoute,
   AppRecipesRoute: AppRecipesRoute,
   AppReportsRoute: AppReportsRoute,
@@ -571,6 +633,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAgentContextRoute: ApiAgentContextRoute,
   ApiAgentQueryRoute: ApiAgentQueryRoute,
   ApiAgentStateRoute: ApiAgentStateRoute,
+  ApiLyftaWorkoutsRoute: ApiLyftaWorkoutsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
