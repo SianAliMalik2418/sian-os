@@ -6,7 +6,7 @@ describe('nutrition picker helpers', () => {
     expect(shouldLoadRecipesForNutritionPicker({
       compact: true,
       addOpen: false,
-      compactMode: 'recipes',
+      mode: 'recipes',
       recipesLoaded: false,
       recipesLoading: false,
     })).toBe(true)
@@ -16,19 +16,29 @@ describe('nutrition picker helpers', () => {
     expect(shouldLoadRecipesForNutritionPicker({
       compact: true,
       addOpen: false,
-      compactMode: 'manual',
+      mode: 'manual',
       recipesLoaded: false,
       recipesLoading: false,
     })).toBe(false)
   })
 
-  it('loads recipes for the full add-food dialog', () => {
+  it('loads recipes when the full add-food dialog is on the recipes tab', () => {
     expect(shouldLoadRecipesForNutritionPicker({
       compact: false,
       addOpen: true,
-      compactMode: 'manual',
+      mode: 'recipes',
       recipesLoaded: false,
       recipesLoading: false,
     })).toBe(true)
+  })
+
+  it('does not load recipes while the full add-food dialog is on manual entry', () => {
+    expect(shouldLoadRecipesForNutritionPicker({
+      compact: false,
+      addOpen: true,
+      mode: 'manual',
+      recipesLoaded: false,
+      recipesLoading: false,
+    })).toBe(false)
   })
 })

@@ -1,18 +1,19 @@
-export type CompactNutritionMode = 'manual' | 'recipes'
+export type NutritionEntryMode = 'manual' | 'recipes'
 
 export function shouldLoadRecipesForNutritionPicker({
   compact,
   addOpen,
-  compactMode,
+  mode,
   recipesLoaded,
   recipesLoading,
 }: {
   compact: boolean
   addOpen: boolean
-  compactMode: CompactNutritionMode
+  mode: NutritionEntryMode
   recipesLoaded: boolean
   recipesLoading: boolean
 }) {
   if (recipesLoaded || recipesLoading) return false
-  return compact ? compactMode === 'recipes' : addOpen
+  if (compact) return mode === 'recipes'
+  return addOpen && mode === 'recipes'
 }

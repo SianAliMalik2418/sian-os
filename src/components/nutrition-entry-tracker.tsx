@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { groupedNutritionEntries, nutritionEntriesFromRecipes } from '@/lib/nutrition-entries'
-import { shouldLoadRecipesForNutritionPicker, type CompactNutritionMode } from '@/lib/nutrition-picker'
+import { shouldLoadRecipesForNutritionPicker, type NutritionEntryMode } from '@/lib/nutrition-picker'
 import { clampServingQuantity, servingQuantityFromInput } from '@/lib/servings'
 import type { DailyCheckin, NutritionEntry, Recipe } from '@/lib/types'
 
@@ -55,7 +55,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string>()
   const [addOpen, setAddOpen] = useState(false)
-  const [compactMode, setCompactMode] = useState<CompactNutritionMode>('manual')
+  const [entryMode, setEntryMode] = useState<NutritionEntryMode>('manual')
 
   const calorieTotal = entries.reduce((total, entry) => total + entry.calories, 0)
   const proteinTotal = entries.reduce((total, entry) => total + entry.protein_grams, 0)
@@ -87,9 +87,9 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   }, [date, initialEntries])
 
   useEffect(() => {
-    if (!shouldLoadRecipesForNutritionPicker({ compact, addOpen, compactMode, recipesLoaded, recipesLoading })) return
+    if (!shouldLoadRecipesForNutritionPicker({ compact, addOpen, mode: entryMode, recipesLoaded, recipesLoading })) return
     void loadRecipes()
-  }, [addOpen, compact, compactMode, recipesLoaded, recipesLoading])
+  }, [addOpen, compact, entryMode, recipesLoaded, recipesLoading])
 
   const groupedEntries = groupedNutritionEntries(entries)
   const filteredRecipes = useMemo(() => {
@@ -279,6 +279,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
 
   function openAddDialog() {
     setError(undefined)
+    setEntryMode('manual')
     setAddOpen(true)
   }
 
@@ -302,9 +303,15 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
 
   const entryFields = <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} fats={fats} carbs={carbs} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} onFatsChange={setFats} onCarbsChange={setCarbs} />
 
-  const manualEntryForm = (
-    <div className="grid gap-3 lg:grid-cols-[minmax(12rem,1fr)_7rem_7rem_7rem_7rem_auto]">
+  const manualEntryFields = (
+    <div className="grid gap-3 lg:grid-cols-[minmax(12rem,1fr)_7rem_7rem_7rem_7rem]">
       {entryFields}
+    </div>
+  )
+
+  const manualEntryForm = (
+    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+      {manualEntryFields}
       <Button type="button" loading={saving} className="self-end" onClick={addEntry}>Add</Button>
     </div>
   )
@@ -362,7 +369,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   )
 
   const compactEntryForm = (
-    <Tabs value={compactMode} onValueChange={(value) => setCompactMode(value as CompactNutritionMode)} className="rounded-xl border bg-secondary/20 p-3">
+    <Tabs value={entryMode} onValueChange={(value) => setEntryMode(value as NutritionEntryMode)} className="rounded-xl border bg-secondary/20 p-3">
       <TabsList className="grid w-full grid-cols-2 sm:w-fit">
         <TabsTab value="manual">Manual</TabsTab>
         <TabsTab value="recipes">Recipes</TabsTab>
@@ -375,6 +382,21 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
         <div className="flex justify-end">
           <Button type="button" loading={saving} onClick={saveSelectedRecipes}><Utensils /> Log selected</Button>
         </div>
+      </TabsPanel>
+    </Tabs>
+  )
+
+  const addFoodDialogContent = (
+    <Tabs value={entryMode} onValueChange={(value) => setEntryMode(value as NutritionEntryMode)} className="gap-4">
+      <TabsList className="grid w-full grid-cols-2 sm:w-fit">
+        <TabsTab value="manual">Manual</TabsTab>
+        <TabsTab value="recipes">Recipes</TabsTab>
+      </TabsList>
+      <TabsPanel value="manual" className="pt-1">
+        {manualEntryFields}
+      </TabsPanel>
+      <TabsPanel value="recipes" className="space-y-4 pt-1">
+        {recipePicker}
       </TabsPanel>
     </Tabs>
   )
@@ -447,15 +469,17 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
           <div className="flex min-h-0 flex-col">
             <DialogHeader>
               <DialogTitle>Add food</DialogTitle>
-              <DialogDescription>Select saved recipes and set quantities for today.</DialogDescription>
+              <DialogDescription>Add a manual food row or choose saved recipes for today.</DialogDescription>
             </DialogHeader>
             <DialogPanel className="space-y-4">
-              {recipePicker}
+              {addFoodDialogContent}
               {error && <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
             </DialogPanel>
             <DialogFooter>
               <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
-              <Button type="button" loading={saving} onClick={saveSelectedRecipes}><Utensils /> Log selected</Button>
+              {entryMode === 'manual'
+                ? <Button type="button" loading={saving} onClick={addEntry}>Add food</Button>
+                : <Button type="button" loading={saving} onClick={saveSelectedRecipes}><Utensils /> Log selected</Button>}
             </DialogFooter>
           </div>
         </DialogPopup>
