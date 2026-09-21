@@ -20,6 +20,7 @@ import { Route as ApiCheckinsRouteImport } from './routes/api/checkins'
 import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
 import { Route as ApiExportRouteImport } from './routes/api/export'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as ApiNutritionEntriesRouteImport } from './routes/api/nutrition-entries'
 import { Route as ApiProfileRouteImport } from './routes/api/profile'
 import { Route as ApiProgressPhotosRouteImport } from './routes/api/progress-photos'
@@ -88,6 +89,11 @@ const ApiExportRoute = ApiExportRouteImport.update({
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMcpRoute = ApiMcpRouteImport.update({
+  id: '/api/mcp',
+  path: '/api/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiNutritionEntriesRoute = ApiNutritionEntriesRouteImport.update({
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/api/dashboard': typeof ApiDashboardRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/api/nutrition-entries': typeof ApiNutritionEntriesRouteWithChildren
   '/api/profile': typeof ApiProfileRoute
   '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/api/dashboard': typeof ApiDashboardRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/api/nutrition-entries': typeof ApiNutritionEntriesRouteWithChildren
   '/api/profile': typeof ApiProfileRoute
   '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
@@ -235,6 +243,7 @@ export interface FileRoutesById {
   '/api/dashboard': typeof ApiDashboardRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/api/nutrition-entries': typeof ApiNutritionEntriesRouteWithChildren
   '/api/profile': typeof ApiProfileRoute
   '/api/progress-photos': typeof ApiProgressPhotosRouteWithChildren
@@ -265,6 +274,7 @@ export interface FileRouteTypes {
     | '/api/dashboard'
     | '/api/export'
     | '/api/health'
+    | '/api/mcp'
     | '/api/nutrition-entries'
     | '/api/profile'
     | '/api/progress-photos'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/api/dashboard'
     | '/api/export'
     | '/api/health'
+    | '/api/mcp'
     | '/api/nutrition-entries'
     | '/api/profile'
     | '/api/progress-photos'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/api/dashboard'
     | '/api/export'
     | '/api/health'
+    | '/api/mcp'
     | '/api/nutrition-entries'
     | '/api/profile'
     | '/api/progress-photos'
@@ -343,6 +355,7 @@ export interface RootRouteChildren {
   ApiDashboardRoute: typeof ApiDashboardRoute
   ApiExportRoute: typeof ApiExportRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiMcpRoute: typeof ApiMcpRoute
   ApiNutritionEntriesRoute: typeof ApiNutritionEntriesRouteWithChildren
   ApiProfileRoute: typeof ApiProfileRoute
   ApiProgressPhotosRoute: typeof ApiProgressPhotosRouteWithChildren
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mcp': {
+      id: '/api/mcp'
+      path: '/api/mcp'
+      fullPath: '/api/mcp'
+      preLoaderRoute: typeof ApiMcpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/nutrition-entries': {
@@ -624,6 +644,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDashboardRoute: ApiDashboardRoute,
   ApiExportRoute: ApiExportRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiMcpRoute: ApiMcpRoute,
   ApiNutritionEntriesRoute: ApiNutritionEntriesRouteWithChildren,
   ApiProfileRoute: ApiProfileRoute,
   ApiProgressPhotosRoute: ApiProgressPhotosRouteWithChildren,

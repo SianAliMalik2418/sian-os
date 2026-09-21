@@ -9,6 +9,7 @@ Use the smallest current doc set:
 - `docs/SIAN_HEALTH_COACH_GPT_INSTRUCTIONS.md`: paste into the Custom GPT Instructions field.
 - `docs/SIAN_HEALTH_COACH_KNOWLEDGE.md`: upload as the Custom GPT knowledge file.
 - `docs/sian-os-health-api.openapi.yaml`: paste into the Custom GPT Action schema.
+- `/api/mcp`: remote MCP server exposing the same operations as MCP tools for Claude and other MCP-compatible agents; see "MCP server" below.
 
 Do not recreate separate handoff, role, API, or deployment docs unless the owner explicitly asks. Put technical operating details here. Put coaching decisions in `docs/FITNESS_COACHING_CONTEXT.md`. Put only Custom GPT runtime material in the three GPT files above.
 
@@ -146,6 +147,31 @@ Routine food logging must use `/api/nutrition-entries`, not `nutrition_notes`. E
 Saved recipes represent one normal serving. Match foods by name and aliases before estimating. For multiple servings, multiply macros exactly and keep decimals. Label rows with the count, such as `Bread x3` or `Egg x1.5`.
 
 Saved recipe bundles are quick templates. When logging a bundle, expand it into its included saved recipes, then apply the owner's one-day changes before writing entries. One-day changes may change recipe quantities, remove bundled recipes, or add other recipes. Do not edit the saved bundle unless the owner explicitly asks to change the recurring template.
+
+## MCP server
+
+`/api/mcp` is a stateless remote MCP (Model Context Protocol) server. It exposes the same operations as the REST API and the Custom GPT Action as MCP tools, so any MCP-compatible agent (Claude Desktop, Claude Code, claude.ai custom connectors) can read and write Sian OS data directly without a separate GPT Action schema.
+
+- Tool definitions live in `src/lib/mcp/tools.ts`. Each tool validates arguments with the same Zod schemas the REST API uses (`src/lib/schemas.ts`) and proxies to the matching REST endpoint over `fetch`, so there is one source of truth for request shape and one place implementing the write logic.
+- The JSON-RPC/Streamable HTTP handler lives in `src/routes/api/mcp.ts`. It supports `initialize`, `tools/list`, and `tools/call`, and returns empty `resources/list`/`prompts/list` for client compatibility. It does not implement SSE server push or session resumability; both are optional in the MCP spec and unnecessary for a single-owner stateless tool server.
+- When adding, removing, or renaming an API endpoint or its request shape, update the matching tool in `src/lib/mcp/tools.ts` in the same change so MCP tools stay in sync with the API without a second manually maintained schema.
+- Auth: set the `MCP_API_KEY` secret in production (`wrangler secret put MCP_API_KEY`) and send it as `Authorization: Bearer <key>` from the MCP client. If the secret is unset, the endpoint accepts unauthenticated requests; only acceptable for local development, since MCP tools include writes and deletes.
+
+Connect from Claude:
+
+- claude.ai: Settings → Connectors → Add custom connector, URL `https://sian-os.sianalimalik2418.workers.dev/api/mcp`, with the Bearer token if `MCP_API_KEY` is set.
+- Claude Desktop / Claude Code: add an entry to the MCP client config, for example:
+
+```json
+{
+  "mcpServers": {
+    "sian-os": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://sian-os.sianalimalik2418.workers.dev/api/mcp", "--header", "Authorization: Bearer ${MCP_API_KEY}"]
+    }
+  }
+}
+```
 
 ## Agent loop
 
