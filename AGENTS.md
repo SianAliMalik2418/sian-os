@@ -6,12 +6,11 @@ Use the smallest current doc set:
 
 - `AGENTS.md`: repo, API, data-safety, migration, and deployment rules for coding agents.
 - `docs/FITNESS_COACHING_CONTEXT.md`: durable coaching decisions, goals, source-of-truth boundaries, and decision log.
-- `docs/SIAN_HEALTH_COACH_GPT_INSTRUCTIONS.md`: paste into the Custom GPT Instructions field.
-- `docs/SIAN_HEALTH_COACH_KNOWLEDGE.md`: upload as the Custom GPT knowledge file.
-- `docs/sian-os-health-api.openapi.yaml`: paste into the Custom GPT Action schema.
 - `/api/mcp`: remote MCP server exposing the same operations as MCP tools for Claude and other MCP-compatible agents; see "MCP server" below.
 
-Do not recreate separate handoff, role, API, or deployment docs unless the owner explicitly asks. Put technical operating details here. Put coaching decisions in `docs/FITNESS_COACHING_CONTEXT.md`. Put only Custom GPT runtime material in the three GPT files above.
+Do not recreate separate handoff, role, API, or deployment docs unless the owner explicitly asks. Put technical operating details here. Put coaching decisions in `docs/FITNESS_COACHING_CONTEXT.md`.
+
+Sian retired the ChatGPT-based coaching workflow: `SIAN_HEALTH_COACH_GPT_INSTRUCTIONS.md`, `SIAN_HEALTH_COACH_KNOWLEDGE.md`, and `sian-os-health-api.openapi.yaml` no longer exist. The MCP server is now the single integration path for agents; do not recreate GPT-specific instruction/knowledge/schema files unless the owner explicitly asks to bring ChatGPT back.
 
 ## Stack and production
 
@@ -150,7 +149,7 @@ Saved recipe bundles are quick templates. When logging a bundle, expand it into 
 
 ## MCP server
 
-`/api/mcp` is a stateless remote MCP (Model Context Protocol) server. It exposes the same operations as the REST API and the Custom GPT Action as MCP tools, so any MCP-compatible agent (Claude Desktop, Claude Code, claude.ai custom connectors) can read and write Sian OS data directly without a separate GPT Action schema.
+`/api/mcp` is a stateless remote MCP (Model Context Protocol) server. It exposes the same operations as the REST API as MCP tools, so any MCP-compatible agent (Claude Desktop, Claude Code, claude.ai custom connectors) can read and write Sian OS data directly. This replaced the retired ChatGPT Custom GPT/Action integration.
 
 - Tool definitions live in `src/lib/mcp/tools.ts`. Each tool validates arguments with the same Zod schemas the REST API uses (`src/lib/schemas.ts`) and proxies to the matching REST endpoint over `fetch`, so there is one source of truth for request shape and one place implementing the write logic.
 - The JSON-RPC/Streamable HTTP handler lives in `src/routes/api/mcp.ts`. It supports `initialize`, `tools/list`, and `tools/call`, and returns empty `resources/list`/`prompts/list` for client compatibility. It does not implement SSE server push or session resumability; both are optional in the MCP spec and unnecessary for a single-owner stateless tool server.
@@ -216,8 +215,8 @@ Do not put daily operational data in the coaching context when it belongs in Sia
 - Use Coss UI and shared app components where they already exist.
 - Mood and readiness do not belong in the UI, API, types, or database.
 - Sleep is logged as numeric hours, not separate sleep/wake fields.
-- Sleep hours, waist, and water are legacy fields: the database and `/api/checkins` still store them, but the check-in UI, dashboard, Reports page, and Custom GPT files no longer show or request them. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
-- Fats and carbs are legacy nutrition fields: the database and API still store `fat_grams`/`carb_grams` on check-ins, nutrition entries, and recipes, but the nutrition tracker, check-in UI, dashboard, Reports page, and Custom GPT files no longer show or request them. Daily nutrition focus is calories and protein only. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
+- Sleep hours, waist, and water are legacy fields: the database and `/api/checkins` still store them, but the check-in UI, dashboard, Reports page, and MCP tools no longer show or request them. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
+- Fats and carbs are legacy nutrition fields: the database and API still store `fat_grams`/`carb_grams` on check-ins, nutrition entries, and recipes, but the nutrition tracker, check-in UI, dashboard, Reports page, and MCP tool descriptions no longer show or request them. Daily nutrition focus is calories and protein only. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
 - Do not rebuild Sian OS as a competing workout tracker.
 - Reports are derived from source records.
 - API inputs stay strict and validated.

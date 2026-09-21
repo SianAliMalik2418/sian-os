@@ -3,6 +3,14 @@ import { checkinSchema, dateSchema, nutritionEntrySchema, profileSchema, recipeB
 
 const empty = z.object({}).strict()
 
+// Sleep, waist, and water are legacy check-in fields; fats and carbs are legacy nutrition
+// fields (see docs/FITNESS_COACHING_CONTEXT.md Legacy features). The REST API and database
+// still accept and return them unchanged, but MCP tools intentionally do not advertise them
+// as writable so agents do not start asking about or logging them again.
+const saveCheckinArgs = checkinSchema.omit({ waist_inches: true, sleep_hours: true, water_liters: true, fat_grams: true, carb_grams: true })
+const addNutritionEntryArgs = nutritionEntrySchema.omit({ fat_grams: true, carb_grams: true })
+const createRecipeArgs = recipeSchema.omit({ fat_grams: true, carb_grams: true })
+
 const getCheckinsArgs = z.object({
   date: dateSchema.optional(),
   limit: z.number().int().min(1).max(365).optional(),
@@ -14,7 +22,7 @@ const getNutritionEntriesArgs = z.object({ date: dateSchema }).strict()
 
 const deleteNutritionEntryArgs = z.object({ entryId: z.number().int().min(1) }).strict()
 
-const updateRecipeArgs = recipeSchema.extend({ recipeId: z.number().int().min(1) }).strict()
+const updateRecipeArgs = createRecipeArgs.extend({ recipeId: z.number().int().min(1) }).strict()
 const deleteRecipeArgs = z.object({ recipeId: z.number().int().min(1) }).strict()
 
 const updateRecipeBundleArgs = recipeBundleSchema.extend({ bundleId: z.number().int().min(1) }).strict()
@@ -79,8 +87,8 @@ export const tools: Tool[] = [
   {
     name: 'save_checkin',
     description: 'Create or update a daily check-in by date (upsert). This is a full upsert: omitted optional fields are cleared, so call get_checkins for that date first and pass through any existing confirmed values you want to keep. Use nutrition entry tools for itemized food instead of this.',
-    argsSchema: checkinSchema,
-    buildRequest: (args: z.infer<typeof checkinSchema>) => ({ method: 'POST', path: '/api/checkins', body: args }),
+    argsSchema: saveCheckinArgs,
+    buildRequest: (args: z.infer<typeof saveCheckinArgs>) => ({ method: 'POST', path: '/api/checkins', body: args }),
   },
   {
     name: 'delete_checkin',
@@ -97,8 +105,8 @@ export const tools: Tool[] = [
   {
     name: 'add_nutrition_entry',
     description: "Add one itemized food row for a date. Automatically recalculates that day's check-in calorie and protein totals. Check saved recipes/bundles first for repeat foods instead of estimating.",
-    argsSchema: nutritionEntrySchema,
-    buildRequest: (args: z.infer<typeof nutritionEntrySchema>) => ({ method: 'POST', path: '/api/nutrition-entries', body: args }),
+    argsSchema: addNutritionEntryArgs,
+    buildRequest: (args: z.infer<typeof addNutritionEntryArgs>) => ({ method: 'POST', path: '/api/nutrition-entries', body: args }),
   },
   {
     name: 'delete_nutrition_entry',
@@ -115,8 +123,8 @@ export const tools: Tool[] = [
   {
     name: 'create_recipe',
     description: "Save a new repeat recipe representing one normal serving.",
-    argsSchema: recipeSchema,
-    buildRequest: (args: z.infer<typeof recipeSchema>) => ({ method: 'POST', path: '/api/recipes', body: args }),
+    argsSchema: createRecipeArgs,
+    buildRequest: (args: z.infer<typeof createRecipeArgs>) => ({ method: 'POST', path: '/api/recipes', body: args }),
   },
   {
     name: 'update_recipe',
