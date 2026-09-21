@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Activity, Check, Droplets, Moon, Scale, Sparkles } from 'lucide-react'
+import { Activity, Check, Scale, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
@@ -33,12 +33,6 @@ function Dashboard() {
     date.setUTCDate(date.getUTCDate() - day + 1 + index)
     return { date: date.toISOString().slice(0, 10), label: date.toLocaleDateString('en', { weekday: 'short', timeZone: 'UTC' }) }
   })
-
-  const metrics = [
-    { label: 'Weight', value: formatValue(checkin?.weight_kg, ' kg'), icon: Scale },
-    { label: 'Water', value: formatValue(checkin?.water_liters, ' L'), icon: Droplets },
-    { label: 'Sleep', value: formatValue(checkin?.sleep_hours, ' hrs'), icon: Moon },
-  ]
 
   useEffect(() => {
     setCheckin(data.checkin)
@@ -84,10 +78,8 @@ function Dashboard() {
         await router.invalidate()
       }} />
 
-      <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
-        {metrics.map(({ label, value, icon: Icon }) => (
-          <Card key={label}><CardHeader><CardDescription>{label}</CardDescription><CardAction><Icon className="size-5 text-primary" /></CardAction><CardTitle className="text-2xl">{value}</CardTitle></CardHeader></Card>
-        ))}
+      <section className="grid gap-3 sm:max-w-xs">
+        <Card><CardHeader><CardDescription>Weight</CardDescription><CardAction><Scale className="size-5 text-primary" /></CardAction><CardTitle className="text-2xl">{formatValue(checkin?.weight_kg, ' kg')}</CardTitle></CardHeader></Card>
       </section>
     </div>
   )

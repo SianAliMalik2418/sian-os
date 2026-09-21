@@ -27,6 +27,10 @@ Do not recreate separate handoff, role, API, or deployment docs unless the owner
 
 The app and API are intentionally public. Never commit or print Cloudflare tokens, GitHub credentials, Lyfta keys, `.dev.vars`, session cookies, database backups, or private credentials. Treat body, food, and progress-photo data as sensitive even though the current API has no auth.
 
+## Coding agent workflow
+
+For code changes, bug fixes, refactors, and investigations in this repo (not the Coach/Data Steward fitness roles below), work in poteto-mode: match the task to a playbook from the `poteto-mode` skill (dev-kit plugin) and copy its steps into the todo list before writing a bespoke plan. Route non-trivial subagent work through `poteto-agent`. Verify against the running app (`npm run dev`, a real request, a read-back from D1), not just a passing typecheck or build. Run `unslop` over prose and `/simplify` over the diff before committing.
+
 ## Source of truth boundaries
 
 Before fitness coaching, coaching-related product changes, wellness interpretation, or owner data writes:
@@ -186,6 +190,7 @@ Do not put daily operational data in the coaching context when it belongs in Sia
 - Use Coss UI and shared app components where they already exist.
 - Mood and readiness do not belong in the UI, API, types, or database.
 - Sleep is logged as numeric hours, not separate sleep/wake fields.
+- Sleep hours, waist, and water are legacy fields: the database and `/api/checkins` still store them, but the check-in UI, dashboard, Reports page, and Custom GPT files no longer show or request them. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
 - Do not rebuild Sian OS as a competing workout tracker.
 - Reports are derived from source records.
 - API inputs stay strict and validated.

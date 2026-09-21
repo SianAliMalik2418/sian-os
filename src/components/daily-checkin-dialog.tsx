@@ -1,5 +1,5 @@
 import { useRouter } from '@tanstack/react-router'
-import { Check, Clock3, Save } from 'lucide-react'
+import { Check, Save } from 'lucide-react'
 import { createContext, useCallback, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
 import { Badge } from '@/components/ui/badge'
@@ -183,25 +183,6 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
                 </CheckinField>
                 <CheckinField label="Weight" description="Kilograms">
                   <Input nativeInput type="number" min="0" step="0.1" inputMode="decimal" placeholder="72.4" value={values.weight_kg || ''} onChange={(event) => update('weight_kg', event.target.value)} />
-                </CheckinField>
-                <CheckinField label="Waist" description="Inches">
-                  <Input nativeInput type="number" min="0" step="0.1" inputMode="decimal" placeholder="31.5" value={values.waist_inches || ''} onChange={(event) => update('waist_inches', event.target.value)} />
-                </CheckinField>
-              </div>
-
-              <section className="rounded-2xl border bg-muted/40 p-4">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div><p className="font-heading font-semibold">Sleep</p><p className="mt-1 text-xs text-muted-foreground">Log the total hours slept.</p></div>
-                  <Badge variant={values.sleep_hours ? 'info' : 'secondary'}><Clock3 /> {values.sleep_hours ? `${values.sleep_hours} hours` : 'Add hours'}</Badge>
-                </div>
-                <CheckinField label="Sleep" description="Hours">
-                  <Input nativeInput type="number" min="0" max="24" step="0.25" inputMode="decimal" placeholder="7.5" value={values.sleep_hours || ''} onChange={(event) => update('sleep_hours', event.target.value)} />
-                </CheckinField>
-              </section>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <CheckinField label="Water" description="Liters">
-                  <Input nativeInput type="number" min="0" step="0.1" inputMode="decimal" placeholder="2.5" value={values.water_liters || ''} onChange={(event) => update('water_liters', event.target.value)} />
                 </CheckinField>
               </div>
 

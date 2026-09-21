@@ -4,7 +4,7 @@
 >
 > Owner: Sian Malik
 >
-> Last updated: 2026-08-24
+> Last updated: 2026-09-17
 >
 > Status: Active
 
@@ -196,7 +196,7 @@ The nutrition coach must:
 
 - help Sian turn normal Pakistani home and office meals into repeatable targets;
 - review nutrition daily when logs exist and weekly when at least seven newer logged days exist;
-- make recommendations from body-weight trends, food consistency, training performance, sleep, hydration, appetite, digestion, energy, and visible/photo progress when available;
+- make recommendations from body-weight trends, food consistency, training performance, appetite, digestion, energy, and visible/photo progress when available;
 - give one clear nutrition focus for the next week instead of changing many variables at once;
 - avoid meal-plan rigidity when portions and shared meals are more realistic;
 - recommend qualified medical or registered dietitian support for medical conditions, disordered-eating concerns, severe symptoms, or specialized clinical needs.
@@ -222,7 +222,7 @@ Controlled lean gain means:
 - protein stays consistent;
 - calorie intake is adequate but not force-fed;
 - body weight should rise slowly across multi-week trends, not spike from uncontrolled eating;
-- waist/visual softness, poor digestion, appetite stress, weak training performance, or sleep collapse can justify holding calories instead of increasing them;
+- visual softness, poor digestion, appetite stress, or weak training performance can justify holding calories instead of increasing them;
 - if the evidence shows excess fat gain or poor conditioning, the coach may recommend a conditioning-first phase, but it becomes active only after Sian confirms the change.
 
 ### Constraints
@@ -254,7 +254,6 @@ When logging nutrition:
 - Calories: profile target defaults to approximately 2200 kcal per day and may be adjusted from evidence.
 - Fats and carbs: optional estimates when Sian reports enough food context; use them as supporting nutrition detail, not as stricter targets unless Sian and the coach explicitly agree to macro targets.
 - Daily calorie, protein, fat, and carb totals may be updated throughout the day through itemized food rows in today's draft check-in.
-- Water: at least 2 L per day, with more considered on hot or high-sweat days.
 - Creatine: 5 g daily unless a qualified clinician has advised otherwise.
 - Controlled lean gain: adequate food without an uncontrolled bulk.
 
@@ -285,8 +284,7 @@ Use available Sian OS and Lyfta evidence to review:
 - protein consistency against the 95–110 g target;
 - calorie direction when enough estimates exist;
 - meal pattern quality, including repeated gaps at breakfast, lunch, dinner, snacks, sweet drinks, and late-night eating;
-- water consistency;
-- sleep and appetite signals;
+- appetite signals;
 - training performance from Lyfta, because food changes should support gym progression;
 - digestion, energy, soreness, and subjective adherence when Sian reports them.
 
@@ -295,7 +293,7 @@ Weekly nutrition recommendations must choose one of these decisions:
 - **Hold:** keep targets unchanged because the trend is appropriate or data is insufficient.
 - **Tighten:** improve consistency, portions, protein distribution, hydration, or food quality before changing calories.
 - **Increase slightly:** add a small practical food increase only when weight trend, performance, and conditioning support it.
-- **Pull back slightly:** reduce easy calories or tighten portions when weight/waist/conditioning suggests excess fat gain.
+- **Pull back slightly:** reduce easy calories or tighten portions when weight/conditioning suggests excess fat gain.
 - **Conditioning-first proposal:** recommend a temporary conditioning phase when softness/body-fat trend is the limiting factor; this is a proposal until Sian confirms it.
 
 Do not change targets from one odd weigh-in, one bad meal, or one strong workout. Do not prescribe starvation, crash dieting, punishment cardio, or aggressive bulking.
@@ -306,9 +304,7 @@ Through 2026-08-06:
 
 - no gym workout is required;
 - protein remains approximately 95–110 g;
-- water remains at least 2 L;
 - creatine remains 5 g daily unless medically contraindicated;
-- sleep remains at least seven hours;
 - complete 15–20 minutes of walking or mobility when practical;
 - do not use exams to justify uncontrolled snacking, a crash diet, or abandoning all routines;
 - study and exams remain the priority.
@@ -342,15 +338,13 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Information | Authoritative location |
 | --- | --- |
 | Workout sessions, exercises, sets, reps, load, RPE/RIR | Sian OS Lyfta-backed endpoint, upstream source Lyfta |
-| Sleep hours | Sian OS daily check-in |
 | Daily body weight when measured | Sian OS daily check-in |
-| Waist when measured | Sian OS daily check-in |
-| Water | Sian OS daily check-in |
 | Protein, fats, carbs, and calories | Sian OS nutrition entries, then derived Sian OS daily check-in totals |
 | Daily calorie and protein targets | Sian OS profile |
 | Estimated calories, protein, fats, and carbs by food item | Sian OS nutrition entries |
 | Repeat recipe macros and aliases | Sian OS saved recipes |
 | Repeat meal templates | Sian OS saved recipe bundles |
+| Sleep, waist, and water | Sian personally, outside Sian OS (legacy check-in fields; see Legacy features) |
 | Reviewer-facing workout notes derived from Lyfta | Sian OS daily check-in workout textarea |
 | Progress photos | Sian OS check-in dialog/R2 |
 | Derived daily/weekly/monthly wellness reports | Sian OS Reports page |
@@ -358,6 +352,15 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Subjective explanation for the current day | Coaching conversation, then Data Steward records a confirmed summary in Sian OS when appropriate |
 
 Do not make Sian OS a competing workout log. The daily logger should copy a useful review summary from Sian OS Lyfta-backed data into the daily check-in, but Lyfta remains upstream authoritative for exercises, sets, reps, loads, RPE/RIR, routines, notes, and progression.
+
+## Legacy features
+
+Sleep hours, waist measurement, and water intake are legacy Sian OS daily check-in fields. Sian chose to stop logging them daily because he tracks them himself and does not want a required daily entry for data he already manages outside the app.
+
+- The database columns and `/api/checkins` fields for `sleep_hours`, `waist_inches`, and `water_liters` still exist and continue to accept and return data, so historical records and any future manual API write remain intact.
+- The check-in dialog, dashboard, and Reports UI no longer show inputs, cards, charts, or table columns for these fields.
+- The Custom GPT Instructions and Knowledge files no longer ask about, extract, or send these fields; do not reintroduce them into GPT-facing daily logging or coaching evidence.
+- If Sian asks to bring one of these back into daily coaching evidence, treat it as a new confirmed decision and update this document and the GPT files together rather than assuming the old behavior still applies.
 
 ## Two-agent coaching workflow
 
@@ -422,9 +425,7 @@ Sian may report naturally. The coach should extract only what is explicitly stat
 
 ```text
 Date:
-Sleep hours:
 Morning weight, if measured:
-Waist, if measured:
 Workout: completed / scheduled rest / approved break / missed
 Lyfta workout name or link, if applicable:
 Muscle soreness:
@@ -437,7 +438,6 @@ Estimated protein:
 Estimated fats:
 Estimated carbs:
 Estimated calories:
-Water:
 Creatine:
 Biggest deviation:
 Tomorrow's preparation:
@@ -449,10 +449,7 @@ During the approved exam break, the workout field should be recorded as `approve
 
 ### Daily
 
-- sleep hours;
 - body weight when measured;
-- waist when measured;
-- water;
 - protein;
 - fats and carbs when estimated;
 - calories when estimated;
@@ -467,8 +464,6 @@ During the approved exam break, the workout field should be recorded as `approve
 - completed versus scheduled Lyfta workouts;
 - exercise progression and execution;
 - nutrition-coach review: phase, protein consistency, calorie direction, meal quality, appetite/energy, and one next-week nutrition decision;
-- hydration consistency;
-- sleep consistency;
 - the main obstacle and one focus for the next week.
 
 ### Monthly
@@ -539,3 +534,4 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-17 | Saved recipes can log one serving into today's nutrition entries. | Recipes now store calories, protein, fats, and carbs for one normal serving; using a recipe as food should create an itemized nutrition row and update daily macro totals. |
 | 2026-08-24 | Saved recipe bundles are quick nutrition logging templates. | When logging a bundle, expand it into saved recipes, allow one-day quantity/removal/addition changes, then write itemized nutrition rows without changing the saved bundle defaults. |
 | 2026-08-24 | GPTs and agents should read Lyfta workout records through Sian OS. | Sian OS exposes `/api/lyfta/workouts`; the Custom GPT no longer needs a separate Lyfta Action. Lyfta remains the upstream workout tracker and Sian OS owns the read path for coaching automation. |
+| 2026-09-17 | Sleep hours, waist, and water become legacy Sian OS check-in fields; Sian tracks them himself instead of logging them daily. | The check-in UI, dashboard, and Reports page no longer show these fields; the Custom GPT Instructions and Knowledge files no longer ask about or extract them. The database/API fields remain unchanged for historical data and any future manual write. |
