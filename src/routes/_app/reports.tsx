@@ -20,7 +20,7 @@ import { aggregateReports, reportAverages, type DailyReportPoint } from '@/lib/r
 export const Route = createFileRoute('/_app/reports')({ loader: () => getReportsData(), component: ReportsPage })
 
 type Interval = 'daily' | 'weekly' | 'monthly'
-type MetricKey = 'weight_kg' | 'protein_grams' | 'fat_grams' | 'carb_grams' | 'calories'
+type MetricKey = 'weight_kg' | 'protein_grams' | 'calories'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -133,12 +133,10 @@ function ReportsPage() {
         </CardPanel>
       </Card>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <SummaryCard icon={CheckCircle2} label="Check-ins" value={String(summary.checkins)} />
         <SummaryCard icon={Scale} label="Average weight" value={formatMetric(summary.weight_kg, ' kg')} />
         <SummaryCard icon={Utensils} label="Average protein" value={formatMetric(summary.protein_grams, ' g')} />
-        <SummaryCard icon={Utensils} label="Average fats" value={formatMetric(summary.fat_grams, ' g')} />
-        <SummaryCard icon={Utensils} label="Average carbs" value={formatMetric(summary.carb_grams, ' g')} />
         <SummaryCard icon={Flame} label="Average calories" value={formatMetric(summary.calories, ' kcal')} />
       </div>
 
@@ -154,8 +152,6 @@ function ReportsPage() {
           <div className="grid gap-4 xl:grid-cols-2">
             <MetricChart title="Body weight" description="Weight direction across the selected period" icon={Scale} data={chartPoints} dataKey="weight_kg" color="green" suffix=" kg" kind="area" />
             <MetricChart title="Protein" description="Average recorded daily protein" icon={Utensils} data={chartPoints} dataKey="protein_grams" color="orange" suffix=" g" kind="bar" />
-            <MetricChart title="Fats" description="Average recorded daily fats" icon={Utensils} data={chartPoints} dataKey="fat_grams" color="pink" suffix=" g" kind="bar" />
-            <MetricChart title="Carbs" description="Average recorded daily carbs" icon={Utensils} data={chartPoints} dataKey="carb_grams" color="green" suffix=" g" kind="bar" />
             <MetricChart title="Calories" description="Average estimated daily intake" icon={Flame} data={chartPoints} dataKey="calories" color="red" suffix=" kcal" kind="bar" />
           </div>
         ) : (
@@ -168,9 +164,9 @@ function ReportsPage() {
       <Card>
         <CardHeader><div><CardTitle>{interval[0].toUpperCase() + interval.slice(1)} report</CardTitle><CardDescription>{interval === 'daily' ? 'Review, edit, or delete each daily check-in' : 'Detailed averages for the selected range'}</CardDescription></div></CardHeader>
         <CardPanel className="overflow-x-auto p-0">
-          <table className="w-full min-w-[820px] text-sm">
-            <thead className="border-b bg-secondary/40 text-left text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-4 py-3">Period</th><th className="px-4 py-3">Check-ins</th><th className="px-4 py-3">Weight</th><th className="px-4 py-3">Protein</th><th className="px-4 py-3">Fats</th><th className="px-4 py-3">Carbs</th><th className="px-4 py-3">Calories</th>{interval === 'daily' && <th className="px-4 py-3 text-right">Actions</th>}</tr></thead>
-            <tbody>{points.map((point) => <tr key={point.period} className="border-b last:border-0"><td className="px-4 py-3 font-medium">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3 tabular-nums">{point.checkins}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.fat_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.carb_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.calories, ' kcal')}</td>{interval === 'daily' && <td className="px-4 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive"><Trash2 /></Button></div></td>}</tr>)}</tbody>
+          <table className="w-full min-w-[640px] text-sm">
+            <thead className="border-b bg-secondary/40 text-left text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-4 py-3">Period</th><th className="px-4 py-3">Check-ins</th><th className="px-4 py-3">Weight</th><th className="px-4 py-3">Protein</th><th className="px-4 py-3">Calories</th>{interval === 'daily' && <th className="px-4 py-3 text-right">Actions</th>}</tr></thead>
+            <tbody>{points.map((point) => <tr key={point.period} className="border-b last:border-0"><td className="px-4 py-3 font-medium">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3 tabular-nums">{point.checkins}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.calories, ' kcal')}</td>{interval === 'daily' && <td className="px-4 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive"><Trash2 /></Button></div></td>}</tr>)}</tbody>
           </table>
           {!points.length && <p className="py-10 text-center text-sm text-muted-foreground">No rows to display.</p>}
         </CardPanel>

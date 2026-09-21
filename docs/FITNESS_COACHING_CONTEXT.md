@@ -4,7 +4,7 @@
 >
 > Owner: Sian Malik
 >
-> Last updated: 2026-09-17
+> Last updated: 2026-09-21
 >
 > Status: Active
 
@@ -234,7 +234,7 @@ Controlled lean gain means:
 
 ### Recipe source of truth
 
-Sian OS owns itemized daily nutrition entries, a saved recipe library, and saved recipe bundles for repeat meals. Each daily nutrition entry may include a food item name, calories, protein, fats, and carbs. Each saved recipe may include ingredients, aliases, serving description, calories, protein, fats, and carbs for one normal serving. Recipe photos are no longer part of the active frontend workflow.
+Sian OS owns itemized daily nutrition entries, a saved recipe library, and saved recipe bundles for repeat meals. Each daily nutrition entry may include a food item name, calories, and protein. Each saved recipe may include ingredients, aliases, serving description, calories, and protein for one normal serving. Recipe photos are no longer part of the active frontend workflow.
 
 Saved recipe bundles are logging templates, not fixed meals. A breakfast bundle can preselect common saved recipes, but the daily logger must still allow one-day changes before writing nutrition rows: change quantities, remove bundled recipes, and add other recipes. Those one-day changes must not edit the saved bundle unless Sian explicitly asks to change the recurring template.
 
@@ -242,7 +242,7 @@ When logging nutrition:
 
 - first check Sian OS saved recipes by name and aliases;
 - check saved recipe bundles when Sian names a repeat meal such as breakfast;
-- if a logged food clearly matches a saved recipe, use the saved calories, protein, fats, and carbs instead of estimating;
+- if a logged food clearly matches a saved recipe, use the saved calories and protein instead of estimating;
 - multiply saved values when Sian states multiple servings, and label the nutrition row with the count such as `Bread x3`;
 - keep fractional quantities and fractional calculated macros when the serving is fractional, such as `Egg x1.5`;
 - estimate only foods or servings that are not covered by saved recipes;
@@ -252,8 +252,7 @@ When logging nutrition:
 
 - Protein: profile target defaults to approximately 100 g per day, aligned with the 95–110 g coaching range.
 - Calories: profile target defaults to approximately 2200 kcal per day and may be adjusted from evidence.
-- Fats and carbs: optional estimates when Sian reports enough food context; use them as supporting nutrition detail, not as stricter targets unless Sian and the coach explicitly agree to macro targets.
-- Daily calorie, protein, fat, and carb totals may be updated throughout the day through itemized food rows in today's draft check-in.
+- Daily calorie and protein totals may be updated throughout the day through itemized food rows in today's draft check-in.
 - Creatine: 5 g daily unless a qualified clinician has advised otherwise.
 - Controlled lean gain: adequate food without an uncontrolled bulk.
 
@@ -291,7 +290,7 @@ Use available Sian OS and Lyfta evidence to review:
 Weekly nutrition recommendations must choose one of these decisions:
 
 - **Hold:** keep targets unchanged because the trend is appropriate or data is insufficient.
-- **Tighten:** improve consistency, portions, protein distribution, hydration, or food quality before changing calories.
+- **Tighten:** improve consistency, portions, protein distribution, or food quality before changing calories.
 - **Increase slightly:** add a small practical food increase only when weight trend, performance, and conditioning support it.
 - **Pull back slightly:** reduce easy calories or tighten portions when weight/conditioning suggests excess fat gain.
 - **Conditioning-first proposal:** recommend a temporary conditioning phase when softness/body-fat trend is the limiting factor; this is a proposal until Sian confirms it.
@@ -339,12 +338,13 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | --- | --- |
 | Workout sessions, exercises, sets, reps, load, RPE/RIR | Sian OS Lyfta-backed endpoint, upstream source Lyfta |
 | Daily body weight when measured | Sian OS daily check-in |
-| Protein, fats, carbs, and calories | Sian OS nutrition entries, then derived Sian OS daily check-in totals |
+| Protein and calories | Sian OS nutrition entries, then derived Sian OS daily check-in totals |
 | Daily calorie and protein targets | Sian OS profile |
-| Estimated calories, protein, fats, and carbs by food item | Sian OS nutrition entries |
+| Estimated calories and protein by food item | Sian OS nutrition entries |
 | Repeat recipe macros and aliases | Sian OS saved recipes |
 | Repeat meal templates | Sian OS saved recipe bundles |
 | Sleep, waist, and water | Sian personally, outside Sian OS (legacy check-in fields; see Legacy features) |
+| Fats and carbs | Not tracked (legacy nutrition fields; see Legacy features) |
 | Reviewer-facing workout notes derived from Lyfta | Sian OS daily check-in workout textarea |
 | Progress photos | Sian OS check-in dialog/R2 |
 | Derived daily/weekly/monthly wellness reports | Sian OS Reports page |
@@ -355,11 +355,12 @@ Do not make Sian OS a competing workout log. The daily logger should copy a usef
 
 ## Legacy features
 
-Sleep hours, waist measurement, and water intake are legacy Sian OS daily check-in fields. Sian chose to stop logging them daily because he tracks them himself and does not want a required daily entry for data he already manages outside the app.
+Sleep hours, waist measurement, water intake, fats, and carbs are legacy Sian OS daily check-in/nutrition fields. Sian chose to stop logging sleep/waist/water daily because he tracks them himself, and chose to stop tracking fats/carbs to focus daily nutrition coaching on calories and protein only.
 
-- The database columns and `/api/checkins` fields for `sleep_hours`, `waist_inches`, and `water_liters` still exist and continue to accept and return data, so historical records and any future manual API write remain intact.
+- The database columns and API fields for `sleep_hours`, `waist_inches`, `water_liters`, `fat_grams`, and `carb_grams` (on check-ins, nutrition entries, and recipes) still exist and continue to accept and return data, so historical records and any future manual API write remain intact.
 - The check-in dialog, dashboard, and Reports UI no longer show inputs, cards, charts, or table columns for these fields.
 - The Custom GPT Instructions and Knowledge files no longer ask about, extract, or send these fields; do not reintroduce them into GPT-facing daily logging or coaching evidence.
+- Daily and weekly nutrition coaching now runs on calories and protein only.
 - If Sian asks to bring one of these back into daily coaching evidence, treat it as a new confirmed decision and update this document and the GPT files together rather than assuming the old behavior still applies.
 
 ## Two-agent coaching workflow
@@ -435,8 +436,6 @@ Lunch:
 Dinner:
 Snacks and drinks:
 Estimated protein:
-Estimated fats:
-Estimated carbs:
 Estimated calories:
 Creatine:
 Biggest deviation:
@@ -451,7 +450,6 @@ During the approved exam break, the workout field should be recorded as `approve
 
 - body weight when measured;
 - protein;
-- fats and carbs when estimated;
 - calories when estimated;
 - food summary;
 - creatine;
@@ -535,3 +533,4 @@ These references support the standing targets but do not replace individualized 
 | 2026-08-24 | Saved recipe bundles are quick nutrition logging templates. | When logging a bundle, expand it into saved recipes, allow one-day quantity/removal/addition changes, then write itemized nutrition rows without changing the saved bundle defaults. |
 | 2026-08-24 | GPTs and agents should read Lyfta workout records through Sian OS. | Sian OS exposes `/api/lyfta/workouts`; the Custom GPT no longer needs a separate Lyfta Action. Lyfta remains the upstream workout tracker and Sian OS owns the read path for coaching automation. |
 | 2026-09-17 | Sleep hours, waist, and water become legacy Sian OS check-in fields; Sian tracks them himself instead of logging them daily. | The check-in UI, dashboard, and Reports page no longer show these fields; the Custom GPT Instructions and Knowledge files no longer ask about or extract them. The database/API fields remain unchanged for historical data and any future manual write. |
+| 2026-09-21 | Fats and carbs become legacy nutrition fields; Sian wants daily nutrition coaching to focus on calories and protein only. | The nutrition entry tracker, check-in dialog, dashboard, and Reports page no longer show fat/carb inputs, totals, charts, or table columns; the Custom GPT Instructions and Knowledge files no longer ask about or extract them. The database/API fields for `fat_grams`/`carb_grams` on check-ins, nutrition entries, and recipes remain unchanged for historical data and any future manual write. |

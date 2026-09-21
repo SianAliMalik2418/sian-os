@@ -24,8 +24,6 @@ const emptyRecipeValues = {
   serving_description: '',
   calories: '',
   protein_grams: '',
-  fat_grams: '',
-  carb_grams: '',
   ingredients: '',
   notes: '',
 }
@@ -42,8 +40,6 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   const [itemName, setItemName] = useState('')
   const [calories, setCalories] = useState('')
   const [protein, setProtein] = useState('')
-  const [fats, setFats] = useState('')
-  const [carbs, setCarbs] = useState('')
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [recipesLoading, setRecipesLoading] = useState(false)
   const [recipesLoaded, setRecipesLoaded] = useState(false)
@@ -64,8 +60,6 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
 
   const calorieTotal = entries.reduce((total, entry) => total + entry.calories, 0)
   const proteinTotal = entries.reduce((total, entry) => total + entry.protein_grams, 0)
-  const fatTotal = entries.reduce((total, entry) => total + entry.fat_grams, 0)
-  const carbTotal = entries.reduce((total, entry) => total + entry.carb_grams, 0)
 
   useEffect(() => {
     let isCurrent = true
@@ -117,10 +111,8 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     const quantity = recipeQuantities[recipe.id] || 1
     totals.calories += recipe.calories * quantity
     totals.protein += recipe.protein_grams * quantity
-    totals.fats += recipe.fat_grams * quantity
-    totals.carbs += recipe.carb_grams * quantity
     return totals
-  }, { calories: 0, protein: 0, fats: 0, carbs: 0 })
+  }, { calories: 0, protein: 0 })
 
   async function loadRecipes() {
     setRecipesLoading(true)
@@ -157,8 +149,6 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   async function addEntry() {
     const parsedCalories = Number(calories)
     const parsedProtein = protein === '' ? 0 : Number(protein)
-    const parsedFats = fats === '' ? 0 : Number(fats)
-    const parsedCarbs = carbs === '' ? 0 : Number(carbs)
     if (!itemName.trim()) {
       setError('Enter the food item')
       return
@@ -169,14 +159,6 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     }
     if (!Number.isFinite(parsedProtein) || parsedProtein < 0) {
       setError('Enter valid protein')
-      return
-    }
-    if (!Number.isFinite(parsedFats) || parsedFats < 0) {
-      setError('Enter valid fats')
-      return
-    }
-    if (!Number.isFinite(parsedCarbs) || parsedCarbs < 0) {
-      setError('Enter valid carbs')
       return
     }
 
@@ -191,8 +173,6 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
           item_name: itemName.trim(),
           calories: Math.round(parsedCalories),
           protein_grams: Math.round(parsedProtein),
-          fat_grams: Math.round(parsedFats),
-          carb_grams: Math.round(parsedCarbs),
         }),
       })
       const result = await response.json() as { data?: { entry?: NutritionEntry; checkin?: DailyCheckin }; error?: { message?: string } }
@@ -204,8 +184,6 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       setItemName('')
       setCalories('')
       setProtein('')
-      setFats('')
-      setCarbs('')
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not save food item')
     } finally {
@@ -270,8 +248,6 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
           serving_description: recipeValues.serving_description || undefined,
           calories: Number(recipeValues.calories),
           protein_grams: Number(recipeValues.protein_grams),
-          fat_grams: recipeValues.fat_grams === '' ? undefined : Number(recipeValues.fat_grams),
-          carb_grams: recipeValues.carb_grams === '' ? undefined : Number(recipeValues.carb_grams),
           ingredients: recipeValues.ingredients || undefined,
           notes: recipeValues.notes || undefined,
         }),
@@ -342,10 +318,10 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     setRecipeValues((current) => ({ ...current, [name]: value }))
   }
 
-  const entryFields = <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} fats={fats} carbs={carbs} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} onFatsChange={setFats} onCarbsChange={setCarbs} />
+  const entryFields = <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} />
 
   const manualEntryFields = (
-    <div className="grid gap-3 lg:grid-cols-[minmax(12rem,1fr)_7rem_7rem_7rem_7rem]">
+    <div className="grid gap-3 lg:grid-cols-[minmax(12rem,1fr)_7rem_7rem]">
       {entryFields}
     </div>
   )
@@ -362,7 +338,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       <div className="flex flex-col gap-2 rounded-xl border bg-secondary/20 p-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium">Selected: {selectedRecipeIds.size}</p>
-          <p className="text-xs text-muted-foreground">{selectedTotals.calories} kcal · {selectedTotals.protein} g protein · {selectedTotals.fats} g fat · {selectedTotals.carbs} g carbs</p>
+          <p className="text-xs text-muted-foreground">{selectedTotals.calories} kcal · {selectedTotals.protein} g protein</p>
           <p className="mt-1 text-xs text-muted-foreground">Change quantities, uncheck foods, or add more recipes before logging.</p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={() => setRecipeDialogOpen(true)}><Plus /> New recipe</Button>
@@ -388,7 +364,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
                     <p className="font-medium">{recipe.name}</p>
                     {recipe.category && <Badge variant="secondary">{recipe.category}</Badge>}
                   </div>
-                  <p className="text-sm text-muted-foreground">{recipe.serving_description || '1 serving'} · {recipe.calories * quantity} kcal · {recipe.protein_grams * quantity} g protein · {recipe.fat_grams * quantity} g fat · {recipe.carb_grams * quantity} g carbs</p>
+                  <p className="text-sm text-muted-foreground">{recipe.serving_description || '1 serving'} · {recipe.calories * quantity} kcal · {recipe.protein_grams * quantity} g protein</p>
                 </div>
                 <QuantityControl
                   label={`${recipe.name} quantity`}
@@ -425,10 +401,8 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
             const totals = bundle.recipes.reduce((sum, recipe) => {
               sum.calories += recipe.calories * recipe.default_quantity
               sum.protein += recipe.protein_grams * recipe.default_quantity
-              sum.fats += recipe.fat_grams * recipe.default_quantity
-              sum.carbs += recipe.carb_grams * recipe.default_quantity
               return sum
-            }, { calories: 0, protein: 0, fats: 0, carbs: 0 })
+            }, { calories: 0, protein: 0 })
             return (
               <div key={bundle.id} className="grid gap-3 rounded-xl border bg-background p-3 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div className="min-w-0">
@@ -436,7 +410,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
                     <p className="font-medium">{bundle.name}</p>
                     <Badge variant="secondary">{bundle.recipes.length} items</Badge>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{totals.calories} kcal · {totals.protein} g protein · {totals.fats} g fat · {totals.carbs} g carbs</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{totals.calories} kcal · {totals.protein} g protein</p>
                   <p className="mt-2 text-xs text-muted-foreground">{bundle.recipes.map((recipe) => `${recipe.name} x${recipe.default_quantity}`).join(' · ')}</p>
                 </div>
                 <Button type="button" variant="outline" onClick={() => useBundle(bundle)}><Boxes /> Edit items</Button>
@@ -494,11 +468,9 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
 
   const body = (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2">
         <NutritionTotal label="Calories" value={calorieTotal} goal={calorieGoal} unit="kcal" />
         <NutritionTotal label="Protein" value={proteinTotal} goal={proteinGoal} unit="g" />
-        <NutritionTotal label="Fats" value={fatTotal} unit="g" />
-        <NutritionTotal label="Carbs" value={carbTotal} unit="g" />
       </div>
 
       {compact ? (
@@ -511,7 +483,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
             <div key={entry.ids.join('-')} className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2 text-sm">
               <div className="min-w-0">
                 <p className="truncate font-medium">{entry.item_name}{entry.quantity > 1 ? ` x${entry.quantity}` : ''}</p>
-                <p className="text-muted-foreground">{entry.calories} kcal · {entry.protein_grams} g protein · {entry.fat_grams} g fat · {entry.carb_grams} g carbs</p>
+                <p className="text-muted-foreground">{entry.calories} kcal · {entry.protein_grams} g protein</p>
               </div>
               <Button type="button" variant="ghost" size="icon" aria-label={`Delete one ${entry.item_name}`} onClick={() => deleteEntry(entry.ids.at(-1) ?? entry.ids[0], entry.item_name)} disabled={saving}><Trash2 className="size-4" /></Button>
             </div>
@@ -583,25 +555,19 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   )
 }
 
-function NutritionEntryFields({ itemName, calories, protein, fats, carbs, onItemNameChange, onCaloriesChange, onProteinChange, onFatsChange, onCarbsChange }: {
+function NutritionEntryFields({ itemName, calories, protein, onItemNameChange, onCaloriesChange, onProteinChange }: {
   itemName: string
   calories: string
   protein: string
-  fats: string
-  carbs: string
   onItemNameChange: (value: string) => void
   onCaloriesChange: (value: string) => void
   onProteinChange: (value: string) => void
-  onFatsChange: (value: string) => void
-  onCarbsChange: (value: string) => void
 }) {
   return (
     <>
       <Field><FieldLabel>Item</FieldLabel><Input nativeInput value={itemName} onChange={(event) => onItemNameChange(event.target.value)} placeholder="Egg" /></Field>
       <Field><FieldLabel>Calories</FieldLabel><Input nativeInput type="number" min="0" step="1" inputMode="numeric" value={calories} onChange={(event) => onCaloriesChange(event.target.value)} placeholder="100" /></Field>
       <Field><FieldLabel>Protein</FieldLabel><Input nativeInput type="number" min="0" step="1" inputMode="numeric" value={protein} onChange={(event) => onProteinChange(event.target.value)} placeholder="6" /></Field>
-      <Field><FieldLabel>Fats</FieldLabel><Input nativeInput type="number" min="0" step="1" inputMode="numeric" value={fats} onChange={(event) => onFatsChange(event.target.value)} placeholder="5" /></Field>
-      <Field><FieldLabel>Carbs</FieldLabel><Input nativeInput type="number" min="0" step="1" inputMode="numeric" value={carbs} onChange={(event) => onCarbsChange(event.target.value)} placeholder="1" /></Field>
     </>
   )
 }
@@ -658,11 +624,9 @@ function RecipeCreateDialog({ open, values, saving, onOpenChange, onUpdate, onSu
             <RecipeField label="Aliases" description="Comma-separated names the agent may see">
               <Input nativeInput value={values.aliases} onChange={(event) => onUpdate('aliases', event.target.value)} placeholder="anda, boiled egg" />
             </RecipeField>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3">
               <RecipeField label="Calories"><Input nativeInput required type="number" min="0" max="20000" step="1" inputMode="numeric" value={values.calories} onChange={(event) => onUpdate('calories', event.target.value)} /></RecipeField>
               <RecipeField label="Protein"><Input nativeInput required type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.protein_grams} onChange={(event) => onUpdate('protein_grams', event.target.value)} /></RecipeField>
-              <RecipeField label="Fats"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.fat_grams} onChange={(event) => onUpdate('fat_grams', event.target.value)} /></RecipeField>
-              <RecipeField label="Carbs"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.carb_grams} onChange={(event) => onUpdate('carb_grams', event.target.value)} /></RecipeField>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <RecipeField label="Serving"><Input nativeInput value={values.serving_description} onChange={(event) => onUpdate('serving_description', event.target.value)} placeholder="1 egg, 1 plate, 1 bowl" /></RecipeField>

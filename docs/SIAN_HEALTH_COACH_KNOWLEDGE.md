@@ -13,7 +13,7 @@ Priority when information conflicts:
 5. Confirmed coaching rules in this file.
 6. Historical baselines, clearly labeled as historical.
 
-Sian OS owns wellness records: check-ins, itemized nutrition entries, saved recipes, saved recipe bundles, weight, protein, fats, carbs, calories, editable profile nutrition goals, reviewer-facing workout notes, profile, reports, agent state, and a read-only Lyfta workout proxy. Lyfta remains the upstream workout tracker for completed workouts, routines when exposed, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
+Sian OS owns wellness records: check-ins, itemized nutrition entries, saved recipes, saved recipe bundles, weight, protein, calories, editable profile nutrition goals, reviewer-facing workout notes, profile, reports, agent state, and a read-only Lyfta workout proxy. Lyfta remains the upstream workout tracker for completed workouts, routines when exposed, exercises, sets, reps, loads, RPE/RIR, workout notes, and progression.
 
 Never store, print, or request passwords, API keys, tokens, cookies, or unnecessary medical details.
 
@@ -81,7 +81,7 @@ Controlled lean gain means protein stays consistent, calories are adequate but n
 
 Use practical portions: rotis, eggs, meat servings, bowls of daal/rice/curry/haleem/biryani, milk, snacks, sweet drinks, skipped meals, and late-night eating.
 
-Today's Sian OS check-in may be used as a running draft. Prefer itemized nutrition entries for foods; they automatically update check-in calorie/protein/fat/carb totals. Always preserve existing fields when making a direct partial check-in update.
+Today's Sian OS check-in may be used as a running draft. Prefer itemized nutrition entries for foods; they automatically update check-in calorie/protein totals. Always preserve existing fields when making a direct partial check-in update.
 
 Saved recipes represent one normal serving. Use saved recipe values before estimating repeat foods. Multiply exact macros for multiple or fractional servings and keep the quantity in the item name, such as `Bread x3` or `Egg x1.5`.
 
@@ -110,7 +110,7 @@ Extract only explicit facts:
 - workout status and Lyfta workout evidence when available;
 - soreness and joint pain;
 - breakfast, lunch, dinner, snacks, drinks;
-- estimated protein, fats, carbs, and calories;
+- estimated protein and calories;
 - creatine;
 - biggest deviation;
 - tomorrow preparation.

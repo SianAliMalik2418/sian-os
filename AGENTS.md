@@ -191,6 +191,7 @@ Do not put daily operational data in the coaching context when it belongs in Sia
 - Mood and readiness do not belong in the UI, API, types, or database.
 - Sleep is logged as numeric hours, not separate sleep/wake fields.
 - Sleep hours, waist, and water are legacy fields: the database and `/api/checkins` still store them, but the check-in UI, dashboard, Reports page, and Custom GPT files no longer show or request them. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
+- Fats and carbs are legacy nutrition fields: the database and API still store `fat_grams`/`carb_grams` on check-ins, nutrition entries, and recipes, but the nutrition tracker, check-in UI, dashboard, Reports page, and Custom GPT files no longer show or request them. Daily nutrition focus is calories and protein only. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
 - Do not rebuild Sian OS as a competing workout tracker.
 - Reports are derived from source records.
 - API inputs stay strict and validated.
