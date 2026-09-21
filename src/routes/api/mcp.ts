@@ -17,7 +17,7 @@ function rpcError(id: string | number | null | undefined, code: number, message:
 }
 
 function toolResult(data: unknown, isError = false) {
-  return { content: [{ type: 'text', text: JSON.stringify(data) }], isError }
+  return { content: [{ type: 'text', text: JSON.stringify(data ?? null) }], isError }
 }
 
 function unauthorized() {
@@ -39,12 +39,24 @@ async function callTool(name: string, args: unknown, origin: string) {
   if (!parsed.success) return toolResult({ error: 'Invalid arguments', details: z.treeifyError(parsed.error) }, true)
 
   const built = tool.buildRequest(parsed.data as never)
-  const response = await fetch(new URL(built.path, origin), {
-    method: built.method,
-    headers: built.body === undefined ? undefined : { 'Content-Type': 'application/json' },
-    body: built.body === undefined ? undefined : JSON.stringify(built.body),
-  })
-  const payload = await response.json().catch(() => undefined)
+  let response: Response
+  try {
+    response = await env.SELF.fetch(new URL(built.path, origin), {
+      method: built.method,
+      headers: built.body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      body: built.body === undefined ? undefined : JSON.stringify(built.body),
+    })
+  } catch (caught) {
+    return toolResult({ error: caught instanceof Error ? caught.message : 'Request to Sian OS failed' }, true)
+  }
+  const text = await response.text()
+  const payload = (() => {
+    try {
+      return JSON.parse(text)
+    } catch {
+      return { error: text || `Unexpected ${response.status} response` }
+    }
+  })()
   return toolResult(payload, !response.ok)
 }
 

@@ -20,6 +20,12 @@
       "bucket_name": "sian-os-files"
     }
   ],
+  "services": [
+    {
+      "binding": "SELF",
+      "service": "sian-os"
+    }
+  ],
   "vars": {
     "APP_NAME": "Sian OS"
   }
