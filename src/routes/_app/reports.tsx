@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { CalendarRange, CheckCircle2, Flame, Footprints, Moon, Pencil, Scale, Trash2, Utensils } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Flame, Footprints, Moon, Pencil, Scale, Trash2, Utensils } from 'lucide-react'
+import { motion } from 'motion/react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { Area, Line } from '@/components/dither-kit/area'
 import { AreaChart, LineChart } from '@/components/dither-kit/area-chart'
@@ -10,8 +11,9 @@ import { Grid } from '@/components/dither-kit/grid'
 import { Tooltip } from '@/components/dither-kit/tooltip'
 import { XAxis } from '@/components/dither-kit/x-axis'
 import { YAxis } from '@/components/dither-kit/y-axis'
+import { Doodle } from '@/components/sunrise/illustrations'
+import { CountUp, Notice, Page, PageHeader, SectionTitle, ToneTile, Unit, type Tone } from '@/components/sunrise/primitives'
 import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Dialog, DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogPopup, DialogTitle } from '@/components/ui/dialog'
 import { getReportsData } from '@/lib/app.functions'
@@ -101,82 +103,87 @@ function ReportsPage() {
     }
   }
 
+  const rangeLabel = `${formatPeriod(from, 'daily')} – ${formatPeriod(to, 'daily')}`
+
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
-      <header>
-        <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Reports</p>
-        <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">See the pattern, not the noise.</h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">Explore daily detail, weekly averages, and monthly direction across your wellness data.</p>
-      </header>
+    <Page>
+      <PageHeader kicker="Reports" title="See the pattern." description="Daily detail, weekly averages, monthly direction." illustration="reports" />
 
-      <Card>
-        <CardHeader>
-          <div><CardTitle>Date range</CardTitle><CardDescription>Choose a preset or set an exact reporting window</CardDescription></div>
-          <CardAction><CalendarRange className="size-5 text-primary" /></CardAction>
-        </CardHeader>
-        <CardPanel className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {[
-              ['7d', '7 days', 7],
-              ['30d', '30 days', 30],
-              ['90d', '90 days', 90],
-              ['1y', '1 year', 365],
-            ].map(([value, label, days]) => (
-              <Button key={String(value)} type="button" size="sm" variant={preset === value ? 'default' : 'outline'} onClick={() => applyPreset(String(value), Number(days))}>{String(label)}</Button>
-            ))}
-            <Button type="button" size="sm" variant={preset === 'all' ? 'default' : 'outline'} onClick={() => applyPreset('all')}>All time</Button>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <RangeField label="From"><DatePicker value={from} onValueChange={changeFrom} required /></RangeField>
-            <RangeField label="To"><DatePicker value={to} onValueChange={changeTo} required /></RangeField>
-          </div>
-        </CardPanel>
-      </Card>
+      <section className="rise space-y-4 rounded-[1.8rem] border border-white/8 bg-card p-4 sm:p-5" style={{ '--d': 1 } as CSSProperties}>
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+          {([['7d', '7 days', 7], ['30d', '30 days', 30], ['90d', '90 days', 90], ['1y', '1 year', 365], ['all', 'All time', undefined]] as const).map(([value, label, days]) => (
+            <button key={value} type="button" onClick={() => applyPreset(value, days)} className={`shrink-0 rounded-full px-4 py-2 text-sm font-extrabold transition-colors ${preset === value ? 'bg-sun text-[#1d1330]' : 'bg-white/7 text-muted-foreground hover:text-cream'}`}>{label}</button>
+          ))}
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <RangeField label="From"><DatePicker value={from} onValueChange={changeFrom} required /></RangeField>
+          <RangeField label="To"><DatePicker value={to} onValueChange={changeTo} required /></RangeField>
+        </div>
+      </section>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <SummaryCard icon={CheckCircle2} label="Check-ins" value={String(summary.checkins)} />
-        <SummaryCard icon={Scale} label="Average weight" value={formatMetric(summary.weight_kg, ' kg')} />
-        <SummaryCard icon={Utensils} label="Average protein" value={formatMetric(summary.protein_grams, ' g')} />
-        <SummaryCard icon={Flame} label="Average calories" value={formatMetric(summary.calories, ' kcal')} />
-        <SummaryCard icon={Footprints} label="Average steps" value={formatMetric(summary.steps, '')} />
-        <SummaryCard icon={Flame} label="Average active cal" value={formatMetric(summary.active_calories, ' kcal')} />
-        <SummaryCard icon={Moon} label="Average sleep" value={formatMetric(summary.sleep_hours, ' hrs')} />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <ToneTile tone="mint" label="Check-ins" className="rise col-span-2 lg:col-span-1" style={{ '--d': 2 } as CSSProperties} doodle={<Doodle kind="check" />} value={summary.checkins} footer={rangeLabel} />
+        <ToneTile tone="sun" label="Avg weight" className="rise" style={{ '--d': 3 } as CSSProperties} doodle={<Doodle kind="scale" />} value={<Metric value={summary.weight_kg} unit="kg" />} />
+        <ToneTile tone="rose" label="Avg protein" className="rise" style={{ '--d': 4 } as CSSProperties} doodle={<Doodle kind="protein" />} value={<Metric value={summary.protein_grams} unit="g" />} />
+        <ToneTile tone="butter" label="Avg calories" className="rise" style={{ '--d': 5 } as CSSProperties} doodle={<Doodle kind="flame" />} value={<Metric value={summary.calories} unit="kcal" whole />} />
+        <ToneTile tone="mint" label="Avg steps" className="rise" style={{ '--d': 6 } as CSSProperties} doodle={<Doodle kind="steps" />} value={<Metric value={summary.steps} unit="" whole />} />
+        <ToneTile tone="butter" label="Avg active" className="rise" style={{ '--d': 7 } as CSSProperties} value={<Metric value={summary.active_calories} unit="kcal" whole />} />
+        <ToneTile tone="lilac" label="Avg sleep" className="rise" style={{ '--d': 8 } as CSSProperties} doodle={<Doodle kind="moon" />} value={<Metric value={summary.sleep_hours} unit="hrs" />} />
       </div>
 
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div><h2 className="font-heading text-2xl font-semibold">Trends</h2><p className="text-sm text-muted-foreground">Values are averaged within weekly and monthly views.</p></div>
-          <div className="grid grid-cols-3 rounded-xl border bg-secondary/40 p-1" aria-label="Report interval">
-            {(['daily', 'weekly', 'monthly'] as const).map((value) => <Button key={value} type="button" size="sm" variant={interval === value ? 'default' : 'ghost'} onClick={() => setInterval(value)} className="capitalize">{value}</Button>)}
-          </div>
+          <SectionTitle title="Trends" meta="Averaged per week or month" className="flex-1" />
+          <IntervalSwitch value={interval} onChange={setInterval} />
         </div>
 
         {chartPoints.length ? (
           <div className="grid gap-4 xl:grid-cols-2">
-            <MetricChart title="Body weight" description="Weight direction across the selected period" icon={Scale} data={chartPoints} dataKey="weight_kg" color="green" suffix=" kg" kind="area" />
-            <MetricChart title="Protein" description="Average recorded daily protein" icon={Utensils} data={chartPoints} dataKey="protein_grams" color="orange" suffix=" g" kind="bar" />
-            <MetricChart title="Calories" description="Average estimated daily intake" icon={Flame} data={chartPoints} dataKey="calories" color="red" suffix=" kcal" kind="bar" />
-            <MetricChart title="Steps" description="Daily step count from wearable sync" icon={Footprints} data={chartPoints} dataKey="steps" color="blue" suffix="" kind="bar" />
-            <MetricChart title="Active calories" description="Active calories burned from wearable sync" icon={Flame} data={chartPoints} dataKey="active_calories" color="pink" suffix=" kcal" kind="bar" />
-            <MetricChart title="Sleep duration" description="Logged sleep hours from wearable sync" icon={Moon} data={chartPoints} dataKey="sleep_hours" color="purple" suffix=" hrs" kind="line" />
+            <MetricChart title="Body weight" description="Direction across the range" icon={Scale} tone="sun" data={chartPoints} dataKey="weight_kg" color="orange" suffix=" kg" kind="area" />
+            <MetricChart title="Protein" description="Recorded daily protein" icon={Utensils} tone="rose" data={chartPoints} dataKey="protein_grams" color="pink" suffix=" g" kind="bar" />
+            <MetricChart title="Calories" description="Estimated daily intake" icon={Flame} tone="butter" data={chartPoints} dataKey="calories" color="red" suffix=" kcal" kind="bar" />
+            <MetricChart title="Steps" description="From wearable sync" icon={Footprints} tone="mint" data={chartPoints} dataKey="steps" color="green" suffix="" kind="bar" />
+            <MetricChart title="Active calories" description="Burned moving, from wearable sync" icon={Flame} tone="butter" data={chartPoints} dataKey="active_calories" color="orange" suffix=" kcal" kind="bar" />
+            <MetricChart title="Sleep" description="Hours from wearable sync" icon={Moon} tone="lilac" data={chartPoints} dataKey="sleep_hours" color="purple" suffix=" hrs" kind="line" />
           </div>
         ) : (
-          <Card><CardPanel className="py-16 text-center"><CalendarRange className="mx-auto mb-3 size-8 text-muted-foreground" /><p className="font-medium">No report data in this range</p><p className="mt-1 text-sm text-muted-foreground">Choose a wider range or add daily wellness data.</p></CardPanel></Card>
+          <EmptyRange />
         )}
       </section>
 
-      {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
 
-      <Card>
-        <CardHeader><div><CardTitle>{interval[0].toUpperCase() + interval.slice(1)} report</CardTitle><CardDescription>{interval === 'daily' ? 'Review, edit, or delete each daily check-in' : 'Detailed averages for the selected range'}</CardDescription></div></CardHeader>
-        <CardPanel className="overflow-x-auto p-0">
-          <table className="w-full min-w-[900px] text-sm">
-            <thead className="border-b bg-secondary/40 text-left text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-4 py-3">Period</th><th className="px-4 py-3">Check-ins</th><th className="px-4 py-3">Weight</th><th className="px-4 py-3">Protein</th><th className="px-4 py-3">Calories</th><th className="px-4 py-3">Steps</th><th className="px-4 py-3">Active cal</th><th className="px-4 py-3">Sleep</th>{interval === 'daily' && <th className="px-4 py-3 text-right">Actions</th>}</tr></thead>
-            <tbody>{points.map((point) => <tr key={point.period} className="border-b last:border-0"><td className="px-4 py-3 font-medium">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3 tabular-nums">{point.checkins}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.calories, ' kcal')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.steps, '')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.active_calories, ' kcal')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.sleep_hours, ' hrs')}</td>{interval === 'daily' && <td className="px-4 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive"><Trash2 /></Button></div></td>}</tr>)}</tbody>
+      <section className="space-y-3">
+        <SectionTitle title={`${interval[0].toUpperCase() + interval.slice(1)} log`} meta={`${points.length} ${interval === 'daily' ? 'days' : interval === 'weekly' ? 'weeks' : 'months'}`} />
+
+        <div className="grid gap-2.5 lg:hidden">
+          {[...points].reverse().map((point) => (
+            <article key={point.period} className="rounded-[1.5rem] border border-white/8 bg-card p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div><p className="font-extrabold text-cream">{formatPeriod(point.period, interval)}</p>{interval !== 'daily' && <p className="text-xs font-semibold text-muted-foreground">{point.checkins} check-ins</p>}</div>
+                {interval === 'daily' && <div className="flex gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive-foreground"><Trash2 /></Button></div>}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                <LogChip tone="text-sun" value={formatMetric(point.weight_kg, ' kg')} label="weight" />
+                <LogChip tone="text-rose" value={formatMetric(point.protein_grams, 'g')} label="protein" />
+                <LogChip tone="text-butter" value={formatMetric(point.calories, '')} label="kcal" />
+                <LogChip tone="text-mint" value={formatMetric(point.steps, '')} label="steps" />
+                <LogChip tone="text-butter" value={formatMetric(point.active_calories, '')} label="active" />
+                <LogChip tone="text-lilac" value={formatMetric(point.sleep_hours, 'h')} label="sleep" />
+              </div>
+            </article>
+          ))}
+          {!points.length && <p className="rounded-[1.5rem] border border-dashed border-white/12 py-10 text-center text-sm font-semibold text-muted-foreground">No rows in this range.</p>}
+        </div>
+
+        <div className="hidden overflow-hidden rounded-[1.8rem] border border-white/8 bg-card lg:block">
+          <table className="w-full text-sm">
+            <thead className="border-b border-white/8 text-left text-xs font-extrabold tracking-wide text-muted-foreground uppercase"><tr><th className="px-5 py-4">Period</th><th className="px-4 py-4">Check-ins</th><th className="px-4 py-4">Weight</th><th className="px-4 py-4">Protein</th><th className="px-4 py-4">Calories</th><th className="px-4 py-4">Steps</th><th className="px-4 py-4">Active cal</th><th className="px-4 py-4">Sleep</th>{interval === 'daily' && <th className="px-5 py-4 text-right">Actions</th>}</tr></thead>
+            <tbody>{points.map((point) => <tr key={point.period} className="border-b border-white/6 font-semibold last:border-0 hover:bg-white/3"><td className="px-5 py-3.5 font-extrabold text-cream">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3.5 tabular-nums">{point.checkins}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.calories, ' kcal')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.steps, '')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.active_calories, ' kcal')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.sleep_hours, ' hrs')}</td>{interval === 'daily' && <td className="px-5 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive-foreground"><Trash2 /></Button></div></td>}</tr>)}</tbody>
           </table>
-          {!points.length && <p className="py-10 text-center text-sm text-muted-foreground">No rows to display.</p>}
-        </CardPanel>
-      </Card>
+          {!points.length && <p className="py-10 text-center text-sm font-semibold text-muted-foreground">No rows to display.</p>}
+        </div>
+      </section>
 
       <Dialog open={Boolean(deleteDate)} onOpenChange={(open) => !open && setDeleteDate(undefined)}>
         <DialogPopup className="max-w-md">
@@ -185,22 +192,55 @@ function ReportsPage() {
           <DialogFooter><DialogClose render={<Button variant="outline" />}>Cancel</DialogClose><Button type="button" variant="destructive" loading={deleting} onClick={deleteCheckin}><Trash2 /> Delete check-in</Button></DialogFooter>
         </DialogPopup>
       </Dialog>
-    </div>
+    </Page>
   )
 }
 
 function RangeField({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="grid gap-1.5"><span className="text-xs font-medium text-muted-foreground">{label}</span>{children}</label>
+  return <label className="grid gap-1.5"><span className="px-1 text-xs font-bold text-muted-foreground">{label}</span>{children}</label>
 }
 
-function SummaryCard({ icon: Icon, label, value }: { icon: typeof Scale; label: string; value: string }) {
-  return <Card><CardHeader><CardDescription>{label}</CardDescription><CardAction><Icon className="size-5 text-primary" /></CardAction><CardTitle className="text-xl tabular-nums sm:text-2xl">{value}</CardTitle></CardHeader></Card>
+function Metric({ value, unit, whole = false }: { value: number | null; unit: string; whole?: boolean }) {
+  if (value === null) return <>—</>
+  const rounded = whole ? Math.round(value) : Number(value.toFixed(1))
+  return <><CountUp value={rounded} decimals={Number.isInteger(rounded) ? 0 : 1} />{unit && <Unit>{unit}</Unit>}</>
 }
 
-function MetricChart({ title, description, icon: Icon, data, dataKey, color, suffix, kind }: {
+function LogChip({ tone, value, label }: { tone: string; value: string; label: string }) {
+  if (value === '—') return null
+  return <span className="rounded-full bg-white/6 px-3 py-1.5 text-xs font-semibold text-muted-foreground"><b className={`font-extrabold ${tone}`}>{value}</b> {label}</span>
+}
+
+function IntervalSwitch({ value, onChange }: { value: Interval; onChange: (value: Interval) => void }) {
+  return (
+    <div className="relative grid grid-cols-3 rounded-full border border-white/8 bg-card p-1" role="radiogroup" aria-label="Report interval">
+      {(['daily', 'weekly', 'monthly'] as const).map((option) => (
+        <button key={option} type="button" role="radio" aria-checked={value === option} onClick={() => onChange(option)} className={`relative rounded-full px-4 py-2 text-sm font-extrabold capitalize transition-colors ${value === option ? 'text-[#1d1330]' : 'text-muted-foreground hover:text-cream'}`}>
+          {value === option && <motion.span layoutId="interval-pill" transition={{ type: 'spring', bounce: 0.25, duration: 0.45 }} className="absolute inset-0 rounded-full bg-cream" />}
+          <span className="relative">{option}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function EmptyRange() {
+  return (
+    <div className="grid place-items-center gap-2 rounded-[1.8rem] border border-dashed border-white/12 px-6 py-14 text-center">
+      <Doodle kind="moon" className="size-20" />
+      <p className="text-lg font-extrabold text-cream">Quiet stretch</p>
+      <p className="max-w-xs text-sm text-muted-foreground">No data in this range yet. Pick a wider window or log a few more days.</p>
+    </div>
+  )
+}
+
+const chartTone: Record<Tone, string> = { sun: 'bg-sun/15 text-sun', mint: 'bg-mint/15 text-mint', butter: 'bg-butter/15 text-butter', lilac: 'bg-lilac/15 text-lilac', rose: 'bg-rose/15 text-rose' }
+
+function MetricChart({ title, description, icon: Icon, tone, data, dataKey, color, suffix, kind }: {
   title: string
   description: string
   icon: typeof Scale
+  tone: Tone
   data: Array<DailyReportPoint & { label: string }>
   dataKey: MetricKey
   color: 'green' | 'purple' | 'blue' | 'orange' | 'pink' | 'red'
@@ -210,12 +250,20 @@ function MetricChart({ title, description, icon: Icon, data, dataKey, color, suf
   const present = data.filter((point) => point[dataKey] !== null)
   const config = { [dataKey]: { label: title, color } }
   const formatter = (value: number) => `${Number(value.toFixed(1))}${suffix}`
+  const latest = present.at(-1)?.[dataKey]
 
-  return <Card><CardHeader><div><CardTitle>{title}</CardTitle><CardDescription>{description}</CardDescription></div><CardAction><Icon className="size-5 text-primary" /></CardAction></CardHeader><CardPanel>
-    {present.length ? <div className="h-64 sm:h-72">
-      {kind === 'area' && <AreaChart data={present} config={config} bloom="aura"><Grid /><XAxis dataKey="label" maxTicks={6} /><YAxis tickFormatter={formatter} /><Tooltip labelKey="label" valueFormatter={formatter} /><Area dataKey={dataKey} variant="gradient" /></AreaChart>}
-      {kind === 'line' && <LineChart data={present} config={config} bloom="aura"><Grid /><XAxis dataKey="label" maxTicks={6} /><YAxis tickFormatter={formatter} /><Tooltip labelKey="label" valueFormatter={formatter} /><Line dataKey={dataKey} /></LineChart>}
-      {kind === 'bar' && <BarChart data={present} config={config} bloom="aura"><Grid /><XAxis dataKey="label" maxTicks={6} /><YAxis tickFormatter={formatter} /><Tooltip labelKey="label" valueFormatter={formatter} /><Bar dataKey={dataKey} variant="hatched" /></BarChart>}
-    </div> : <div className="grid h-64 place-items-center text-sm text-muted-foreground">No {title.toLowerCase()} data in this range.</div>}
-  </CardPanel></Card>
+  return (
+    <article className="rise overflow-hidden rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,#201a3d,#161229)] p-4 sm:p-5">
+      <header className="flex items-center gap-3">
+        <span className={`grid size-10 shrink-0 place-items-center rounded-2xl ${chartTone[tone]}`}><Icon className="size-5" strokeWidth={2.4} /></span>
+        <div className="min-w-0 flex-1"><h3 className="font-extrabold text-cream">{title}</h3><p className="truncate text-xs font-semibold text-muted-foreground">{description}</p></div>
+        {typeof latest === 'number' && <p className="text-right text-lg font-extrabold text-cream tabular-nums">{formatter(latest)}<span className="block text-[0.65rem] font-bold text-muted-foreground uppercase">latest</span></p>}
+      </header>
+      {present.length ? <div className="mt-4 h-60 sm:h-72">
+        {kind === 'area' && <AreaChart data={present} config={config} bloom="aura"><Grid /><XAxis dataKey="label" maxTicks={5} /><YAxis tickFormatter={formatter} /><Tooltip labelKey="label" valueFormatter={formatter} /><Area dataKey={dataKey} variant="gradient" /></AreaChart>}
+        {kind === 'line' && <LineChart data={present} config={config} bloom="aura"><Grid /><XAxis dataKey="label" maxTicks={5} /><YAxis tickFormatter={formatter} /><Tooltip labelKey="label" valueFormatter={formatter} /><Line dataKey={dataKey} /></LineChart>}
+        {kind === 'bar' && <BarChart data={present} config={config} bloom="aura"><Grid /><XAxis dataKey="label" maxTicks={5} /><YAxis tickFormatter={formatter} /><Tooltip labelKey="label" valueFormatter={formatter} /><Bar dataKey={dataKey} variant="hatched" /></BarChart>}
+      </div> : <div className="mt-4 grid h-40 place-items-center rounded-2xl border border-dashed border-white/10 text-sm font-semibold text-muted-foreground">No {title.toLowerCase()} data in this range.</div>}
+    </article>
+  )
 }

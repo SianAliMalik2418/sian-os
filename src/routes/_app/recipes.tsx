@@ -1,9 +1,10 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Boxes, MoreHorizontal, Minus, Pencil, Plus, Save, Search, Trash2, Utensils, X } from 'lucide-react'
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react'
+import { Doodle } from '@/components/sunrise/illustrations'
+import { Notice, Page, PageHeader, SectionTitle, Unit } from '@/components/sunrise/primitives'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogPopup, DialogTitle } from '@/components/ui/dialog'
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
@@ -273,78 +274,62 @@ function RecipesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Recipes</p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Your repeat meals.</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">Save dishes, snacks, drinks, portions, ingredients, macros, and notes.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" size="lg" variant="outline" onClick={beginCreateBundle}><Boxes /> New bundle</Button>
-          <Button type="button" size="lg" onClick={beginCreate}><Plus /> New recipe</Button>
-        </div>
-      </header>
+    <Page>
+      <PageHeader
+        kicker="Recipes"
+        title="Your repeat meals."
+        description="Saved portions with calories and protein, ready to log in one tap."
+        illustration="recipes"
+        actions={<>
+          <button type="button" onClick={beginCreate} className="flex items-center gap-2 rounded-full bg-cream px-4 py-2.5 text-sm font-extrabold text-[#1d1330] transition-transform active:scale-95"><Plus className="size-4" strokeWidth={2.8} /> New recipe</button>
+          <button type="button" onClick={beginCreateBundle} className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-extrabold text-cream transition-transform active:scale-95"><Boxes className="size-4" strokeWidth={2.4} /> New bundle</button>
+        </>}
+      />
 
-      {status && <p role="status" className="rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary">{status}</p>}
-      {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
+      {status && <Notice tone="status">{status}</Notice>}
+      {error && <Notice tone="error">{error}</Notice>}
 
-      <section className="space-y-4">
-        <div className="flex w-full items-center gap-2 rounded-xl border bg-secondary/25 px-3 py-2">
-          <Search className="size-4 text-muted-foreground" />
-          <Input nativeInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search recipes, aliases, ingredients…" className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
-        </div>
+      <label className="rise flex items-center gap-3 rounded-full border border-white/8 bg-card px-5 py-1.5 focus-within:border-sun/50" style={{ '--d': 1 } as CSSProperties}>
+        <Search className="size-5 text-muted-foreground" />
+        <Input nativeInput unstyled value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search recipes, aliases, ingredients…" className="flex-1 text-base [&_input]:h-11 [&_input]:px-0" aria-label="Search recipes" />
+        {query && <button type="button" onClick={() => setQuery('')} className="grid size-7 place-items-center rounded-full bg-white/8" aria-label="Clear search"><X className="size-3.5" /></button>}
+      </label>
 
-        {filteredBundles.length ? (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Boxes className="size-5 text-primary" />
-              <h2 className="font-heading text-xl font-semibold">Bundles</h2>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredBundles.map((bundle) => (
-                <BundleCard
-                  key={bundle.id}
-                  bundle={bundle}
-                  logging={loggingBundleId === bundle.id}
-                  onLog={() => logBundleToday(bundle)}
-                  onEdit={() => beginEditBundle(bundle)}
-                  onDelete={() => deleteBundle(bundle)}
-                />
-              ))}
-            </div>
+      {filteredBundles.length ? (
+        <section className="space-y-3">
+          <SectionTitle title="Bundles" meta={`${filteredBundles.length} templates`} />
+          <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
+            {filteredBundles.map((bundle, index) => (
+              <BundleCard key={bundle.id} bundle={bundle} index={index} logging={loggingBundleId === bundle.id} onLog={() => logBundleToday(bundle)} onEdit={() => beginEditBundle(bundle)} onDelete={() => deleteBundle(bundle)} />
+            ))}
           </div>
-        ) : null}
+        </section>
+      ) : null}
 
+      <section className="space-y-3">
+        <SectionTitle title="Recipes" meta={`${filteredRecipes.length} saved`} />
         {filteredRecipes.length ? (
-          <div className="space-y-3">
-            <h2 className="font-heading text-xl font-semibold">Recipes</h2>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {filteredRecipes.map((recipe) => {
-              const quantity = quantities[recipe.id] || 1
-              return (
-                <RecipeCard
-                  key={recipe.id}
-                  recipe={recipe}
-                  quantity={quantity}
-                  logging={loggingRecipeId === recipe.id}
-                  onQuantityChange={(nextQuantity) => setRecipeQuantity(recipe.id, nextQuantity)}
-                  onLog={() => logRecipeToday(recipe)}
-                  onEdit={() => beginEdit(recipe)}
-                  onDelete={() => deleteRecipe(recipe)}
-                />
-              )
-            })}
-          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {filteredRecipes.map((recipe, index) => (
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                index={index}
+                quantity={quantities[recipe.id] || 1}
+                logging={loggingRecipeId === recipe.id}
+                onQuantityChange={(nextQuantity) => setRecipeQuantity(recipe.id, nextQuantity)}
+                onLog={() => logRecipeToday(recipe)}
+                onEdit={() => beginEdit(recipe)}
+                onDelete={() => deleteRecipe(recipe)}
+              />
+            ))}
           </div>
         ) : (
-          <Card>
-            <CardPanel className="py-16 text-center">
-              <Utensils className="mx-auto mb-3 size-8 text-muted-foreground" />
-              <p className="font-medium">No recipes found</p>
-              <p className="mt-1 text-sm text-muted-foreground">Add repeat meals so nutrition logs can use known macros.</p>
-            </CardPanel>
-          </Card>
+          <div className="grid place-items-center gap-2 rounded-[1.8rem] border border-dashed border-white/12 px-6 py-14 text-center">
+            <Doodle kind="plate" className="size-20" />
+            <p className="text-lg font-extrabold text-cream">{query ? 'Nothing matches that' : 'No recipes yet'}</p>
+            <p className="max-w-xs text-sm text-muted-foreground">{query ? 'Try a different name, alias, or ingredient.' : 'Save your repeat meals so logging takes one tap.'}</p>
+          </div>
         )}
       </section>
 
@@ -362,12 +347,42 @@ function RecipesPage() {
         onSubmit={submitBundle}
         onCancel={closeBundleForm}
       />
-    </div>
+    </Page>
   )
 }
 
-function BundleCard({ bundle, logging, onLog, onEdit, onDelete }: {
+const monogramTones = ['bg-sun/18 text-sun', 'bg-mint/18 text-mint', 'bg-butter/18 text-butter', 'bg-lilac/18 text-lilac', 'bg-rose/18 text-rose']
+const bundleTones = [
+  'border-sun/20 bg-[linear-gradient(150deg,rgb(255_107_44/.2),#1c1836_70%)]',
+  'border-mint/20 bg-[linear-gradient(150deg,rgb(45_212_191/.18),#1c1836_70%)]',
+  'border-lilac/20 bg-[linear-gradient(150deg,rgb(167_139_250/.2),#1c1836_70%)]',
+]
+
+function toneFor(value: string, tones: string[]) {
+  let hash = 0
+  for (const character of value) hash = (hash * 31 + character.charCodeAt(0)) >>> 0
+  return tones[hash % tones.length]
+}
+
+function ItemMenu({ name, logging, onLog, onEdit, onDelete }: { name: string; logging: boolean; onLog: () => void; onEdit: () => void; onDelete: () => void }) {
+  return (
+    <Menu>
+      <MenuTrigger render={<Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label={`${name} actions`} />}>
+        <MoreHorizontal />
+      </MenuTrigger>
+      <MenuPopup align="end">
+        <MenuItem onClick={onLog} disabled={logging}><Utensils /> Log today</MenuItem>
+        <MenuItem onClick={onEdit}><Pencil /> Edit</MenuItem>
+        <MenuSeparator />
+        <MenuItem variant="destructive" onClick={onDelete}><Trash2 /> Delete</MenuItem>
+      </MenuPopup>
+    </Menu>
+  )
+}
+
+function BundleCard({ bundle, index, logging, onLog, onEdit, onDelete }: {
   bundle: RecipeBundle
+  index: number
   logging: boolean
   onLog: () => void
   onEdit: () => void
@@ -376,55 +391,34 @@ function BundleCard({ bundle, logging, onLog, onEdit, onDelete }: {
   const totals = bundle.recipes.reduce((sum, recipe) => {
     sum.calories += recipe.calories * recipe.default_quantity
     sum.protein += recipe.protein_grams * recipe.default_quantity
-    sum.fats += recipe.fat_grams * recipe.default_quantity
-    sum.carbs += recipe.carb_grams * recipe.default_quantity
     return sum
-  }, { calories: 0, protein: 0, fats: 0, carbs: 0 })
+  }, { calories: 0, protein: 0 })
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="min-w-0 pr-2">
-          <CardTitle>{bundle.name}</CardTitle>
-          <CardDescription>{bundle.recipes.length} saved recipe{bundle.recipes.length === 1 ? '' : 's'}</CardDescription>
+    <article className={`rise flex w-[82%] shrink-0 snap-start flex-col rounded-[1.8rem] border p-5 sm:w-auto ${bundleTones[index % bundleTones.length]}`} style={{ '--d': index + 2 } as CSSProperties}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-xs font-extrabold tracking-[0.14em] text-muted-foreground uppercase">{bundle.recipes.length} item{bundle.recipes.length === 1 ? '' : 's'}</p>
+          <h3 className="mt-1 truncate text-xl font-extrabold tracking-tight text-cream">{bundle.name}</h3>
         </div>
-        <CardAction>
-          <Menu>
-            <MenuTrigger render={<Button type="button" variant="ghost" size="icon" aria-label={`${bundle.name} actions`} />}>
-              <MoreHorizontal />
-            </MenuTrigger>
-            <MenuPopup align="end">
-              <MenuItem onClick={onLog} disabled={logging}><Utensils /> Log today</MenuItem>
-              <MenuItem onClick={onEdit}><Pencil /> Edit</MenuItem>
-              <MenuSeparator />
-              <MenuItem variant="destructive" onClick={onDelete}><Trash2 /> Delete</MenuItem>
-            </MenuPopup>
-          </Menu>
-        </CardAction>
-      </CardHeader>
-      <CardPanel className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Metric label="Calories" value={`${totals.calories} kcal`} />
-          <Metric label="Protein" value={`${totals.protein} g`} />
-          <Metric label="Fats" value={`${totals.fats} g`} />
-          <Metric label="Carbs" value={`${totals.carbs} g`} />
-        </div>
-        <div className="space-y-2">
-          {bundle.recipes.map((recipe) => (
-            <div key={recipe.bundle_item_id} className="flex items-center justify-between gap-3 rounded-lg border bg-secondary/20 px-3 py-2 text-sm">
-              <span className="font-medium">{recipe.name}</span>
-              <span className="text-muted-foreground">x{recipe.default_quantity}</span>
-            </div>
-          ))}
-        </div>
-        {bundle.notes && <p className="text-sm text-muted-foreground">{bundle.notes}</p>}
-      </CardPanel>
-    </Card>
+        <ItemMenu name={bundle.name} logging={logging} onLog={onLog} onEdit={onEdit} onDelete={onDelete} />
+      </div>
+      <div className="mt-3 flex items-baseline gap-4">
+        <p className="text-2xl font-extrabold text-cream tabular-nums">{Math.round(totals.calories)}<Unit>kcal</Unit></p>
+        <p className="text-2xl font-extrabold text-mint tabular-nums">{Math.round(totals.protein)}<small className="ml-0.5 text-sm font-bold">g protein</small></p>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {bundle.recipes.map((recipe) => <span key={recipe.bundle_item_id} className="rounded-full bg-white/8 px-2.5 py-1 text-xs font-bold text-cream/85">{recipe.name} ×{recipe.default_quantity}</span>)}
+      </div>
+      {bundle.notes && <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{bundle.notes}</p>}
+      <Button type="button" onClick={onLog} loading={logging} className="mt-4 h-11 w-full rounded-full border-0 bg-cream font-extrabold text-[#1d1330] hover:bg-cream/90"><Utensils /> Log today</Button>
+    </article>
   )
 }
 
-function RecipeCard({ recipe, quantity, logging, onQuantityChange, onLog, onEdit, onDelete }: {
+function RecipeCard({ recipe, index, quantity, logging, onQuantityChange, onLog, onEdit, onDelete }: {
   recipe: Recipe
+  index: number
   quantity: number
   logging: boolean
   onQuantityChange: (quantity: number) => void
@@ -448,50 +442,37 @@ function RecipeCard({ recipe, quantity, logging, onQuantityChange, onLog, onEdit
     if (quantityDraft.trim() === '') setQuantityDraft(String(quantity))
   }
 
+  const calories = Math.round(recipe.calories * quantity * 10) / 10
+  const protein = Math.round(recipe.protein_grams * quantity * 10) / 10
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="min-w-0 pr-2">
-          <CardTitle>{recipe.name}</CardTitle>
-          <CardDescription>{recipe.serving_description || recipe.category || 'Saved recipe'}</CardDescription>
+    <article className="rise rounded-[1.8rem] border border-white/8 bg-card p-4" style={{ '--d': Math.min(index, 8) + 3 } as CSSProperties}>
+      <div className="flex items-start gap-3">
+        <span className={`grid size-12 shrink-0 place-items-center rounded-2xl text-lg font-extrabold ${toneFor(recipe.category || recipe.name, monogramTones)}`}>{recipe.name.trim().charAt(0).toUpperCase()}</span>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-lg leading-tight font-extrabold text-cream">{recipe.name}</h3>
+          <p className="truncate text-sm font-semibold text-muted-foreground">{[recipe.serving_description, recipe.category].filter(Boolean).join(' · ') || 'One serving'}</p>
         </div>
-        <CardAction>
-          <Menu>
-            <MenuTrigger render={<Button type="button" variant="ghost" size="icon" aria-label={`${recipe.name} actions`} />}>
-              <MoreHorizontal />
-            </MenuTrigger>
-            <MenuPopup align="end">
-              <MenuItem onClick={onLog} disabled={logging}><Utensils /> Log today</MenuItem>
-              <MenuItem onClick={onEdit}><Pencil /> Edit</MenuItem>
-              <MenuSeparator />
-              <MenuItem variant="destructive" onClick={onDelete}><Trash2 /> Delete</MenuItem>
-            </MenuPopup>
-          </Menu>
-        </CardAction>
-      </CardHeader>
-      <CardPanel className="space-y-4">
-        <div className="flex flex-col gap-3 rounded-xl border bg-secondary/20 p-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <Badge variant="info">{recipe.protein_grams * quantity}g protein</Badge>
-            <p className="text-xs text-muted-foreground">Macros shown for selected quantity.</p>
-          </div>
-          <div className="grid w-full grid-cols-[2.5rem_minmax(5rem,1fr)_2.5rem] items-center rounded-lg border bg-background p-1 sm:w-44" aria-label={`${recipe.name} quantity`}>
-            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Decrease ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity - 0.25)} disabled={quantity <= 0.25}><Minus /></Button>
-            <Input nativeInput type="number" min="0.25" max="20" step="0.25" inputMode="decimal" aria-label={`${recipe.name} quantity value`} value={quantityDraft} onBlur={resetBlankQuantityDraft} onChange={(event) => updateQuantityDraft(event.target.value)} className="h-9 min-w-0 px-2 text-center text-sm tabular-nums" />
-            <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity + 0.25)}><Plus /></Button>
-          </div>
+        <ItemMenu name={recipe.name} logging={logging} onLog={onLog} onEdit={onEdit} onDelete={onDelete} />
+      </div>
+
+      <div className="mt-3 flex gap-2">
+        <span className="rounded-full bg-sun/14 px-3 py-1.5 text-sm font-extrabold text-[#ffb38a] tabular-nums">{calories} kcal</span>
+        <span className="rounded-full bg-mint/14 px-3 py-1.5 text-sm font-extrabold text-mint tabular-nums">{protein}g protein</span>
+      </div>
+
+      {recipe.ingredients && <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{recipe.ingredients}</p>}
+      {recipe.aliases && <p className="mt-1.5 truncate text-xs font-semibold text-muted-foreground/80">Also: {recipe.aliases}</p>}
+
+      <div className="mt-4 flex items-center gap-2">
+        <div className="grid flex-1 grid-cols-[2.5rem_minmax(3rem,1fr)_2.5rem] items-center rounded-full bg-white/6 p-1" aria-label={`${recipe.name} quantity`}>
+          <Button type="button" variant="ghost" size="icon-sm" className="rounded-full" aria-label={`Decrease ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity - 0.25)} disabled={quantity <= 0.25}><Minus /></Button>
+          <Input nativeInput type="number" min="0.25" max="20" step="0.25" inputMode="decimal" aria-label={`${recipe.name} quantity value`} value={quantityDraft} onBlur={resetBlankQuantityDraft} onChange={(event) => updateQuantityDraft(event.target.value)} unstyled className="min-w-0 [&_input]:h-8 [&_input]:px-1 [&_input]:text-center [&_input]:font-extrabold [&_input]:tabular-nums" />
+          <Button type="button" variant="ghost" size="icon-sm" className="rounded-full" aria-label={`Increase ${recipe.name} quantity`} onClick={() => onQuantityChange(quantity + 0.25)}><Plus /></Button>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Metric label="Calories" value={`${recipe.calories * quantity} kcal`} />
-          <Metric label="Protein" value={`${recipe.protein_grams * quantity} g`} />
-          <Metric label="Fats" value={`${recipe.fat_grams * quantity} g`} />
-          <Metric label="Carbs" value={`${recipe.carb_grams * quantity} g`} />
-          <Metric label="Category" value={recipe.category || 'Not set'} />
-        </div>
-        {recipe.ingredients && <p className="line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{recipe.ingredients}</p>}
-        {recipe.aliases && <p className="text-xs text-muted-foreground">Also: {recipe.aliases}</p>}
-      </CardPanel>
-    </Card>
+        <Button type="button" onClick={onLog} loading={logging} className="h-10 rounded-full border-0 bg-sun px-5 font-extrabold text-[#1d1330] hover:bg-sun/90"><Utensils /> Log</Button>
+      </div>
+    </article>
   )
 }
 
@@ -663,10 +644,6 @@ function BundleQuantityControl({ label, value, disabled, onChange }: {
       <Button type="button" variant="ghost" size="icon-sm" aria-label={`Increase ${label}`} onClick={() => onChange(value + 0.25)} disabled={disabled}><Plus /></Button>
     </div>
   )
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-lg border bg-secondary/25 p-3"><p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p><p className="mt-1 font-heading text-lg font-semibold">{value}</p></div>
 }
 
 function RecipeField({ label, description, children }: { label: string; description?: string; children: ReactNode }) {

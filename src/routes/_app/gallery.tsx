@@ -1,13 +1,13 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Camera, ImagePlus, Images, Trash2, Upload } from 'lucide-react'
-import { useMemo, useRef, useState, type FormEvent, type RefObject } from 'react'
+import { Camera, ImagePlus, Trash2 } from 'lucide-react'
+import { useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react'
+import { HeaderIllustration } from '@/components/sunrise/illustrations'
+import { Notice, Page, PageHeader, SectionTitle } from '@/components/sunrise/primitives'
 import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
-import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
-import { Form } from '@/components/ui/form'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { getProgressPhotos } from '@/lib/app.functions'
 import { groupProgressPhotosByDate } from '@/lib/progress-photos'
@@ -34,11 +34,6 @@ function GalleryPage() {
   const [status, setStatus] = useState<string>()
   const [error, setError] = useState<string>()
   const groups = useMemo(() => groupProgressPhotosByDate(photos), [photos])
-
-  async function submit(event: FormEvent<HTMLFormElement>, source: 'gallery' | 'camera') {
-    event.preventDefault()
-    await uploadPhoto(source, source === 'gallery' ? galleryFileRef : cameraFileRef)
-  }
 
   async function uploadPhoto(source: 'gallery' | 'camera', inputRef: RefObject<HTMLInputElement | null>) {
     const file = inputRef.current?.files?.[0]
@@ -99,78 +94,49 @@ function GalleryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Gallery</p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Progress photos by date.</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">A dated timeline of your uploaded progress pictures.</p>
+    <Page>
+      <PageHeader
+        kicker="Gallery"
+        title="Progress, framed."
+        description="A dated timeline of your progress photos."
+        illustration="gallery"
+        aside={<span className="rounded-full bg-white/8 px-3.5 py-1.5 text-sm font-extrabold text-cream">{photos.length} photo{photos.length === 1 ? '' : 's'}</span>}
+      />
+
+      <section className="rise space-y-4 rounded-[1.8rem] border border-white/8 bg-card p-4 sm:p-5" style={{ '--d': 1 } as CSSProperties}>
+        <div className="grid grid-cols-2 gap-3">
+          <UploadTile tone="sun" icon={Camera} title="Take photo" subtitle="Opens the camera" loading={savingSource === 'camera'} disabled={savingSource !== null}>
+            <input ref={cameraFileRef} type="file" accept="image/*" capture="environment" className="sr-only" disabled={savingSource !== null} onChange={() => uploadPhoto('camera', cameraFileRef)} />
+          </UploadTile>
+          <UploadTile tone="lilac" icon={ImagePlus} title="From library" subtitle="Pick an existing shot" loading={savingSource === 'gallery'} disabled={savingSource !== null}>
+            <input ref={galleryFileRef} type="file" accept="image/*" className="sr-only" disabled={savingSource !== null} onChange={() => uploadPhoto('gallery', galleryFileRef)} />
+          </UploadTile>
         </div>
-        <div className="rounded-2xl border bg-secondary/30 px-4 py-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Total photos</p>
-          <p className="mt-1 font-heading text-2xl font-semibold tabular-nums">{photos.length}</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field><FieldLabel>Date</FieldLabel><DatePicker value={date} onValueChange={setDate} required /></Field>
+          <Field><FieldLabel>Label</FieldLabel><Input nativeInput value={label} onChange={(event) => setLabel(event.target.value)} placeholder="Front, side, month 3" /></Field>
+          <div className="sm:col-span-2"><Field><FieldLabel>Notes</FieldLabel><Textarea rows={2} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Optional context" /></Field></div>
         </div>
-      </header>
+        <p className="px-1 text-xs font-semibold text-muted-foreground">Set the date and label first. The photo uploads as soon as you pick it.</p>
+      </section>
 
-      <Card>
-        <CardHeader>
-          <div><CardTitle>Add photo</CardTitle><CardDescription>Choose a date, then upload from photos or capture from camera.</CardDescription></div>
-          <CardAction><ImagePlus className="size-5 text-primary" /></CardAction>
-        </CardHeader>
-        <CardPanel>
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.7fr)]">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field><FieldLabel>Date</FieldLabel><DatePicker value={date} onValueChange={setDate} required /></Field>
-              <Field><FieldLabel>Label</FieldLabel><Input nativeInput value={label} onChange={(event) => setLabel(event.target.value)} placeholder="Front, side, month 3" /></Field>
-              <div className="sm:col-span-2"><Field><FieldLabel>Notes</FieldLabel><Textarea rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Optional context" /></Field></div>
-            </div>
-
-            <div className="grid gap-3">
-              <Form onSubmit={(event) => submit(event, 'gallery')} className="rounded-xl border bg-background/60 p-3">
-                <Field>
-                  <FieldLabel>Upload from gallery</FieldLabel>
-                  <Input ref={galleryFileRef} nativeInput type="file" accept="image/*" />
-                  <FieldDescription>Use an existing image from your photo library.</FieldDescription>
-                </Field>
-                <Button type="submit" className="mt-3 w-full" loading={savingSource === 'gallery'} disabled={savingSource !== null}><Upload /> Upload gallery photo</Button>
-              </Form>
-
-              <Form onSubmit={(event) => submit(event, 'camera')} className="rounded-xl border bg-background/60 p-3">
-                <Field>
-                  <FieldLabel>Take live photo</FieldLabel>
-                  <Input ref={cameraFileRef} nativeInput type="file" accept="image/*" capture="environment" />
-                  <FieldDescription>Opens the device camera when the browser supports it.</FieldDescription>
-                </Field>
-                <Button type="submit" variant="outline" className="mt-3 w-full" loading={savingSource === 'camera'} disabled={savingSource !== null}><Camera /> Upload camera photo</Button>
-              </Form>
-            </div>
-          </div>
-        </CardPanel>
-      </Card>
-
-      {status && <p role="status" className="rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary">{status}</p>}
-      {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
+      {status && <Notice tone="status">{status}</Notice>}
+      {error && <Notice tone="error">{error}</Notice>}
 
       {groups.length ? (
-        <div className="space-y-5">
-          {groups.map((group) => (
-            <section key={group.date} className="space-y-3">
-              <div className="flex items-end justify-between gap-3 border-b pb-2">
-                <div>
-                  <h2 className="font-heading text-xl font-semibold">{formatPhotoDate(group.date)}</h2>
-                  <p className="text-sm text-muted-foreground">{group.photos.length} photo{group.photos.length === 1 ? '' : 's'}</p>
-                </div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{group.date}</p>
-              </div>
+        <div className="space-y-6">
+          {groups.map((group, groupIndex) => (
+            <section key={group.date} className="rise space-y-3" style={{ '--d': Math.min(groupIndex, 6) + 2 } as CSSProperties}>
+              <SectionTitle title={formatPhotoDate(group.date)} meta={`${group.photos.length} photo${group.photos.length === 1 ? '' : 's'}`} />
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {group.photos.map((photo) => (
-                  <figure key={photo.id} className="group relative overflow-hidden rounded-2xl border bg-card">
-                    <img src={`/api/progress-photos/${photo.id}`} alt={photo.label || `Progress photo from ${group.date}`} className="aspect-[3/4] w-full object-cover" loading="lazy" />
-                    <figcaption className="min-h-16 p-3">
-                      <p className="truncate text-sm font-medium">{photo.label || 'Progress photo'}</p>
-                      {photo.notes && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{photo.notes}</p>}
+                  <figure key={photo.id} className="group relative overflow-hidden rounded-[1.5rem] border border-white/8 bg-card">
+                    <img src={`/api/progress-photos/${photo.id}`} alt={photo.label || `Progress photo from ${group.date}`} className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
+                    <figcaption className="absolute inset-x-0 bottom-0 bg-[linear-gradient(transparent,rgb(18_15_36/.92))] px-3 pt-8 pb-3">
+                      <p className="truncate text-sm font-extrabold text-cream">{photo.label || 'Progress photo'}</p>
+                      {photo.notes && <p className="line-clamp-1 text-xs font-medium text-cream/70">{photo.notes}</p>}
                     </figcaption>
-                    <Button type="button" size="icon-sm" variant="destructive" className="absolute right-2 top-2 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100" loading={deletingId === photo.id} disabled={deletingId !== null} onClick={() => deletePhoto(photo)} aria-label="Delete photo"><Trash2 /></Button>
+                    <Button type="button" size="icon-sm" variant="destructive" className="absolute top-2 right-2 rounded-full sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100" loading={deletingId === photo.id} disabled={deletingId !== null} onClick={() => deletePhoto(photo)} aria-label="Delete photo"><Trash2 /></Button>
                   </figure>
                 ))}
               </div>
@@ -178,18 +144,24 @@ function GalleryPage() {
           ))}
         </div>
       ) : (
-        <Card>
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon"><Images /></EmptyMedia>
-              <EmptyTitle>No progress photos yet</EmptyTitle>
-              <EmptyDescription>Add your first photo above and it will appear in a dated section here.</EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent />
-          </Empty>
-        </Card>
+        <div className="grid place-items-center gap-2 rounded-[1.8rem] border border-dashed border-white/12 px-6 py-14 text-center">
+          <HeaderIllustration kind="gallery" className="w-32" />
+          <p className="mt-2 text-lg font-extrabold text-cream">No photos yet</p>
+          <p className="max-w-xs text-sm text-muted-foreground">Snap your first one above. Future you will be glad you did.</p>
+        </div>
       )}
-    </div>
+    </Page>
+  )
+}
+
+function UploadTile({ tone, icon: Icon, title, subtitle, loading, disabled, children }: { tone: 'sun' | 'lilac'; icon: typeof Camera; title: string; subtitle: string; loading: boolean; disabled: boolean; children: ReactNode }) {
+  const toneClass = tone === 'sun' ? 'border-sun/25 bg-[linear-gradient(150deg,rgb(255_107_44/.22),rgb(255_107_44/.05))] text-sun' : 'border-lilac/25 bg-[linear-gradient(150deg,rgb(167_139_250/.22),rgb(167_139_250/.05))] text-lilac'
+  return (
+    <label className={`relative flex min-h-32 cursor-pointer flex-col justify-between rounded-[1.5rem] border p-4 transition-transform active:scale-[.97] focus-within:ring-2 focus-within:ring-ring ${toneClass} ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
+      {children}
+      <span className="grid size-11 place-items-center rounded-2xl bg-white/10">{loading ? <Spinner className="size-5" /> : <Icon className="size-5" strokeWidth={2.4} />}</span>
+      <span><span className="block font-extrabold text-cream">{loading ? 'Uploading…' : title}</span><span className="block text-xs font-semibold text-muted-foreground">{subtitle}</span></span>
+    </label>
   )
 }
 

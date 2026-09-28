@@ -1,21 +1,33 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Activity, Check, Flame, Footprints, Moon, Scale, Sparkles } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Flame, Pencil } from 'lucide-react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { getDashboardData } from '@/lib/app.functions'
+import { DaySun, Doodle, SunriseScene } from '@/components/sunrise/illustrations'
+import { LyftaSessionCard } from '@/components/sunrise/lyfta-session-card'
+import { CountUp, Page, SectionTitle, StripeBar, ToneTile, Unit } from '@/components/sunrise/primitives'
+import { getCoachNote, getDashboardData, getLatestLyftaWorkout } from '@/lib/app.functions'
+import type { LyftaWorkout } from '@/lib/lyfta'
 
 export const Route = createFileRoute('/_app/')({
-  loader: () => getDashboardData(),
+  loader: async () => {
+    const [dashboard, coachNote] = await Promise.all([getDashboardData(), getCoachNote()])
+    return { ...dashboard, coachNote }
+  },
   component: Dashboard,
 })
 
-function formatValue(value: number | null | undefined, suffix = '') {
-  return value === null || value === undefined ? '—' : `${value}${suffix}`
+const delay = (d: number) => ({ '--d': d }) as CSSProperties
+
+function percent(value: number | null | undefined, goal: number) {
+  return value && goal > 0 ? Math.min((value / goal) * 100, 100) : 0
+}
+
+function greetingFor(hour: number) {
+  if (hour < 5) return 'Up late'
+  if (hour < 12) return 'Morning'
+  if (hour < 17) return 'Afternoon'
+  return 'Evening'
 }
 
 function Dashboard() {
@@ -23,6 +35,8 @@ function Dashboard() {
   const router = useRouter()
   const { openCheckin } = useDailyCheckinDialog()
   const [checkin, setCheckin] = useState(data.checkin)
+  const [workout, setWorkout] = useState<LyftaWorkout | null>(null)
+  const [greeting, setGreeting] = useState('Hey')
   const calorieGoal = data.profile?.calorie_goal || 2200
   const proteinGoal = data.profile?.protein_goal || 100
   const todayIso = new Date().toISOString().slice(0, 10)
@@ -34,66 +48,136 @@ function Dashboard() {
     return { date: date.toISOString().slice(0, 10), label: date.toLocaleDateString('en', { weekday: 'short', timeZone: 'UTC' }) }
   })
 
+  const calories = checkin?.calories ?? 0
+  const protein = checkin?.protein_grams ?? 0
+  const caloriePercent = percent(calories, calorieGoal)
+  const proteinPercent = percent(protein, proteinGoal)
+  const hill = Math.round((caloriePercent + proteinPercent) / 2)
+  const caloriesLeft = calorieGoal - calories
+  const proteinLeft = Math.max(proteinGoal - protein, 0)
+  const weightDelta = data.weightTrend.length >= 2 ? data.weightTrend[0].weight_kg - data.weightTrend[data.weightTrend.length - 1].weight_kg : null
+  const checkedInToday = checkin?.date === todayIso && checkin.weight_kg !== null
+
   useEffect(() => {
     setCheckin(data.checkin)
   }, [data.checkin])
 
+  useEffect(() => {
+    setGreeting(greetingFor(new Date().getHours()))
+    let current = true
+    getLatestLyftaWorkout().then((latest) => current && setWorkout(latest)).catch(() => undefined)
+    return () => {
+      current = false
+    }
+  }, [])
+
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Today</p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Build the next strong day.</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">Keep the signal clean: check in, nourish yourself, and recover deliberately.</p>
-        </div>
-        <Button type="button" size="lg" onClick={() => openCheckin()} className="min-h-11 rounded-xl">
-          <Activity className="size-4" /> {checkin?.date === new Date().toISOString().slice(0, 10) ? 'Edit today' : 'Check in'}
-        </Button>
-      </header>
+    <Page className="pt-0 sm:pt-0 lg:pt-8">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start">
+        <div className="space-y-5">
+          <section className="relative -mx-4 h-[22rem] overflow-hidden rounded-b-[2.25rem] sm:-mx-6 lg:mx-0 lg:rounded-[2.25rem]">
+            <SunriseScene progress={hill / 100} className="absolute inset-0" />
+            <div className="rise relative px-5 pt-8 sm:px-7">
+              <p className="text-sm font-bold text-[#ffb38a]">{new Date().toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' })}</p>
+              <h1 className="mt-1 text-[2.1rem] leading-[1.02] font-extrabold tracking-tight text-cream">{greeting}, Sian.<br /><CountUp value={hill} />% up the hill.</h1>
+              <p className="mt-1.5 text-sm font-semibold text-cream/70">Calories + protein vs your goals</p>
+            </div>
+            {data.streak > 0 && (
+              <div className="pop absolute right-4 bottom-8 flex items-center gap-1.5 rounded-full bg-cream px-3.5 py-2 text-sm font-extrabold text-[#1d1330] shadow-[0_10px_24px_-8px_rgb(0_0_0/.6)]" style={delay(8)}>
+                <Flame className="anim-flicker size-4 fill-sun text-sun" /> {data.streak} day streak
+              </div>
+            )}
+          </section>
 
-      <Card className="overflow-hidden border-primary/20 bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--primary)_14%,transparent),transparent_45%)]">
-        <CardHeader>
-          <div className="flex items-center gap-3"><span className="rounded-xl bg-primary p-2 text-primary-foreground"><Sparkles className="size-5" /></span><div><CardTitle>Consistency pulse</CardTitle><CardDescription>Your current daily check-in rhythm</CardDescription></div></div>
-          <CardAction><Badge variant={data.streak > 0 ? 'success' : 'secondary'}>{data.streak} day streak</Badge></CardAction>
-        </CardHeader>
-        <CardPanel>
-          <div className="mb-3 flex items-center justify-between text-sm"><span className="text-muted-foreground">This week</span><span>{data.weeklyCheckins.length}/7 complete</span></div>
-          <Progress value={(data.weeklyCheckins.length / 7) * 100} />
-          <div className="mt-4 grid grid-cols-7 gap-2">
-            {weekDays.map((day) => {
-              const isCompleted = completedDays.has(day.date)
-              return (
-                <div key={day.date} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg border px-1 py-2 text-center text-xs ${isCompleted ? 'border-primary/40 bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
-                  {isCompleted && <><Check className="size-4 stroke-[2.5]" aria-hidden="true" /><span className="sr-only">Completed</span></>}
-                  <span>{day.label}</span>
-                </div>
-              )
-            })}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <MacroCard label="Calories" value={calories} goal={calorieGoal} unit="" tone="sun" percentValue={caloriePercent} style={delay(1)}
+              footer={caloriesLeft >= 0 ? <><b className="text-cream">{caloriesLeft.toLocaleString()} kcal</b> left today</> : <><b className="text-rose">{Math.abs(caloriesLeft).toLocaleString()} kcal</b> over goal</>} />
+            <MacroCard label="Protein" value={protein} goal={proteinGoal} unit="g" tone="mint" percentValue={proteinPercent} style={delay(2)}
+              footer={proteinLeft > 0 ? <><b className="text-cream">{proteinLeft}g</b> to go</> : <b className="text-mint">Goal smashed</b>} />
           </div>
-        </CardPanel>
-      </Card>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { label: 'Weight', value: formatValue(checkin?.weight_kg, ' kg'), icon: Scale },
-          { label: 'Steps', value: formatValue(checkin?.steps), icon: Footprints },
-          { label: 'Active calories', value: formatValue(checkin?.active_calories, ' kcal'), icon: Flame },
-          { label: 'Sleep', value: formatValue(checkin?.sleep_hours, ' hrs'), icon: Moon },
-        ].map(({ label, value, icon: Icon }) => (
-          <Card key={label}>
-            <CardHeader>
-              <CardDescription>{label}</CardDescription>
-              <CardAction><Icon className="size-5 text-primary" /></CardAction>
-              <CardTitle className="text-2xl">{value}</CardTitle>
-            </CardHeader>
-          </Card>
-        ))}
-      </section>
+          <button type="button" onClick={() => openCheckin()} className="rise flex w-full items-center gap-4 rounded-[1.8rem] border border-white/8 bg-card p-4 text-left transition-colors hover:bg-dusk-high" style={delay(3)}>
+            <Doodle kind={checkedInToday ? 'check' : 'plate'} className="size-12 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="font-extrabold text-cream">{checkedInToday ? 'Checked in today' : 'Daily check-in'}</p>
+              <p className="truncate text-sm font-semibold text-muted-foreground">{checkedInToday ? `${checkin?.weight_kg} kg logged. Tap to edit.` : 'Weight, workout notes, and meals for today.'}</p>
+            </div>
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white/8 text-cream"><Pencil className="size-4" /></span>
+          </button>
 
-      <NutritionEntryTracker date={todayIso} initialEntries={data.nutritionEntries} calorieGoal={calorieGoal} proteinGoal={proteinGoal} onCheckinChange={async (nextCheckin) => {
+          <section className="rise space-y-3" style={delay(4)}>
+            <SectionTitle title="This week" meta={`${data.weeklyCheckins.length} of 7 days`} />
+            <div className="grid grid-cols-7 gap-1 rounded-[1.8rem] border border-white/8 bg-card px-2 py-4">
+              {weekDays.map((day, index) => {
+                const state = completedDays.has(day.date) ? 'done' : day.date === todayIso ? 'today' : 'idle'
+                return (
+                  <div key={day.date} className={`pop grid justify-items-center gap-1.5 text-xs font-bold ${day.date === todayIso ? 'text-sun' : state === 'done' ? 'text-cream' : 'text-muted-foreground'}`} style={delay(index + 4)}>
+                    <DaySun state={state} />
+                    {day.label}
+                    <span className="sr-only">{state === 'done' ? 'checked in' : 'no check-in'}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        </div>
+
+        <div className="space-y-5 lg:pt-0">
+          <section className="space-y-3">
+            <SectionTitle title="Body today" meta="Wearable + check-in" className="rise" style={delay(5)} />
+            <div className="grid grid-cols-2 gap-3">
+              <ToneTile tone="sun" label="Weight" className="rise" style={delay(5)} doodle={<Doodle kind="scale" />}
+                value={checkin?.weight_kg != null ? <><CountUp value={checkin.weight_kg} decimals={1} /><Unit>kg</Unit></> : '—'}
+                footer={weightDelta !== null ? `${weightDelta <= 0 ? '▼' : '▲'} ${Math.abs(weightDelta).toFixed(1)} kg trend` : 'Log it in check-in'} />
+              <ToneTile tone="mint" label="Steps" className="rise" style={delay(6)} doodle={<Doodle kind="steps" />}
+                value={checkin?.steps != null ? <CountUp value={checkin.steps} /> : '—'} footer="From your wearable" />
+              <ToneTile tone="butter" label="Active" className="rise" style={delay(7)} doodle={<Doodle kind="flame" />}
+                value={checkin?.active_calories != null ? <><CountUp value={checkin.active_calories} /><Unit>kcal</Unit></> : '—'} footer="Burned moving" />
+              <ToneTile tone="lilac" label="Sleep" className="rise" style={delay(8)} doodle={<Doodle kind="moon" />}
+                value={checkin?.sleep_hours != null ? <><CountUp value={checkin.sleep_hours} decimals={1} /><Unit>hrs</Unit></> : '—'} footer="Last night" />
+            </div>
+          </section>
+
+          {workout && <LyftaSessionCard workout={workout} className="rise" />}
+
+          {data.coachNote && (
+            <section className="rise relative overflow-hidden rounded-[1.8rem] border border-lilac/20 bg-[linear-gradient(160deg,rgb(167_139_250/.16),rgb(167_139_250/.03))] p-5" style={delay(9)}>
+              <div className="flex items-center gap-3">
+                <span className="grid size-10 place-items-center rounded-2xl bg-lilac/20"><svg viewBox="0 0 24 24" className="anim-spin-slow size-6" style={{ animationDuration: '14s' }} aria-hidden="true"><g stroke="#ffd23f" strokeWidth="2" strokeLinecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" /></g><circle cx="12" cy="12" r="4.5" fill="#ff9447" /></svg></span>
+                <p className="text-xs font-extrabold tracking-[0.14em] text-[#cfc0ff] uppercase">Last night's coach note</p>
+              </div>
+              <p className="mt-3 line-clamp-6 text-[0.95rem] leading-relaxed font-medium whitespace-pre-wrap text-cream/90">{data.coachNote}</p>
+            </section>
+          )}
+        </div>
+      </div>
+
+      <NutritionEntryTracker date={todayIso} initialEntries={data.nutritionEntries} calorieGoal={calorieGoal} proteinGoal={proteinGoal} showTotals={false} onCheckinChange={async (nextCheckin) => {
         setCheckin(nextCheckin)
         await router.invalidate()
       }} />
+    </Page>
+  )
+}
+
+function MacroCard({ label, value, goal, unit, tone, percentValue, footer, style }: {
+  label: string
+  value: number
+  goal: number
+  unit: string
+  tone: 'sun' | 'mint'
+  percentValue: number
+  footer: React.ReactNode
+  style?: CSSProperties
+}) {
+  return (
+    <div className="rise rounded-[1.8rem] border border-white/8 bg-card p-5" style={style}>
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="font-bold text-muted-foreground">{label}</p>
+        <p className="text-[1.75rem] leading-none font-extrabold tracking-tight text-cream"><CountUp value={value} />{unit}<small className="ml-1 text-sm font-bold text-muted-foreground">/ {goal.toLocaleString()}{unit}</small></p>
+      </div>
+      <StripeBar value={percentValue} tone={tone} className="mt-3" />
+      <p className="mt-2.5 text-sm font-semibold text-muted-foreground">{footer}</p>
     </div>
   )
 }

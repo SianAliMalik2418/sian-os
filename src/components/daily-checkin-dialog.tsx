@@ -166,12 +166,13 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
         <DialogPopup className="h-[min(52rem,calc(100dvh-2rem))] max-w-2xl max-sm:h-[calc(100dvh-3rem)]">
           <Form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
             <DialogHeader>
-              <div className="flex items-center gap-2">
-                <DialogTitle>{editing ? 'Edit daily check-in' : 'Daily check-in'}</DialogTitle>
+              <div className="flex items-center gap-3">
+                <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-sun/15"><svg viewBox="0 0 24 24" className="anim-spin-slow size-6" style={{ animationDuration: '14s' }} aria-hidden="true"><g stroke="#ffb065" strokeWidth="2" strokeLinecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" /></g><circle cx="12" cy="12" r="4.5" fill="#ff6b2c" /></svg></span>
+                <DialogTitle className="text-xl font-extrabold tracking-tight">{editing ? 'Edit check-in' : 'Daily check-in'}</DialogTitle>
                 {editing && <Badge variant="success"><Check /> Saved</Badge>}
                 {pendingCount > 0 && <Badge variant="warning">{pendingCount} offline</Badge>}
               </div>
-              <DialogDescription>Log wellness, meals, and progress photos for one day.</DialogDescription>
+              <DialogDescription>Weight, meals, and training notes for one day. Steps, active calories, and sleep sync from your wearable.</DialogDescription>
             </DialogHeader>
 
             <DialogPanel className="grid gap-5">
@@ -186,8 +187,8 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
                 </CheckinField>
               </div>
 
-              <section className="rounded-2xl border p-4">
-                <div className="mb-4"><p className="font-heading font-semibold">Nutrition items</p><p className="mt-1 text-xs text-muted-foreground">Food rows update calories, protein, fats, and carbs.</p></div>
+              <section className="rounded-[1.5rem] border border-white/8 bg-white/4 p-4">
+                <div className="mb-4"><p className="font-extrabold text-cream">Meals</p><p className="mt-1 text-xs font-semibold text-muted-foreground">Each food row updates today's calories and protein.</p></div>
                 <NutritionEntryTracker date={values.date} calorieGoal={calorieGoal} proteinGoal={proteinGoal} compact onCheckinChange={updateNutritionTotals} />
               </section>
 
@@ -199,13 +200,13 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
                 <Textarea value={values.notes || ''} onChange={(event) => update('notes', event.target.value)} placeholder="Anything else worth remembering today…" rows={4} />
               </CheckinField>
 
-              {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
-              {syncMessage && <p role="status" className="rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary">{syncMessage}</p>}
+              {error && <p role="alert" className="rounded-2xl bg-destructive/12 px-4 py-3 text-sm font-semibold text-destructive-foreground">{error}</p>}
+              {syncMessage && <p role="status" className="rounded-2xl bg-mint/12 px-4 py-3 text-sm font-semibold text-mint">{syncMessage}</p>}
             </DialogPanel>
 
             <DialogFooter className="pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4">
-              <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-              <Button type="submit" loading={saving} disabled={loading}><Save /> {editing ? 'Save changes' : 'Save check-in'}</Button>
+              <DialogClose render={<Button variant="ghost" className="rounded-full px-5 font-bold" />}>Cancel</DialogClose>
+              <Button type="submit" loading={saving} disabled={loading} className="h-11 rounded-full px-6 font-extrabold"><Save /> {editing ? 'Save changes' : 'Save check-in'}</Button>
             </DialogFooter>
           </Form>
         </DialogPopup>
@@ -240,7 +241,7 @@ function OfflineSyncStatus({ pendingCount, message }: { pendingCount: number; me
   if (!message && pendingCount === 0) return null
 
   return (
-    <div className="fixed inset-x-3 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-md rounded-lg border bg-popover px-3 py-2 text-sm text-popover-foreground shadow-lg lg:bottom-4 lg:left-auto lg:right-4 lg:mx-0">
+    <div className="fixed inset-x-3 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-md rounded-2xl border border-white/10 bg-popover px-4 py-3 text-sm font-semibold text-popover-foreground shadow-lg lg:bottom-4 lg:left-auto lg:right-4 lg:mx-0">
       <p>{message || `${pendingCount} check-in${pendingCount === 1 ? '' : 's'} waiting to sync`}</p>
     </div>
   )

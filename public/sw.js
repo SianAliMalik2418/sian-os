@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'sian-os-v3'
+const CACHE_VERSION = 'sian-os-v4'
 const STATIC_CACHE = `${CACHE_VERSION}-static`
 const PAGE_CACHE = `${CACHE_VERSION}-pages`
 const STATIC_ASSETS = [
@@ -13,14 +13,14 @@ const OFFLINE_HTML = `<!doctype html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#090b0d" />
+    <meta name="theme-color" content="#120f24" />
     <title>Sian OS Offline</title>
     <style>
       :root {
         color-scheme: dark;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #090b0d;
-        color: #f5f7fa;
+        background: #120f24;
+        color: #fff5e8;
       }
 
       body {
@@ -30,16 +30,16 @@ const OFFLINE_HTML = `<!doctype html>
         place-items: center;
         padding: 24px;
         background:
-          radial-gradient(circle at 50% 0%, rgb(45 93 72 / 28%), transparent 36%),
-          #090b0d;
+          radial-gradient(circle at 50% 0%, rgb(255 107 44 / 26%), transparent 36%),
+          #120f24;
       }
 
       main {
         width: min(100%, 420px);
         border: 1px solid rgb(255 255 255 / 12%);
-        border-radius: 8px;
+        border-radius: 24px;
         padding: 24px;
-        background: rgb(14 17 20 / 86%);
+        background: rgb(28 24 54 / 90%);
       }
 
       h1 {
@@ -50,7 +50,7 @@ const OFFLINE_HTML = `<!doctype html>
 
       p {
         margin: 12px 0 0;
-        color: #a7b0bb;
+        color: #a9a3c7;
         line-height: 1.55;
       }
     </style>

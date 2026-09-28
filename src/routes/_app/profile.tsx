@@ -1,6 +1,8 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { ArrowRight, Dumbbell, HeartPulse, Images, Pencil, Save, Target, UserRound, X } from 'lucide-react'
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { ArrowUpRight, Dumbbell, HeartPulse, Images, Pencil, Save, Target, TrendingUp, UserRound, X } from 'lucide-react'
+import { useState, type CSSProperties, type FormEvent, type ReactNode } from 'react'
+import { Doodle, HeaderIllustration } from '@/components/sunrise/illustrations'
+import { CountUp, Notice, Page, PageHeader, SectionTitle, ToneTile, Unit } from '@/components/sunrise/primitives'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
@@ -69,106 +71,110 @@ function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Profile</p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Your context, in one place.</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">Your baseline, goals, schedule, and health context.</p>
-        </div>
-        {!editing && <Button type="button" size="lg" onClick={beginEditing}><Pencil /> Edit profile</Button>}
-      </header>
+    <Page>
+      <PageHeader
+        kicker="Profile"
+        title="Your summit plan."
+        description="Baseline, goals, and training context your coach works from."
+        illustration="profile"
+        actions={!editing ? <button type="button" onClick={beginEditing} className="flex items-center gap-2 rounded-full bg-cream px-4 py-2.5 text-sm font-extrabold text-[#1d1330] transition-transform active:scale-95"><Pencil className="size-4" strokeWidth={2.6} /> Edit profile</button> : undefined}
+      />
 
-      {status && <p role="status" className="rounded-xl bg-primary/10 px-3 py-2 text-sm text-primary">{status}</p>}
+      {status && <Notice tone="status">{status}</Notice>}
 
       {editing ? (
         <ProfileEditor values={values} saving={saving} onUpdate={update} onSubmit={submit} onCancel={cancelEditing} error={error} />
       ) : (
         <>
-          <ProfileMiniPages />
           <ProfileOverview profile={profile} onEdit={beginEditing} />
+          <ProfileMiniPages />
         </>
       )}
-    </div>
+    </Page>
   )
 }
 
+const delay = (d: number) => ({ '--d': d }) as CSSProperties
+
 function ProfileMiniPages() {
   return (
-    <Card>
-      <CardHeader>
-        <div><CardTitle>Mini pages</CardTitle><CardDescription>Personal tools and logs connected to your profile</CardDescription></div>
-        <CardAction><Images className="size-5 text-primary" /></CardAction>
-      </CardHeader>
-      <CardPanel className="grid gap-3 sm:grid-cols-2">
-        <Button render={<Link to="/lyfta" />} variant="ghost" className="h-auto w-full justify-start rounded-xl border bg-secondary/30 p-4 text-left">
-          <Dumbbell className="size-5 text-primary" />
-          <span className="min-w-0 flex-1">
-            <span className="block font-heading text-base font-semibold text-foreground">Lyfta</span>
-            <span className="mt-1 block text-sm font-normal text-muted-foreground">Read-only workout history and set details</span>
-          </span>
-          <ArrowRight className="ml-auto size-4 text-muted-foreground" />
-        </Button>
-        <Button render={<Link to="/gallery" />} variant="ghost" className="h-auto w-full justify-start rounded-xl border bg-secondary/30 p-4 text-left">
-          <Images className="size-5 text-primary" />
-          <span className="min-w-0 flex-1">
-            <span className="block font-heading text-base font-semibold text-foreground">Gallery</span>
-            <span className="mt-1 block text-sm font-normal text-muted-foreground">Progress photos grouped by date</span>
-          </span>
-          <ArrowRight className="ml-auto size-4 text-muted-foreground" />
-        </Button>
-      </CardPanel>
-    </Card>
+    <section className="space-y-3">
+      <SectionTitle title="More of you" />
+      <div className="grid grid-cols-2 gap-3">
+        <Link to="/lyfta" className="rise group relative min-h-40 overflow-hidden rounded-[1.8rem] border border-sun/20 bg-[linear-gradient(150deg,rgb(255_107_44/.24),#1c1836_75%)] p-4" style={delay(8)}>
+          <HeaderIllustration kind="lyfta" className="absolute -right-4 -bottom-2 w-32 opacity-90" />
+          <Dumbbell className="size-6 text-sun" strokeWidth={2.4} />
+          <p className="mt-3 text-xl font-extrabold text-cream">Lyfta</p>
+          <p className="mt-0.5 text-sm font-semibold text-muted-foreground">Workouts & PRs</p>
+          <ArrowUpRight className="absolute top-4 right-4 size-5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        </Link>
+        <Link to="/gallery" className="rise group relative min-h-40 overflow-hidden rounded-[1.8rem] border border-lilac/20 bg-[linear-gradient(150deg,rgb(167_139_250/.24),#1c1836_75%)] p-4" style={delay(9)}>
+          <HeaderIllustration kind="gallery" className="absolute -right-6 -bottom-4 w-32 opacity-90" />
+          <Images className="size-6 text-lilac" strokeWidth={2.4} />
+          <p className="mt-3 text-xl font-extrabold text-cream">Gallery</p>
+          <p className="mt-0.5 text-sm font-semibold text-muted-foreground">Progress photos</p>
+          <ArrowUpRight className="absolute top-4 right-4 size-5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+    </section>
   )
 }
 
 function ProfileOverview({ profile, onEdit }: { profile: Profile | null; onEdit: () => void }) {
   if (!profile) {
-    return <Card><CardPanel className="py-16 text-center"><UserRound className="mx-auto mb-3 size-8 text-muted-foreground" /><p className="font-medium">No profile details yet</p><p className="mt-1 text-sm text-muted-foreground">Add your baseline and goals when you are ready.</p><Button type="button" className="mt-5" onClick={onEdit}><Pencil /> Create profile</Button></CardPanel></Card>
+    return (
+      <div className="grid place-items-center gap-2 rounded-[1.8rem] border border-dashed border-white/12 px-6 py-14 text-center">
+        <Doodle kind="check" className="size-20" />
+        <p className="text-lg font-extrabold text-cream">No profile yet</p>
+        <p className="max-w-xs text-sm text-muted-foreground">Add your baseline and goals so every number has context.</p>
+        <button type="button" onClick={onEdit} className="mt-3 flex items-center gap-2 rounded-full bg-sun px-5 py-2.5 font-extrabold text-[#1d1330]"><Pencil className="size-4" /> Create profile</button>
+      </div>
+    )
   }
 
   return <div className="space-y-5">
-    <Card>
-      <CardHeader>
-        <div><CardTitle>Baseline</CardTitle><CardDescription>Core details used to understand your wellness data</CardDescription></div>
-        <CardAction><UserRound className="size-5 text-primary" /></CardAction>
-      </CardHeader>
-      <CardPanel className="grid gap-3 sm:grid-cols-3">
-        <ProfileMetric label="Age" value={profile.age === null ? null : `${profile.age} years`} />
-        <ProfileMetric label="Height" value={profile.height_cm === null ? null : `${profile.height_cm} cm`} />
-        <ProfileMetric label="Current weight" value={profile.weight_kg === null ? null : `${profile.weight_kg} kg`} />
-      </CardPanel>
-    </Card>
+    <section className="rise flex items-center gap-4 rounded-[1.8rem] border border-white/8 bg-card p-4" style={delay(1)}>
+      <div className="relative grid size-16 shrink-0 place-items-center rounded-full bg-[linear-gradient(160deg,#ffd23f,#ff6b2c)] text-2xl font-extrabold text-[#1d1330]">
+        S
+        <span className="absolute -right-0.5 -bottom-0.5 grid size-6 place-items-center rounded-full border-2 border-card bg-mint"><TrendingUp className="size-3 text-[#120f24]" strokeWidth={3} /></span>
+      </div>
+      <div className="grid flex-1 grid-cols-3 divide-x divide-white/8">
+        <BaselineStat label="Age" value={profile.age === null ? null : String(profile.age)} unit="yrs" />
+        <BaselineStat label="Height" value={profile.height_cm === null ? null : String(profile.height_cm)} unit="cm" />
+        <BaselineStat label="Weight" value={profile.weight_kg === null ? null : String(profile.weight_kg)} unit="kg" />
+      </div>
+    </section>
 
-    <Card>
-      <CardHeader>
-        <div><CardTitle>Direction</CardTitle><CardDescription>What you are working toward and why it matters</CardDescription></div>
-        <CardAction><Target className="size-5 text-primary" /></CardAction>
-      </CardHeader>
-      <CardPanel className="grid gap-5">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <ProfileMetric label="Calorie goal" value={profile.calorie_goal === null ? null : `${profile.calorie_goal} kcal`} />
-          <ProfileMetric label="Protein goal" value={profile.protein_goal === null ? null : `${profile.protein_goal} g`} />
-        </div>
-        <ProfileValue label="Goals" value={profile.goals} />
-        <ProfileValue label="Long-term vision" value={profile.long_term_vision} />
-      </CardPanel>
-    </Card>
+    <div className="grid grid-cols-2 gap-3">
+      <ToneTile tone="sun" label="Calorie goal" className="rise" style={delay(2)} doodle={<Doodle kind="flame" />} value={profile.calorie_goal === null ? '—' : <><CountUp value={profile.calorie_goal} /><Unit>kcal</Unit></>} footer="Daily target" />
+      <ToneTile tone="mint" label="Protein goal" className="rise" style={delay(3)} doodle={<Doodle kind="protein" />} value={profile.protein_goal === null ? '—' : <><CountUp value={profile.protein_goal} /><Unit>g</Unit></>} footer="Daily target" />
+    </div>
 
-    <Card>
-      <CardHeader>
-        <div><CardTitle>Training and environment</CardTitle><CardDescription>Context for recommendations; workouts remain tracked in Lyfta</CardDescription></div>
-        <CardAction><HeartPulse className="size-5 text-primary" /></CardAction>
-      </CardHeader>
-      <CardPanel className="grid gap-5 sm:grid-cols-2">
-        <ProfileValue label="Experience level" value={profile.experience_level} />
+    <section className="rise space-y-4 rounded-[1.8rem] border border-white/8 bg-card p-5" style={delay(4)}>
+      <IconHeading icon={Target} tone="text-sun bg-sun/15" title="Direction" />
+      <ProfileValue label="Goals" value={profile.goals} />
+      <ProfileValue label="Long-term vision" value={profile.long_term_vision} />
+    </section>
+
+    <section className="rise space-y-4 rounded-[1.8rem] border border-white/8 bg-card p-5" style={delay(5)}>
+      <IconHeading icon={HeartPulse} tone="text-lilac bg-lilac/15" title="Training & environment" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <ProfileValue label="Experience" value={profile.experience_level} />
         <ProfileValue label="Training style" value={profile.training_style} />
         <ProfileValue label="Schedule" value={profile.gym_schedule} />
         <ProfileValue label="Equipment" value={profile.equipment} />
         <div className="sm:col-span-2"><ProfileValue label="Injuries or limitations" value={profile.injuries} /></div>
-      </CardPanel>
-    </Card>
+      </div>
+    </section>
   </div>
+}
+
+function IconHeading({ icon: Icon, tone, title }: { icon: typeof Target; tone: string; title: string }) {
+  return <div className="flex items-center gap-3"><span className={`grid size-10 place-items-center rounded-2xl ${tone}`}><Icon className="size-5" strokeWidth={2.4} /></span><h2 className="text-lg font-extrabold text-cream">{title}</h2></div>
+}
+
+function BaselineStat({ label, value, unit }: { label: string; value: string | null; unit: string }) {
+  return <div className="px-2 text-center first:pl-0 last:pr-0"><p className="text-xl font-extrabold text-cream tabular-nums">{value ?? '—'}{value && <small className="ml-0.5 text-xs font-bold text-muted-foreground">{unit}</small>}</p><p className="text-xs font-semibold text-muted-foreground">{label}</p></div>
 }
 
 function ProfileEditor({ values, saving, onUpdate, onSubmit, onCancel, error }: {
@@ -221,7 +227,7 @@ function ProfileEditor({ values, saving, onUpdate, onSubmit, onCancel, error }: 
       </CardPanel>
     </Card>
 
-    {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
+    {error && <Notice tone="error">{error}</Notice>}
     <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={onCancel} disabled={saving}><X /> Cancel</Button><Button type="submit" size="lg" loading={saving}><Save /> Save profile</Button></div>
   </Form>
 }
@@ -235,12 +241,8 @@ function valuesFromProfile(profile: Profile | null) {
   return values
 }
 
-function ProfileMetric({ label, value }: { label: string; value: string | null }) {
-  return <div className="rounded-xl border bg-secondary/30 p-4"><p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p><p className="mt-2 font-heading text-2xl font-semibold tabular-nums">{value || 'Not set'}</p></div>
-}
-
 function ProfileValue({ label, value }: { label: string; value: string | null }) {
-  return <div><p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p><p className={`mt-2 whitespace-pre-wrap text-sm leading-6 ${value ? 'text-foreground' : 'text-muted-foreground'}`}>{value || 'Not set'}</p></div>
+  return <div><p className="text-xs font-extrabold tracking-[0.12em] text-muted-foreground uppercase">{label}</p><p className={`mt-1.5 whitespace-pre-wrap text-[0.95rem] leading-relaxed font-medium ${value ? 'text-cream' : 'text-muted-foreground'}`}>{value || 'Not set'}</p></div>
 }
 
 function ProfileField({ label, description, children }: { label: string; description?: string; children: ReactNode }) {

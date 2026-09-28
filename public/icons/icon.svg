@@ -1,8 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sian OS dumbbell">
-  <rect width="512" height="512" rx="112" fill="#090b0d"/>
-  <g transform="rotate(-18 256 256)" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M176 256h160" stroke="#eef3f6" stroke-width="36"/>
-    <path d="M123 198v116M158 184v144M354 184v144M389 198v116" stroke="#7dd3a8" stroke-width="38"/>
-    <path d="M91 224v64M421 224v64" stroke="#eef3f6" stroke-width="38"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sian OS sunrise">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1535"/><stop offset=".6" stop-color="#3b2358"/><stop offset="1" stop-color="#7a3558"/></linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd23f"/><stop offset="1" stop-color="#ff6b2c"/></linearGradient>
+    <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a3d"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#sky)"/>
+  <circle cx="300" cy="236" r="150" fill="#ff9447" opacity=".18"/>
+  <circle cx="300" cy="236" r="92" fill="url(#sun)"/>
+  <path d="M0 400 L150 236 L230 318 L286 262 L512 430 L512 400 Q512 512 400 512 L112 512 Q0 512 0 400 Z" fill="url(#mtn)"/>
+  <path d="M150 236 L184 272 L152 268 L118 272 Z" fill="#fff5e8" opacity=".55"/>
+  <path d="M0 440 Q128 404 256 432 T512 424 L512 400 Q512 512 400 512 L112 512 Q0 512 0 400 Z" fill="#120f24"/>
 </svg>

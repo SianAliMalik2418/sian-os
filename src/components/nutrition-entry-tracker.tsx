@@ -1,14 +1,14 @@
-import { Boxes, Minus, Plus, Save, Search, Trash2, Utensils } from 'lucide-react'
+import { Boxes, Minus, Plus, Save, Search, Utensils, X } from 'lucide-react'
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogPopup, DialogTitle } from '@/components/ui/dialog'
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Progress } from '@/components/ui/progress'
+import { Doodle } from '@/components/sunrise/illustrations'
+import { SectionTitle, StripeBar } from '@/components/sunrise/primitives'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { groupedNutritionEntries, nutritionEntriesFromRecipes } from '@/lib/nutrition-entries'
@@ -28,12 +28,13 @@ const emptyRecipeValues = {
   notes: '',
 }
 
-export function NutritionEntryTracker({ date, initialEntries, calorieGoal, proteinGoal, compact = false, onCheckinChange }: {
+export function NutritionEntryTracker({ date, initialEntries, calorieGoal, proteinGoal, compact = false, showTotals = true, onCheckinChange }: {
   date: string
   initialEntries?: NutritionEntry[]
   calorieGoal: number
   proteinGoal: number
   compact?: boolean
+  showTotals?: boolean
   onCheckinChange?: (checkin: DailyCheckin) => void
 }) {
   const [entries, setEntries] = useState(initialEntries || [])
@@ -344,9 +345,9 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
         <Button type="button" variant="outline" size="sm" onClick={() => setRecipeDialogOpen(true)}><Plus /> New recipe</Button>
       </div>
 
-      <div className="flex items-center gap-2 rounded-xl border bg-background px-3 py-2">
+      <div className="flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-4 py-1.5">
         <Search className="size-4 text-muted-foreground" />
-        <Input nativeInput value={recipeQuery} onChange={(event) => setRecipeQuery(event.target.value)} placeholder="Search recipes, aliases, ingredients..." className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
+        <Input nativeInput value={recipeQuery} onChange={(event) => setRecipeQuery(event.target.value)} placeholder="Search recipes, aliases, ingredients..." unstyled className="flex-1 [&_input]:px-0" />
       </div>
 
       {recipesLoading ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">Loading recipes...</p> : null}
@@ -388,9 +389,9 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
 
   const bundlePicker = (
     <>
-      <div className="flex items-center gap-2 rounded-xl border bg-background px-3 py-2">
+      <div className="flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-4 py-1.5">
         <Search className="size-4 text-muted-foreground" />
-        <Input nativeInput value={bundleQuery} onChange={(event) => setBundleQuery(event.target.value)} placeholder="Search bundles, recipes..." className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" />
+        <Input nativeInput value={bundleQuery} onChange={(event) => setBundleQuery(event.target.value)} placeholder="Search bundles, recipes..." unstyled className="flex-1 [&_input]:px-0" />
       </div>
 
       {bundlesLoading ? <p className="rounded-lg border border-dashed px-3 py-6 text-sm text-muted-foreground">Loading bundles...</p> : null}
@@ -468,30 +469,36 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
 
   const body = (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <NutritionTotal label="Calories" value={calorieTotal} goal={calorieGoal} unit="kcal" />
-        <NutritionTotal label="Protein" value={proteinTotal} goal={proteinGoal} unit="g" />
-      </div>
+      {showTotals && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <NutritionTotal label="Calories" value={calorieTotal} goal={calorieGoal} unit="kcal" tone="sun" />
+          <NutritionTotal label="Protein" value={proteinTotal} goal={proteinGoal} unit="g" tone="mint" />
+        </div>
+      )}
 
       {compact ? (
         compactEntryForm
       ) : null}
 
       {groupedEntries.length ? (
-        <div className="divide-y rounded-lg border">
-          {groupedEntries.map((entry) => (
-            <div key={entry.ids.join('-')} className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2 text-sm">
-              <div className="min-w-0">
-                <p className="truncate font-medium">{entry.item_name}{entry.quantity > 1 ? ` x${entry.quantity}` : ''}</p>
-                <p className="text-muted-foreground">{entry.calories} kcal · {entry.protein_grams} g protein</p>
-              </div>
-              <Button type="button" variant="ghost" size="icon" aria-label={`Delete one ${entry.item_name}`} onClick={() => deleteEntry(entry.ids.at(-1) ?? entry.ids[0], entry.item_name)} disabled={saving}><Trash2 className="size-4" /></Button>
-            </div>
+        <ul className="flex flex-wrap gap-2">
+          {groupedEntries.map((entry, index) => (
+            <li key={entry.ids.join('-')} className="pop flex max-w-full items-center gap-2 rounded-full border border-white/8 bg-white/6 py-1.5 pr-1.5 pl-4 text-sm" style={{ '--d': index } as React.CSSProperties}>
+              <span className="min-w-0 truncate font-bold text-cream">{entry.item_name}{entry.quantity > 1 ? ` ×${entry.quantity}` : ''}</span>
+              <span className="shrink-0 font-semibold text-muted-foreground tabular-nums">{entry.calories}</span>
+              <span className="shrink-0 font-extrabold text-mint tabular-nums">{entry.protein_grams}g</span>
+              <button type="button" aria-label={`Delete one ${entry.item_name}`} onClick={() => deleteEntry(entry.ids.at(-1) ?? entry.ids[0], entry.item_name)} disabled={saving} className="grid size-7 shrink-0 place-items-center rounded-full bg-white/8 text-muted-foreground transition-colors hover:bg-destructive/20 hover:text-destructive-foreground disabled:opacity-50"><X className="size-3.5" strokeWidth={2.8} /></button>
+            </li>
           ))}
+        </ul>
+      ) : (
+        <div className="flex items-center gap-3 rounded-[1.4rem] border border-dashed border-white/12 px-4 py-4">
+          <Doodle kind="plate" className="size-12 shrink-0" />
+          <div><p className="font-bold text-cream">Nothing logged yet</p><p className="text-sm text-muted-foreground">Add a meal, pick a recipe, or drop in a bundle.</p></div>
         </div>
-      ) : <p className="rounded-lg border border-dashed px-3 py-4 text-sm text-muted-foreground">No food items added yet.</p>}
+      )}
 
-      {error && <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">{error}</p>}
+      {error && <p role="alert" className="rounded-2xl bg-destructive/12 px-4 py-3 text-sm font-semibold text-destructive-foreground">{error}</p>}
     </div>
   )
 
@@ -517,15 +524,13 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div><CardTitle>Nutrition</CardTitle><CardDescription>Food items for today</CardDescription></div>
-          <CardAction>
-            <Button type="button" size="sm" onClick={openAddDialog}><Plus /> Add food</Button>
-          </CardAction>
-        </CardHeader>
-        <CardPanel>{body}</CardPanel>
-      </Card>
+      <section className="rise space-y-3" style={{ '--d': 10 } as React.CSSProperties}>
+        <SectionTitle title="What you ate" meta={`${groupedEntries.length} item${groupedEntries.length === 1 ? '' : 's'}`} />
+        <div className="rounded-[1.8rem] border border-white/8 bg-card p-4">
+          {body}
+          <button type="button" onClick={openAddDialog} className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-cream px-4 py-3 font-extrabold text-[#1d1330] transition-transform active:scale-[.98]"><Plus className="size-5" strokeWidth={2.8} /> Add food</button>
+        </div>
+      </section>
 
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogPopup className="max-w-3xl">
@@ -649,19 +654,17 @@ function RecipeField({ label, description, children }: { label: string; descript
   return <Field><FieldLabel>{label}</FieldLabel>{children}{description && <FieldDescription>{description}</FieldDescription>}</Field>
 }
 
-function NutritionTotal({ label, value, goal, unit }: { label: string; value: number; goal?: number; unit: string }) {
+function NutritionTotal({ label, value, goal, unit, tone }: { label: string; value: number; goal?: number; unit: string; tone: 'sun' | 'mint' }) {
   const remaining = goal === undefined ? undefined : Math.max(goal - value, 0)
   const progress = goal && goal > 0 ? Math.min((value / goal) * 100, 100) : 0
   return (
-    <div className="rounded-lg border bg-background p-3">
-      <div className="mb-3 flex items-start justify-between gap-2">
-        <div>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="font-heading text-2xl font-semibold tabular-nums">{value}<span className="ml-1 text-sm text-muted-foreground">{unit}</span></p>
-        </div>
-        {remaining !== undefined && <Badge variant={remaining === 0 ? 'success' : 'info'}>{remaining} left</Badge>}
+    <div className="rounded-[1.4rem] border border-white/8 bg-white/4 p-4">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="font-bold text-muted-foreground">{label}</p>
+        <p className="text-2xl font-extrabold tracking-tight text-cream tabular-nums">{value}<span className="ml-1 text-sm font-bold text-muted-foreground">{goal !== undefined ? `/ ${goal} ${unit}` : unit}</span></p>
       </div>
-      {goal !== undefined ? <><Progress value={progress} /><p className="mt-2 text-xs text-muted-foreground">{goal} {unit} goal</p></> : <p className="text-xs text-muted-foreground">From food items</p>}
+      {goal !== undefined && <StripeBar value={progress} tone={tone} className="mt-3 h-3" />}
+      {remaining !== undefined && <p className="mt-2 text-xs font-semibold text-muted-foreground">{remaining === 0 ? 'Goal reached' : `${remaining} ${unit} left`}</p>}
     </div>
   )
 }
