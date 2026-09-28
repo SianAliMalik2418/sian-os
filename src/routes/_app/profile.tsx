@@ -72,8 +72,8 @@ function ProfilePage() {
     <div className="mx-auto max-w-5xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Profile</p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Your <span className="text-aurora-gradient">context</span>, in one place.</h1>
+          <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Profile</p>
+          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Your context, in one place.</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">Your baseline, goals, schedule, and health context.</p>
         </div>
         {!editing && <Button type="button" size="lg" onClick={beginEditing}><Pencil /> Edit profile</Button>}

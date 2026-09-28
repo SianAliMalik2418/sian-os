@@ -104,8 +104,8 @@ function ReportsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
       <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Reports</p>
-        <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">See the <span className="text-aurora-gradient">pattern</span>, not the noise.</h1>
+        <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Reports</p>
+        <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">See the pattern, not the noise.</h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">Explore daily detail, weekly averages, and monthly direction across your wellness data.</p>
       </header>
 
