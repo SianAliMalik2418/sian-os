@@ -7,6 +7,8 @@ export interface DailyCheckin {
   wake_time: string | null
   sleep_hours: number | null
   water_liters: number | null
+  steps: number | null
+  active_calories: number | null
   protein_grams: number | null
   fat_grams: number | null
   carb_grams: number | null

@@ -6,6 +6,8 @@ export interface DailyReportPoint {
   waist_inches: number | null
   sleep_hours: number | null
   water_liters: number | null
+  steps: number | null
+  active_calories: number | null
   protein_grams: number | null
   fat_grams: number | null
   carb_grams: number | null
@@ -19,6 +21,8 @@ interface CheckinReportSource {
   waist_inches: number | null
   sleep_hours: number | null
   water_liters: number | null
+  steps: number | null
+  active_calories: number | null
   protein_grams: number | null
   fat_grams: number | null
   carb_grams: number | null
@@ -39,6 +43,8 @@ export function buildDailyReports(checkins: CheckinReportSource[]) {
       waist_inches: checkin.waist_inches,
       sleep_hours: checkin.sleep_hours,
       water_liters: checkin.water_liters,
+      steps: checkin.steps,
+      active_calories: checkin.active_calories,
       protein_grams: checkin.protein_grams,
       fat_grams: checkin.fat_grams,
       carb_grams: checkin.carb_grams,
@@ -65,6 +71,8 @@ export function aggregateReports(points: DailyReportPoint[], interval: 'weekly' 
       waist_inches: average(rows.map((row) => row.waist_inches)),
       sleep_hours: average(rows.map((row) => row.sleep_hours)),
       water_liters: average(rows.map((row) => row.water_liters)),
+      steps: average(rows.map((row) => row.steps)),
+      active_calories: average(rows.map((row) => row.active_calories)),
       protein_grams: average(rows.map((row) => row.protein_grams)),
       fat_grams: average(rows.map((row) => row.fat_grams)),
       carb_grams: average(rows.map((row) => row.carb_grams)),
@@ -79,6 +87,8 @@ export function reportAverages(points: DailyReportPoint[]) {
     waist_inches: average(points.map((point) => point.waist_inches)),
     sleep_hours: average(points.map((point) => point.sleep_hours)),
     water_liters: average(points.map((point) => point.water_liters)),
+    steps: average(points.map((point) => point.steps)),
+    active_calories: average(points.map((point) => point.active_calories)),
     protein_grams: average(points.map((point) => point.protein_grams)),
     fat_grams: average(points.map((point) => point.fat_grams)),
     carb_grams: average(points.map((point) => point.carb_grams)),

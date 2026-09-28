@@ -140,6 +140,7 @@ Write endpoints:
 - `POST /api/recipes`, `PUT /api/recipes/{recipeId}`, `DELETE /api/recipes/{recipeId}`: manage one-serving saved recipes.
 - `POST /api/recipe-bundles`, `PUT /api/recipe-bundles/{bundleId}`, `DELETE /api/recipe-bundles/{bundleId}`: manage saved meal templates.
 - `PUT /api/agent/state`: update `last_weekly_report_date` (`YYYY-MM-DD`) after giving a weekly report, or `last_nightly_review_note` (free text, max 2000 chars) after a nightly review. No other keys are accepted.
+- `POST /api/wearable-metrics`: partial upsert of `steps`, `active_calories`, and/or `sleep_hours` by date, synced from a wearable device (see "Wearable data" below). Unlike `/api/checkins`, this only touches the fields present in the request and never clears the rest of that day's check-in. Requires `Authorization: Bearer <MCP_API_KEY>` when that secret is set.
 - `POST /api/export`: create a production backup.
 
 Routine food logging must use `/api/nutrition-entries`, not `nutrition_notes`. Each entry needs `date`, `item_name`, and `calories`, with optional `protein_grams`, `fat_grams`, and `carb_grams`.
@@ -155,7 +156,7 @@ Saved recipe bundles are quick templates. When logging a bundle, expand it into 
 - Tool definitions live in `src/lib/mcp/tools.ts`. Each tool validates arguments with the same Zod schemas the REST API uses (`src/lib/schemas.ts`) and proxies to the matching REST endpoint over `fetch`, so there is one source of truth for request shape and one place implementing the write logic.
 - The JSON-RPC/Streamable HTTP handler lives in `src/routes/api/mcp.ts`. It supports `initialize`, `tools/list`, and `tools/call`, and returns empty `resources/list`/`prompts/list` for client compatibility. It does not implement SSE server push or session resumability; both are optional in the MCP spec and unnecessary for a single-owner stateless tool server.
 - When adding, removing, or renaming an API endpoint or its request shape, update the matching tool in `src/lib/mcp/tools.ts` in the same change so MCP tools stay in sync with the API without a second manually maintained schema.
-- Auth: set the `MCP_API_KEY` secret in production (`wrangler secret put MCP_API_KEY`) and send it as `Authorization: Bearer <key>` from the MCP client. If the secret is unset, the endpoint accepts unauthenticated requests; only acceptable for local development, since MCP tools include writes and deletes.
+- Auth: set the `MCP_API_KEY` secret in production (`wrangler secret put MCP_API_KEY`) and send it as `Authorization: Bearer <key>` from the MCP client. If the secret is unset, the endpoint accepts unauthenticated requests; only acceptable for local development, since MCP tools include writes and deletes. The same secret also gates `POST /api/wearable-metrics` directly (used by the Tasker wearable sync, not just MCP clients).
 
 Connect from Claude:
 
@@ -225,7 +226,9 @@ Do not put daily operational data in the coaching context when it belongs in Sia
 - Use Coss UI and shared app components where they already exist.
 - Mood and readiness do not belong in the UI, API, types, or database.
 - Sleep is logged as numeric hours, not separate sleep/wake fields.
-- Sleep hours, waist, and water are legacy fields: the database and `/api/checkins` still store them, but the check-in UI, dashboard, Reports page, and MCP tools no longer show or request them. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
+- Waist and water are legacy fields: the database and `/api/checkins` still store them, but the check-in UI, dashboard, Reports page, and MCP tools no longer show or request them. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
+- Sleep hours are shown again on the dashboard and Reports page, but as a wearable-synced field via `/api/wearable-metrics`, not a manual check-in input; the check-in dialog itself still has no sleep field. See `docs/FITNESS_COACHING_CONTEXT.md` Wearable data.
+- Steps and active calories come only from `/api/wearable-metrics` (wearable sync); there is no manual input for them in the check-in dialog.
 - Fats and carbs are legacy nutrition fields: the database and API still store `fat_grams`/`carb_grams` on check-ins, nutrition entries, and recipes, but the nutrition tracker, check-in UI, dashboard, Reports page, and MCP tool descriptions no longer show or request them. Daily nutrition focus is calories and protein only. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
 - Do not rebuild Sian OS as a competing workout tracker.
 - Reports are derived from source records.

@@ -36,7 +36,7 @@ export const getProgressPhotos = createServerFn({ method: 'GET' }).handler(async
 
 export const getReportsData = createServerFn({ method: 'GET' }).handler(async () => {
   disableCaching()
-  const checkins = await db().prepare('SELECT date, weight_kg, waist_inches, sleep_hours, water_liters, protein_grams, fat_grams, carb_grams, calories FROM daily_checkins ORDER BY date').all<DailyCheckin>()
+  const checkins = await db().prepare('SELECT date, weight_kg, waist_inches, sleep_hours, water_liters, steps, active_calories, protein_grams, fat_grams, carb_grams, calories FROM daily_checkins ORDER BY date').all<DailyCheckin>()
   return buildDailyReports(checkins.results)
 })
 
@@ -49,4 +49,20 @@ export const getRecipesData = createServerFn({ method: 'GET' }).handler(async ()
 export const getLyftaWorkoutsData = createServerFn({ method: 'GET' }).handler(async () => {
   disableCaching()
   return fetchLyftaWorkouts({ apiKey: env.LYFTA_API_KEY, limit: 20, page: 1 })
+})
+
+export const getLatestLyftaWorkout = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  try {
+    const result = await fetchLyftaWorkouts({ apiKey: env.LYFTA_API_KEY, limit: 1, page: 1 })
+    return result.available ? (result.workouts[0] ?? null) : null
+  } catch {
+    return null
+  }
+})
+
+export const getCoachNote = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  const row = await db().prepare("SELECT value FROM agent_state WHERE key = 'last_nightly_review_note'").first<{ value: string | null }>()
+  return row?.value?.trim() || null
 })

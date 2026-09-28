@@ -1,16 +1,19 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Activity, Check, Scale, Sparkles } from 'lucide-react'
+import { Flame, Footprints, Moon, Scale, Sparkles } from 'lucide-react'
+import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
+import { LiquidOrb } from '@/components/liquid-orb'
+import { LyftaSessionCard } from '@/components/lyfta-session-card'
 import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { getDashboardData } from '@/lib/app.functions'
+import { WeightTrendCard } from '@/components/weight-trend-card'
+import { getCoachNote, getDashboardData, getLatestLyftaWorkout } from '@/lib/app.functions'
+import { useCountUp } from '@/lib/use-count-up'
 
 export const Route = createFileRoute('/_app/')({
-  loader: () => getDashboardData(),
+  loader: async () => {
+    const [dashboard, latestWorkout, coachNote] = await Promise.all([getDashboardData(), getLatestLyftaWorkout(), getCoachNote()])
+    return { dashboard, latestWorkout, coachNote }
+  },
   component: Dashboard,
 })
 
@@ -18,10 +21,14 @@ function formatValue(value: number | null | undefined, suffix = '') {
   return value === null || value === undefined ? '—' : `${value}${suffix}`
 }
 
+const cardMotion = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+}
+
 function Dashboard() {
-  const data = Route.useLoaderData()
+  const { dashboard: data, latestWorkout, coachNote } = Route.useLoaderData()
   const router = useRouter()
-  const { openCheckin } = useDailyCheckinDialog()
   const [checkin, setCheckin] = useState(data.checkin)
   const calorieGoal = data.profile?.calorie_goal || 2200
   const proteinGoal = data.profile?.protein_goal || 100
@@ -33,54 +40,91 @@ function Dashboard() {
     date.setUTCDate(date.getUTCDate() - day + 1 + index)
     return { date: date.toISOString().slice(0, 10), label: date.toLocaleDateString('en', { weekday: 'short', timeZone: 'UTC' }) }
   })
+  const todayDate = new Date().toLocaleDateString('en', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
+  const streakCount = useCountUp(data.streak)
 
   useEffect(() => {
     setCheckin(data.checkin)
   }, [data.checkin])
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto max-w-7xl space-y-4 px-3 py-5 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
+      <motion.header {...cardMotion} transition={{ duration: 0.4 }} className="flex items-end justify-between">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Today</p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Build the next strong day.</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">Keep the signal clean: check in, nourish yourself, and recover deliberately.</p>
+          <p className="text-sm font-medium text-primary">{todayDate} &middot; <span className="tabular-nums">{Math.round(streakCount)}</span> day streak</p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Locked in, <span className="text-aurora-gradient">Sian.</span></h1>
         </div>
-        <Button type="button" size="lg" onClick={() => openCheckin()} className="min-h-11 rounded-xl">
-          <Activity className="size-4" /> {checkin?.date === new Date().toISOString().slice(0, 10) ? 'Edit today' : 'Check in'}
-        </Button>
-      </header>
+      </motion.header>
 
-      <Card className="overflow-hidden border-primary/20 bg-[radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--primary)_14%,transparent),transparent_45%)]">
-        <CardHeader>
-          <div className="flex items-center gap-3"><span className="rounded-xl bg-primary p-2 text-primary-foreground"><Sparkles className="size-5" /></span><div><CardTitle>Consistency pulse</CardTitle><CardDescription>Your current daily check-in rhythm</CardDescription></div></div>
-          <CardAction><Badge variant={data.streak > 0 ? 'success' : 'secondary'}>{data.streak} day streak</Badge></CardAction>
-        </CardHeader>
-        <CardPanel>
-          <div className="mb-3 flex items-center justify-between text-sm"><span className="text-muted-foreground">This week</span><span>{data.weeklyCheckins.length}/7 complete</span></div>
-          <Progress value={(data.weeklyCheckins.length / 7) * 100} />
-          <div className="mt-4 grid grid-cols-7 gap-2">
-            {weekDays.map((day) => {
-              const isCompleted = completedDays.has(day.date)
-              return (
-                <div key={day.date} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg border px-1 py-2 text-center text-xs ${isCompleted ? 'border-primary/40 bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
-                  {isCompleted && <><Check className="size-4 stroke-[2.5]" aria-hidden="true" /><span className="sr-only">Completed</span></>}
-                  <span>{day.label}</span>
-                </div>
-              )
-            })}
+      <motion.section {...cardMotion} transition={{ duration: 0.4, delay: 0.05 }} className="glass grid grid-cols-2 gap-2 p-4 sm:grid-cols-[1.25fr_1fr]">
+        <LiquidOrb label="Calories" value={checkin?.calories ?? 0} goal={calorieGoal} unit="kcal" color="#22d3ee" size={140} />
+        <LiquidOrb label="Protein" value={checkin?.protein_grams ?? 0} goal={proteinGoal} unit="g" color="#a3e635" size={140} />
+      </motion.section>
+
+      <motion.section {...cardMotion} transition={{ duration: 0.4, delay: 0.1 }} className="glass p-4">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span className="flex items-center gap-2"><Sparkles className="size-4 text-primary" /> This week</span>
+          <span>{data.weeklyCheckins.length}/7 complete</span>
+        </div>
+        <div className="mt-3 grid grid-cols-7 gap-1.5">
+          {weekDays.map((day, index) => {
+            const isCompleted = completedDays.has(day.date)
+            const isToday = day.date === todayIso
+            return (
+              <motion.div
+                key={day.date}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: index * 0.06 + 0.3, type: 'spring', stiffness: 300, damping: 18 }}
+                className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[0.65rem] ${isCompleted ? 'bg-gradient-to-b from-cyan-400/30 to-lime-400/20 text-lime-300' : isToday ? 'border border-dashed border-primary/60 text-primary' : 'text-muted-foreground'}`}
+              >
+                {day.label}
+              </motion.div>
+            )
+          })}
+        </div>
+      </motion.section>
+
+      <motion.div {...cardMotion} transition={{ duration: 0.4, delay: 0.15 }}>
+        <WeightTrendCard points={data.weightTrend} />
+      </motion.div>
+
+      <motion.section {...cardMotion} transition={{ duration: 0.4, delay: 0.2 }} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: 'Weight', value: formatValue(checkin?.weight_kg, ' kg'), icon: Scale, color: '#67e8f9' },
+          { label: 'Steps', value: formatValue(checkin?.steps), icon: Footprints, color: '#a3e635' },
+          { label: 'Active cal', value: formatValue(checkin?.active_calories, ' kcal'), icon: Flame, color: '#fb923c' },
+          { label: 'Sleep', value: formatValue(checkin?.sleep_hours, ' hrs'), icon: Moon, color: '#8b5cf6' },
+        ].map(({ label, value, icon: Icon, color }) => (
+          <div key={label} className="glass p-3.5">
+            <p className="flex items-center gap-2 text-xs text-muted-foreground"><span className="grid size-7 place-items-center rounded-lg bg-white/8" style={{ color }}><Icon className="size-4" /></span>{label}</p>
+            <b className="mt-3 block text-xl font-bold tracking-tight tabular-nums">{value}</b>
           </div>
-        </CardPanel>
-      </Card>
+        ))}
+      </motion.section>
 
-      <NutritionEntryTracker date={todayIso} initialEntries={data.nutritionEntries} calorieGoal={calorieGoal} proteinGoal={proteinGoal} onCheckinChange={async (nextCheckin) => {
-        setCheckin(nextCheckin)
-        await router.invalidate()
-      }} />
+      {latestWorkout && (
+        <motion.div {...cardMotion} transition={{ duration: 0.4, delay: 0.25 }}>
+          <LyftaSessionCard workout={latestWorkout} />
+        </motion.div>
+      )}
 
-      <section className="grid gap-3 sm:max-w-xs">
-        <Card><CardHeader><CardDescription>Weight</CardDescription><CardAction><Scale className="size-5 text-primary" /></CardAction><CardTitle className="text-2xl">{formatValue(checkin?.weight_kg, ' kg')}</CardTitle></CardHeader></Card>
-      </section>
+      {coachNote && (
+        <motion.div {...cardMotion} transition={{ duration: 0.4, delay: 0.3 }} className="glass grid grid-cols-[36px_1fr] gap-3 p-4">
+          <div className="size-9 rounded-xl" style={{ background: 'conic-gradient(from 0deg, #22d3ee, #8b5cf6, #a3e635, #22d3ee)' }} />
+          <div>
+            <small className="mb-1 block text-[0.65rem] font-semibold tracking-[0.08em] text-muted-foreground">LAST NIGHT&apos;S COACH NOTE</small>
+            <p className="text-sm leading-relaxed">{coachNote}</p>
+          </div>
+        </motion.div>
+      )}
+
+      <motion.div {...cardMotion} transition={{ duration: 0.4, delay: 0.35 }}>
+        <NutritionEntryTracker date={todayIso} initialEntries={data.nutritionEntries} calorieGoal={calorieGoal} proteinGoal={proteinGoal} onCheckinChange={async (nextCheckin) => {
+          setCheckin(nextCheckin)
+          await router.invalidate()
+        }} />
+      </motion.div>
     </div>
   )
 }

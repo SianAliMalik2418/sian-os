@@ -41,9 +41,13 @@ async function callTool(name: string, args: unknown, origin: string) {
   const built = tool.buildRequest(parsed.data as never)
   let response: Response
   try {
+    const headers: Record<string, string> = {}
+    if (built.body !== undefined) headers['Content-Type'] = 'application/json'
+    // /api/wearable-metrics checks this same bearer token; other internal routes ignore it.
+    if (env.MCP_API_KEY) headers.Authorization = `Bearer ${env.MCP_API_KEY}`
     response = await env.SELF.fetch(new URL(built.path, origin), {
       method: built.method,
-      headers: built.body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      headers,
       body: built.body === undefined ? undefined : JSON.stringify(built.body),
     })
   } catch (caught) {

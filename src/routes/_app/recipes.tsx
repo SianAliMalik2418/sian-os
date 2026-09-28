@@ -276,8 +276,8 @@ function RecipesPage() {
     <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Recipes</p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Your repeat meals.</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Recipes</p>
+          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Your repeat <span className="text-aurora-gradient">meals.</span></h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">Save dishes, snacks, drinks, portions, ingredients, macros, and notes.</p>
         </div>
         <div className="flex flex-wrap gap-2">

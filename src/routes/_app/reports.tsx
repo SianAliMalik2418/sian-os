@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { CalendarRange, CheckCircle2, Flame, Pencil, Scale, Trash2, Utensils } from 'lucide-react'
+import { CalendarRange, CheckCircle2, Flame, Footprints, Moon, Pencil, Scale, Trash2, Utensils } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { Area, Line } from '@/components/dither-kit/area'
@@ -20,7 +20,7 @@ import { aggregateReports, reportAverages, type DailyReportPoint } from '@/lib/r
 export const Route = createFileRoute('/_app/reports')({ loader: () => getReportsData(), component: ReportsPage })
 
 type Interval = 'daily' | 'weekly' | 'monthly'
-type MetricKey = 'weight_kg' | 'protein_grams' | 'calories'
+type MetricKey = 'weight_kg' | 'protein_grams' | 'calories' | 'steps' | 'active_calories' | 'sleep_hours'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -104,8 +104,8 @@ function ReportsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:px-10 lg:py-10">
       <header>
-        <p className="text-sm font-medium uppercase tracking-[0.24em] text-primary">Reports</p>
-        <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">See the pattern, not the noise.</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Reports</p>
+        <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">See the <span className="text-aurora-gradient">pattern</span>, not the noise.</h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">Explore daily detail, weekly averages, and monthly direction across your wellness data.</p>
       </header>
 
@@ -138,6 +138,9 @@ function ReportsPage() {
         <SummaryCard icon={Scale} label="Average weight" value={formatMetric(summary.weight_kg, ' kg')} />
         <SummaryCard icon={Utensils} label="Average protein" value={formatMetric(summary.protein_grams, ' g')} />
         <SummaryCard icon={Flame} label="Average calories" value={formatMetric(summary.calories, ' kcal')} />
+        <SummaryCard icon={Footprints} label="Average steps" value={formatMetric(summary.steps, '')} />
+        <SummaryCard icon={Flame} label="Average active cal" value={formatMetric(summary.active_calories, ' kcal')} />
+        <SummaryCard icon={Moon} label="Average sleep" value={formatMetric(summary.sleep_hours, ' hrs')} />
       </div>
 
       <section className="space-y-4">
@@ -153,6 +156,9 @@ function ReportsPage() {
             <MetricChart title="Body weight" description="Weight direction across the selected period" icon={Scale} data={chartPoints} dataKey="weight_kg" color="green" suffix=" kg" kind="area" />
             <MetricChart title="Protein" description="Average recorded daily protein" icon={Utensils} data={chartPoints} dataKey="protein_grams" color="orange" suffix=" g" kind="bar" />
             <MetricChart title="Calories" description="Average estimated daily intake" icon={Flame} data={chartPoints} dataKey="calories" color="red" suffix=" kcal" kind="bar" />
+            <MetricChart title="Steps" description="Daily step count from wearable sync" icon={Footprints} data={chartPoints} dataKey="steps" color="blue" suffix="" kind="bar" />
+            <MetricChart title="Active calories" description="Active calories burned from wearable sync" icon={Flame} data={chartPoints} dataKey="active_calories" color="pink" suffix=" kcal" kind="bar" />
+            <MetricChart title="Sleep duration" description="Logged sleep hours from wearable sync" icon={Moon} data={chartPoints} dataKey="sleep_hours" color="purple" suffix=" hrs" kind="line" />
           </div>
         ) : (
           <Card><CardPanel className="py-16 text-center"><CalendarRange className="mx-auto mb-3 size-8 text-muted-foreground" /><p className="font-medium">No report data in this range</p><p className="mt-1 text-sm text-muted-foreground">Choose a wider range or add daily wellness data.</p></CardPanel></Card>
@@ -164,9 +170,9 @@ function ReportsPage() {
       <Card>
         <CardHeader><div><CardTitle>{interval[0].toUpperCase() + interval.slice(1)} report</CardTitle><CardDescription>{interval === 'daily' ? 'Review, edit, or delete each daily check-in' : 'Detailed averages for the selected range'}</CardDescription></div></CardHeader>
         <CardPanel className="overflow-x-auto p-0">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead className="border-b bg-secondary/40 text-left text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-4 py-3">Period</th><th className="px-4 py-3">Check-ins</th><th className="px-4 py-3">Weight</th><th className="px-4 py-3">Protein</th><th className="px-4 py-3">Calories</th>{interval === 'daily' && <th className="px-4 py-3 text-right">Actions</th>}</tr></thead>
-            <tbody>{points.map((point) => <tr key={point.period} className="border-b last:border-0"><td className="px-4 py-3 font-medium">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3 tabular-nums">{point.checkins}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.calories, ' kcal')}</td>{interval === 'daily' && <td className="px-4 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive"><Trash2 /></Button></div></td>}</tr>)}</tbody>
+          <table className="w-full min-w-[900px] text-sm">
+            <thead className="border-b bg-secondary/40 text-left text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-4 py-3">Period</th><th className="px-4 py-3">Check-ins</th><th className="px-4 py-3">Weight</th><th className="px-4 py-3">Protein</th><th className="px-4 py-3">Calories</th><th className="px-4 py-3">Steps</th><th className="px-4 py-3">Active cal</th><th className="px-4 py-3">Sleep</th>{interval === 'daily' && <th className="px-4 py-3 text-right">Actions</th>}</tr></thead>
+            <tbody>{points.map((point) => <tr key={point.period} className="border-b last:border-0"><td className="px-4 py-3 font-medium">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3 tabular-nums">{point.checkins}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.calories, ' kcal')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.steps, '')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.active_calories, ' kcal')}</td><td className="px-4 py-3 tabular-nums">{formatMetric(point.sleep_hours, ' hrs')}</td>{interval === 'daily' && <td className="px-4 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive"><Trash2 /></Button></div></td>}</tr>)}</tbody>
           </table>
           {!points.length && <p className="py-10 text-center text-sm text-muted-foreground">No rows to display.</p>}
         </CardPanel>

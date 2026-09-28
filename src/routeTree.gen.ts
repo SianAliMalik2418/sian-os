@@ -27,6 +27,7 @@ import { Route as ApiProgressPhotosRouteImport } from './routes/api/progress-pho
 import { Route as ApiRecipeBundlesRouteImport } from './routes/api/recipe-bundles'
 import { Route as ApiRecipesRouteImport } from './routes/api/recipes'
 import { Route as ApiReportsRouteImport } from './routes/api/reports'
+import { Route as ApiWearableMetricsRouteImport } from './routes/api/wearable-metrics'
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
 import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
 import { Route as ApiAgentStateRouteImport } from './routes/api/agent/state'
@@ -126,6 +127,11 @@ const ApiReportsRoute = ApiReportsRouteImport.update({
   path: '/api/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWearableMetricsRoute = ApiWearableMetricsRouteImport.update({
+  id: '/api/wearable-metrics',
+  path: '/api/wearable-metrics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAgentContextRoute = ApiAgentContextRouteImport.update({
   id: '/api/agent/context',
   path: '/api/agent/context',
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/api/wearable-metrics': typeof ApiWearableMetricsRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/api/wearable-metrics': typeof ApiWearableMetricsRoute
   '/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/api/wearable-metrics': typeof ApiWearableMetricsRoute
   '/_app/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
@@ -281,6 +290,7 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/api/wearable-metrics'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/api/wearable-metrics'
     | '/'
     | '/api/agent/context'
     | '/api/agent/query'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/api/wearable-metrics'
     | '/_app/'
     | '/api/agent/context'
     | '/api/agent/query'
@@ -362,6 +374,7 @@ export interface RootRouteChildren {
   ApiRecipeBundlesRoute: typeof ApiRecipeBundlesRouteWithChildren
   ApiRecipesRoute: typeof ApiRecipesRouteWithChildren
   ApiReportsRoute: typeof ApiReportsRoute
+  ApiWearableMetricsRoute: typeof ApiWearableMetricsRoute
   ApiAgentContextRoute: typeof ApiAgentContextRoute
   ApiAgentQueryRoute: typeof ApiAgentQueryRoute
   ApiAgentStateRoute: typeof ApiAgentStateRoute
@@ -494,6 +507,13 @@ declare module '@tanstack/react-router' {
       path: '/api/reports'
       fullPath: '/api/reports'
       preLoaderRoute: typeof ApiReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/wearable-metrics': {
+      id: '/api/wearable-metrics'
+      path: '/api/wearable-metrics'
+      fullPath: '/api/wearable-metrics'
+      preLoaderRoute: typeof ApiWearableMetricsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/agent/context': {
@@ -651,6 +671,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRecipeBundlesRoute: ApiRecipeBundlesRouteWithChildren,
   ApiRecipesRoute: ApiRecipesRouteWithChildren,
   ApiReportsRoute: ApiReportsRoute,
+  ApiWearableMetricsRoute: ApiWearableMetricsRoute,
   ApiAgentContextRoute: ApiAgentContextRoute,
   ApiAgentQueryRoute: ApiAgentQueryRoute,
   ApiAgentStateRoute: ApiAgentStateRoute,
