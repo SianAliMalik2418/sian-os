@@ -120,6 +120,7 @@ Read endpoints:
 - `GET /api/agent/context`
 - `GET /api/agent/query?mode=dashboard`
 - `GET /api/agent/state?key=last_weekly_report_date`
+- `GET /api/agent/state?key=last_nightly_review_note`
 - `GET /api/dashboard`
 - `GET /api/profile`
 - `GET /api/checkins?date=YYYY-MM-DD`
@@ -138,7 +139,7 @@ Write endpoints:
 - `PUT /api/profile`: upsert profile and nutrition goals. Read first because omitted fields become null.
 - `POST /api/recipes`, `PUT /api/recipes/{recipeId}`, `DELETE /api/recipes/{recipeId}`: manage one-serving saved recipes.
 - `POST /api/recipe-bundles`, `PUT /api/recipe-bundles/{bundleId}`, `DELETE /api/recipe-bundles/{bundleId}`: manage saved meal templates.
-- `PUT /api/agent/state`: update only `last_weekly_report_date` after giving a weekly report.
+- `PUT /api/agent/state`: update `last_weekly_report_date` (`YYYY-MM-DD`) after giving a weekly report, or `last_nightly_review_note` (free text, max 2000 chars) after a nightly review. No other keys are accepted.
 - `POST /api/export`: create a production backup.
 
 Routine food logging must use `/api/nutrition-entries`, not `nutrition_notes`. Each entry needs `date`, `item_name`, and `calories`, with optional `protein_grams`, `fat_grams`, and `carb_grams`.
@@ -196,6 +197,15 @@ Daily analysis:
 6. Give exactly one verdict: `On Track`, `Needs Correction`, `Off Plan`, or `Insufficient Data`.
 
 Weekly analysis runs only after seven newer logged days exist since `last_weekly_report_date`. After giving the weekly report, write the latest covered date to `/api/agent/state`.
+
+Nightly review:
+
+1. `GET /api/health`
+2. `GET /api/agent/context`
+3. `GET /api/agent/state?key=last_nightly_review_note` to see what last night's review called for, so tonight's review can check whether it was followed.
+4. `GET /api/checkins?limit=30`, today's and yesterday's nutrition entries, and recent Lyfta workouts.
+5. Give the review: today's numbers vs goals, what went well, what's off, multi-week patterns, this week's adjustments, and next-workout targets. State plainly when data is missing instead of inventing numbers.
+6. `PUT /api/agent/state` with `{ "key": "last_nightly_review_note", "value": "<summary>" }` summarizing tonight's key calls and adjustments. This overwrites last night's note; only one note is kept.
 
 ## Coaching document maintenance
 

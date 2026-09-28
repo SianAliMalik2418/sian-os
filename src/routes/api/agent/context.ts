@@ -48,6 +48,12 @@ const weeklyReportGuidance = {
   range: 'Use the last 7 logged days, sorted by date, unless the owner specifies a different range.',
 }
 
+const nightlyReviewGuidance = {
+  priorNote: 'GET /api/agent/state?key=last_nightly_review_note',
+  updateState: 'PUT /api/agent/state with { "key": "last_nightly_review_note", "value": "<summary>" } (free text, max 2000 chars) after giving a nightly review.',
+  rule: "Read last night's note first to check whether its calls/adjustments were followed, then overwrite it with tonight's summary. Only one note is kept; it is not a history log.",
+}
+
 export const Route = createFileRoute('/api/agent/context')({
   server: {
     handlers: {
@@ -82,6 +88,7 @@ export const Route = createFileRoute('/api/agent/context')({
             agent: {
               checkinWriteContract,
               weeklyReportGuidance,
+              nightlyReviewGuidance,
               recipeGuidance,
               nutritionTargetGuidance,
             },

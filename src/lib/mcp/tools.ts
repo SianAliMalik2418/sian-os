@@ -39,9 +39,16 @@ const getLyftaWorkoutsArgs = z.object({
   page: z.number().int().min(1).optional(),
 }).strict()
 
-const agentStateKey = z.literal('last_weekly_report_date')
+const agentStateKey = z.enum(['last_weekly_report_date', 'last_nightly_review_note'])
 const getAgentStateArgs = z.object({ key: agentStateKey.optional() }).strict()
-const saveAgentStateArgs = z.object({ key: agentStateKey, value: dateSchema.nullable() }).strict()
+const saveAgentStateArgs = z.object({
+  key: agentStateKey,
+  value: z.string().max(2000).nullable(),
+}).strict().superRefine((data, ctx) => {
+  if (data.key === 'last_weekly_report_date' && data.value !== null && !dateSchema.safeParse(data.value).success) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['value'], message: 'value must be YYYY-MM-DD for last_weekly_report_date' })
+  }
+})
 
 type Request = {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE'
@@ -194,13 +201,13 @@ export const tools: Tool[] = [
   },
   {
     name: 'get_agent_state',
-    description: 'Get agent cadence state, such as the date of the last weekly report given.',
+    description: "Get agent cadence state: the date of the last weekly report given (key last_weekly_report_date), or last night's nightly review note (key last_nightly_review_note).",
     argsSchema: getAgentStateArgs,
     buildRequest: (args: z.infer<typeof getAgentStateArgs>) => ({ method: 'GET', path: `/api/agent/state${query({ key: args.key })}` }),
   },
   {
     name: 'save_agent_state',
-    description: 'Save agent cadence state. Use only for last_weekly_report_date immediately after giving a weekly report.',
+    description: 'Save agent cadence state. Use last_weekly_report_date (YYYY-MM-DD) immediately after giving a weekly report. Use last_nightly_review_note (free text, max 2000 chars) after a nightly review to summarize the calls/adjustments made, so the next nightly review can check whether they were followed.',
     argsSchema: saveAgentStateArgs,
     buildRequest: (args: z.infer<typeof saveAgentStateArgs>) => ({ method: 'PUT', path: '/api/agent/state', body: args }),
   },

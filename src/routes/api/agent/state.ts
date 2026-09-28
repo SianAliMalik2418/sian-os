@@ -4,11 +4,15 @@ import { db, recordApiWrite } from '@/lib/db'
 import { handleApi, HttpError, json, readJson } from '@/lib/http'
 import { dateSchema } from '@/lib/schemas'
 
-const keySchema = z.literal('last_weekly_report_date')
+const keySchema = z.enum(['last_weekly_report_date', 'last_nightly_review_note'])
 const agentStateSchema = z.object({
   key: keySchema,
-  value: dateSchema.nullable(),
-}).strict()
+  value: z.string().max(2000).nullable(),
+}).strict().superRefine((data, ctx) => {
+  if (data.key === 'last_weekly_report_date' && data.value !== null && !dateSchema.safeParse(data.value).success) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['value'], message: 'value must be YYYY-MM-DD for last_weekly_report_date' })
+  }
+})
 
 type AgentState = {
   key: string
