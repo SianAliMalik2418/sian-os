@@ -160,7 +160,7 @@ function Dashboard() {
                 <span className="grid size-10 place-items-center rounded-2xl bg-lilac/20"><svg viewBox="0 0 24 24" className="anim-spin-slow size-6" style={{ animationDuration: '14s' }} aria-hidden="true"><g stroke="#ffd23f" strokeWidth="2" strokeLinecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" /></g><circle cx="12" cy="12" r="4.5" fill="#ff9447" /></svg></span>
                 <p className="text-xs font-extrabold tracking-[0.14em] text-[#cfc0ff] uppercase">Last night's coach note</p>
               </div>
-              <p className="mt-3 line-clamp-6 text-[0.95rem] leading-relaxed font-medium whitespace-pre-wrap text-cream/90">{data.coachNote}</p>
+              <p className="mt-3 text-[0.95rem] leading-relaxed font-medium whitespace-pre-wrap text-cream/90">{data.coachNote}</p>
             </section>
           )}
         </div>
