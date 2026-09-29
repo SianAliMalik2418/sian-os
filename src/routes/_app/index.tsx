@@ -103,7 +103,7 @@ function Dashboard() {
             )}
           </section>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <MacroCard label="Calories" value={calories} goal={calorieGoal} unit="" tone="sun" percentValue={caloriePercent} style={delay(1)}
               footer={caloriesLeft >= 0 ? <><b className="text-cream">{caloriesLeft.toLocaleString()} kcal</b> left today</> : <><b className="text-rose">{Math.abs(caloriesLeft).toLocaleString()} kcal</b> over goal</>} />
             <MacroCard label="Protein" value={protein} goal={proteinGoal} unit="g" tone="mint" percentValue={proteinPercent} style={delay(2)}

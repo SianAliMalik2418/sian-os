@@ -181,7 +181,7 @@ function ProfileOverview({ profile, onEdit, onSaveGoal }: {
 
     <section className="rise space-y-4 rounded-[1.8rem] border border-white/8 bg-card p-5" style={delay(5)}>
       <IconHeading icon={HeartPulse} tone="text-lilac bg-lilac/15" title="Training & environment" />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <ProfileValue label="Experience" value={profile.experience_level} />
         <ProfileValue label="Training style" value={profile.training_style} />
         <ProfileValue label="Schedule" value={profile.gym_schedule} />
@@ -214,7 +214,7 @@ function ProfileEditor({ values, saving, onUpdate, onSubmit, onCancel, error }: 
         <div><CardTitle>Edit baseline</CardTitle><CardDescription>Core details used to understand your wellness data</CardDescription></div>
         <CardAction><UserRound className="size-5 text-primary" /></CardAction>
       </CardHeader>
-      <CardPanel className="grid gap-4 sm:grid-cols-3">
+      <CardPanel className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <ProfileField label="Age"><Input nativeInput type="number" min="1" max="130" inputMode="numeric" value={values.age || ''} onChange={(event) => onUpdate('age', event.target.value)} /></ProfileField>
         <ProfileField label="Height" description="Centimeters"><Input nativeInput type="number" min="1" max="300" step="0.1" inputMode="decimal" value={values.height_cm || ''} onChange={(event) => onUpdate('height_cm', event.target.value)} /></ProfileField>
         <ProfileField label="Current weight" description="Kilograms"><Input nativeInput type="number" min="1" max="500" step="0.1" inputMode="decimal" value={values.weight_kg || ''} onChange={(event) => onUpdate('weight_kg', event.target.value)} /></ProfileField>
@@ -226,8 +226,8 @@ function ProfileEditor({ values, saving, onUpdate, onSubmit, onCancel, error }: 
         <div><CardTitle>Edit direction</CardTitle><CardDescription>What you are working toward and why it matters</CardDescription></div>
         <CardAction><Target className="size-5 text-primary" /></CardAction>
       </CardHeader>
-      <CardPanel className="grid gap-4">
-        <div className="grid gap-4 sm:grid-cols-2">
+      <CardPanel className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <ProfileField label="Calorie goal" description="Daily kcal"><Input nativeInput type="number" min="0" max="20000" step="1" inputMode="numeric" value={values.calorie_goal || ''} onChange={(event) => onUpdate('calorie_goal', event.target.value)} placeholder="2200" /></ProfileField>
           <ProfileField label="Protein goal" description="Daily grams"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.protein_goal || ''} onChange={(event) => onUpdate('protein_goal', event.target.value)} placeholder="100" /></ProfileField>
         </div>
@@ -241,7 +241,7 @@ function ProfileEditor({ values, saving, onUpdate, onSubmit, onCancel, error }: 
         <div><CardTitle>Edit training and environment</CardTitle><CardDescription>Context for recommendations; workouts remain tracked in Lyfta</CardDescription></div>
         <CardAction><HeartPulse className="size-5 text-primary" /></CardAction>
       </CardHeader>
-      <CardPanel className="grid gap-4 sm:grid-cols-2">
+      <CardPanel className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <ProfileField label="Experience level"><Input nativeInput value={values.experience_level || ''} onChange={(event) => onUpdate('experience_level', event.target.value)} placeholder="Beginner, intermediate…" /></ProfileField>
         <ProfileField label="Training style"><Input nativeInput value={values.training_style || ''} onChange={(event) => onUpdate('training_style', event.target.value)} /></ProfileField>
         <ProfileField label="Schedule"><Textarea rows={3} value={values.gym_schedule || ''} onChange={(event) => onUpdate('gym_schedule', event.target.value)} /></ProfileField>

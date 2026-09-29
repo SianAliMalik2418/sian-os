@@ -323,7 +323,7 @@ function RecipesPage() {
       <section className="space-y-3">
         <SectionTitle title="Recipes" meta={`${filteredRecipes.length} saved`} />
         {filteredRecipes.length ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredRecipes.map((recipe, index) => (
               <RecipeCard
                 key={recipe.id}
@@ -518,7 +518,7 @@ function RecipeFormDialog({ open, editing, values, saving, onOpenChange, onUpdat
             <DialogTitle>{editing ? 'Edit recipe' : 'Add recipe'}</DialogTitle>
             <DialogDescription>Macros should match one normal serving.</DialogDescription>
           </DialogHeader>
-          <DialogPanel className="grid gap-4">
+          <DialogPanel className="grid grid-cols-1 gap-4">
             <RecipeField label="Name"><Input nativeInput required value={values.name} onChange={(event) => onUpdate('name', event.target.value)} placeholder="Chicken pulao" /></RecipeField>
             <RecipeField label="Aliases" description="Comma-separated names the agent may see">
               <Input nativeInput value={values.aliases} onChange={(event) => onUpdate('aliases', event.target.value)} placeholder="pulao, chicken rice" />
@@ -529,7 +529,7 @@ function RecipeFormDialog({ open, editing, values, saving, onOpenChange, onUpdat
               <RecipeField label="Fats"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.fat_grams} onChange={(event) => onUpdate('fat_grams', event.target.value)} /></RecipeField>
               <RecipeField label="Carbs"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.carb_grams} onChange={(event) => onUpdate('carb_grams', event.target.value)} /></RecipeField>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <RecipeField label="Serving"><Input nativeInput value={values.serving_description} onChange={(event) => onUpdate('serving_description', event.target.value)} placeholder="1 plate, 1 bowl, 2 pieces…" /></RecipeField>
               <RecipeField label="Category"><Input nativeInput value={values.category} onChange={(event) => onUpdate('category', event.target.value)} placeholder="Dish, snack, drink…" /></RecipeField>
             </div>
@@ -576,8 +576,8 @@ function BundleFormDialog({ open, editing, values, recipes, saving, onOpenChange
             <DialogTitle>{editing ? 'Edit bundle' : 'Add bundle'}</DialogTitle>
             <DialogDescription>Save a repeat meal made of recipes and default quantities.</DialogDescription>
           </DialogHeader>
-          <DialogPanel className="grid gap-4">
-            <div className="grid gap-3 sm:grid-cols-2">
+          <DialogPanel className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <RecipeField label="Name">
                 <Input nativeInput required value={values.name} onChange={(event) => onUpdate({ name: event.target.value })} placeholder="Breakfast" />
               </RecipeField>

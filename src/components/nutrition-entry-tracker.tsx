@@ -335,13 +335,13 @@ export const NutritionEntryTracker = forwardRef<NutritionEntryTrackerHandle, {
   const entryFields = <NutritionEntryFields itemName={itemName} calories={calories} protein={protein} onItemNameChange={setItemName} onCaloriesChange={setCalories} onProteinChange={setProtein} />
 
   const manualEntryFields = (
-    <div className="grid gap-3 lg:grid-cols-[minmax(12rem,1fr)_7rem_7rem]">
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(12rem,1fr)_7rem_7rem]">
       {entryFields}
     </div>
   )
 
   const manualEntryForm = (
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
       {manualEntryFields}
       <Button type="button" loading={saving} className="self-end" onClick={addEntry}>Add</Button>
     </div>
@@ -481,7 +481,7 @@ export const NutritionEntryTracker = forwardRef<NutritionEntryTrackerHandle, {
   const body = (
     <div className="space-y-4">
       {showTotals && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <NutritionTotal label="Calories" value={calorieTotal} goal={calorieGoal} unit="kcal" tone="sun" />
           <NutritionTotal label="Protein" value={proteinTotal} goal={proteinGoal} unit="g" tone="mint" />
         </div>
@@ -653,7 +653,7 @@ function RecipeCreateDialog({ open, values, saving, onOpenChange, onUpdate, onSu
             <DialogTitle>New recipe</DialogTitle>
             <DialogDescription>Save macros for one normal serving, then log it from the selected list.</DialogDescription>
           </DialogHeader>
-          <DialogPanel className="grid gap-4">
+          <DialogPanel className="grid grid-cols-1 gap-4">
             <RecipeField label="Name"><Input nativeInput required value={values.name} onChange={(event) => onUpdate('name', event.target.value)} placeholder="Egg" /></RecipeField>
             <RecipeField label="Aliases" description="Comma-separated names the agent may see">
               <Input nativeInput value={values.aliases} onChange={(event) => onUpdate('aliases', event.target.value)} placeholder="anda, boiled egg" />
@@ -662,7 +662,7 @@ function RecipeCreateDialog({ open, values, saving, onOpenChange, onUpdate, onSu
               <RecipeField label="Calories"><Input nativeInput required type="number" min="0" max="20000" step="1" inputMode="numeric" value={values.calories} onChange={(event) => onUpdate('calories', event.target.value)} /></RecipeField>
               <RecipeField label="Protein"><Input nativeInput required type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.protein_grams} onChange={(event) => onUpdate('protein_grams', event.target.value)} /></RecipeField>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <RecipeField label="Serving"><Input nativeInput value={values.serving_description} onChange={(event) => onUpdate('serving_description', event.target.value)} placeholder="1 egg, 1 plate, 1 bowl" /></RecipeField>
               <RecipeField label="Category"><Input nativeInput value={values.category} onChange={(event) => onUpdate('category', event.target.value)} placeholder="Snack, dish, drink" /></RecipeField>
             </div>

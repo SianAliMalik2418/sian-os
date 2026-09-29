@@ -115,7 +115,7 @@ function ReportsPage() {
             <button key={value} type="button" onClick={() => applyPreset(value, days)} className={`shrink-0 rounded-full px-4 py-2 text-sm font-extrabold transition-colors ${preset === value ? 'bg-sun text-[#1d1330]' : 'bg-white/7 text-muted-foreground hover:text-cream'}`}>{label}</button>
           ))}
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <RangeField label="From"><DatePicker value={from} onValueChange={changeFrom} required /></RangeField>
           <RangeField label="To"><DatePicker value={to} onValueChange={changeTo} required /></RangeField>
         </div>
@@ -138,7 +138,7 @@ function ReportsPage() {
         </div>
 
         {chartPoints.length ? (
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <MetricChart title="Body weight" description="Direction across the range" icon={Scale} tone="sun" data={chartPoints} dataKey="weight_kg" color="orange" suffix=" kg" kind="area" />
             <MetricChart title="Protein" description="Recorded daily protein" icon={Utensils} tone="rose" data={chartPoints} dataKey="protein_grams" color="pink" suffix=" g" kind="bar" />
             <MetricChart title="Calories" description="Estimated daily intake" icon={Flame} tone="butter" data={chartPoints} dataKey="calories" color="red" suffix=" kcal" kind="bar" />

@@ -184,10 +184,10 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
               <DialogDescription>Weight and meals for one day. Steps, active calories, and sleep sync from your wearable.</DialogDescription>
             </DialogHeader>
 
-            <DialogPanel className="grid gap-5">
+            <DialogPanel className="grid grid-cols-1 gap-5">
               {loading && <p className="text-sm text-muted-foreground">Loading check-in…</p>}
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <CheckinField label="Date">
                   <DatePicker value={values.date} onValueChange={openCheckin} required />
                 </CheckinField>
