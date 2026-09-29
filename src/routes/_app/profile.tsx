@@ -1,8 +1,9 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { ArrowUpRight, Dumbbell, HeartPulse, Images, Pencil, Save, Target, TrendingUp, UserRound, X } from 'lucide-react'
 import { useState, type CSSProperties, type FormEvent, type ReactNode } from 'react'
+import { EditableNumber } from '@/components/sunrise/editable-number'
 import { Doodle, HeaderIllustration } from '@/components/sunrise/illustrations'
-import { CountUp, Notice, Page, PageHeader, SectionTitle, ToneTile, Unit } from '@/components/sunrise/primitives'
+import { Notice, Page, PageHeader, SectionTitle, ToneTile } from '@/components/sunrise/primitives'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardDescription, CardHeader, CardPanel, CardTitle } from '@/components/ui/card'
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
@@ -40,6 +41,24 @@ function ProfilePage() {
 
   function update(name: string, value: string) {
     setValues((current) => ({ ...current, [name]: value }))
+  }
+
+  async function saveGoal(field: 'calorie_goal' | 'protein_goal', value: number) {
+    if (!profile) throw new Error('Create a profile first')
+    const payload = Object.fromEntries(
+      Object.entries({ ...profile, [field]: value }).flatMap(([key, value]) => (
+        ['id', 'updated_at'].includes(key) || value === null || value === undefined ? [] : [[key, value]]
+      )),
+    )
+    const response = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    const result = await response.json() as { data?: Profile; error?: { message?: string } }
+    if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not save goal')
+    setProfile(result.data)
+    setValues(valuesFromProfile(result.data))
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -86,7 +105,7 @@ function ProfilePage() {
         <ProfileEditor values={values} saving={saving} onUpdate={update} onSubmit={submit} onCancel={cancelEditing} error={error} />
       ) : (
         <>
-          <ProfileOverview profile={profile} onEdit={beginEditing} />
+          <ProfileOverview profile={profile} onEdit={beginEditing} onSaveGoal={saveGoal} />
           <ProfileMiniPages />
         </>
       )}
@@ -120,7 +139,11 @@ function ProfileMiniPages() {
   )
 }
 
-function ProfileOverview({ profile, onEdit }: { profile: Profile | null; onEdit: () => void }) {
+function ProfileOverview({ profile, onEdit, onSaveGoal }: {
+  profile: Profile | null
+  onEdit: () => void
+  onSaveGoal: (field: 'calorie_goal' | 'protein_goal', value: number) => Promise<void>
+}) {
   if (!profile) {
     return (
       <div className="grid place-items-center gap-2 rounded-[1.8rem] border border-dashed border-white/12 px-6 py-14 text-center">
@@ -146,8 +169,8 @@ function ProfileOverview({ profile, onEdit }: { profile: Profile | null; onEdit:
     </section>
 
     <div className="grid grid-cols-2 gap-3">
-      <ToneTile tone="sun" label="Calorie goal" className="rise" style={delay(2)} doodle={<Doodle kind="flame" />} value={profile.calorie_goal === null ? '—' : <><CountUp value={profile.calorie_goal} /><Unit>kcal</Unit></>} footer="Daily target" />
-      <ToneTile tone="mint" label="Protein goal" className="rise" style={delay(3)} doodle={<Doodle kind="protein" />} value={profile.protein_goal === null ? '—' : <><CountUp value={profile.protein_goal} /><Unit>g</Unit></>} footer="Daily target" />
+      <ToneTile tone="sun" label="Calorie goal" className="rise" style={delay(2)} doodle={<Doodle kind="flame" />} value={<EditableNumber value={profile.calorie_goal} unit="kcal" max={20000} ariaLabel="Calorie goal" placeholder="Tap to set" onSave={(next) => onSaveGoal('calorie_goal', next)} />} footer="Daily target · tap to edit" />
+      <ToneTile tone="mint" label="Protein goal" className="rise" style={delay(3)} doodle={<Doodle kind="protein" />} value={<EditableNumber value={profile.protein_goal} unit="g" max={2000} ariaLabel="Protein goal" placeholder="Tap to set" onSave={(next) => onSaveGoal('protein_goal', next)} />} footer="Daily target · tap to edit" />
     </div>
 
     <section className="rise space-y-4 rounded-[1.8rem] border border-white/8 bg-card p-5" style={delay(4)}>

@@ -1,7 +1,7 @@
 import { useRouter } from '@tanstack/react-router'
 import { Check, Save } from 'lucide-react'
-import { createContext, useCallback, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { NutritionEntryTracker, type NutritionEntryTrackerHandle } from '@/components/nutrition-entry-tracker'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
@@ -9,7 +9,6 @@ import { Dialog, DialogClose, DialogDescription, DialogFooter, DialogHeader, Dia
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offline-checkins'
 import type { CheckinInput } from '@/lib/schemas'
 import type { DailyCheckin, Profile } from '@/lib/types'
@@ -35,6 +34,7 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
   const [error, setError] = useState<string>()
   const [syncMessage, setSyncMessage] = useState<string>()
   const [pendingCount, setPendingCount] = useState(0)
+  const nutritionTrackerRef = useRef<NutritionEntryTrackerHandle>(null)
 
   const refreshPendingCount = useCallback(() => {
     setPendingCount(readQueuedCheckins().length)
@@ -127,6 +127,15 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
     event.preventDefault()
     setSaving(true)
     setError(undefined)
+
+    try {
+      await nutritionTrackerRef.current?.flushSelections()
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not save selected recipes')
+      setSaving(false)
+      return
+    }
+
     const numeric = new Set<string>(numericFields)
     const payload = Object.fromEntries(Object.entries(values).flatMap(([key, value]) => {
       if (value === '') return []
@@ -172,7 +181,7 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
                 {editing && <Badge variant="success"><Check /> Saved</Badge>}
                 {pendingCount > 0 && <Badge variant="warning">{pendingCount} offline</Badge>}
               </div>
-              <DialogDescription>Weight, meals, and training notes for one day. Steps, active calories, and sleep sync from your wearable.</DialogDescription>
+              <DialogDescription>Weight and meals for one day. Steps, active calories, and sleep sync from your wearable.</DialogDescription>
             </DialogHeader>
 
             <DialogPanel className="grid gap-5">
@@ -189,16 +198,8 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
 
               <section className="rounded-[1.5rem] border border-white/8 bg-white/4 p-4">
                 <div className="mb-4"><p className="font-extrabold text-cream">Meals</p><p className="mt-1 text-xs font-semibold text-muted-foreground">Each food row updates today's calories and protein.</p></div>
-                <NutritionEntryTracker date={values.date} calorieGoal={calorieGoal} proteinGoal={proteinGoal} compact onCheckinChange={updateNutritionTotals} />
+                <NutritionEntryTracker ref={nutritionTrackerRef} date={values.date} calorieGoal={calorieGoal} proteinGoal={proteinGoal} compact onCheckinChange={updateNutritionTotals} />
               </section>
-
-              <CheckinField label="Workout" description="Reviewer-facing notes; detailed workouts stay in Lyfta">
-                <Textarea value={values.workout_text || ''} onChange={(event) => update('workout_text', event.target.value)} placeholder="Lyfta workout name, exercises, sets, notes…" rows={4} />
-              </CheckinField>
-
-              <CheckinField label="Notes" description="Optional context for appetite, aches, energy, or schedule changes">
-                <Textarea value={values.notes || ''} onChange={(event) => update('notes', event.target.value)} placeholder="Anything else worth remembering today…" rows={4} />
-              </CheckinField>
 
               {error && <p role="alert" className="rounded-2xl bg-destructive/12 px-4 py-3 text-sm font-semibold text-destructive-foreground">{error}</p>}
               {syncMessage && <p role="status" className="rounded-2xl bg-mint/12 px-4 py-3 text-sm font-semibold text-mint">{syncMessage}</p>}

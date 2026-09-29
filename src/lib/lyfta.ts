@@ -140,9 +140,9 @@ function normalizeSet(value: unknown): LyftaSet {
   const set = asRecord(value)
   return {
     id: text(set.id) || '',
-    weight: nullableText(set.weight),
-    reps: nullableText(set.reps),
-    rir: nullableText(set.rir),
+    weight: cleanDecimalString(nullableText(set.weight)),
+    reps: cleanDecimalString(nullableText(set.reps)),
+    rir: cleanDecimalString(nullableText(set.rir)),
     duration: nullableText(set.duration),
     distance: nullableText(set.distance),
     completed: typeof set.is_completed === 'boolean' ? set.is_completed : null,
@@ -150,6 +150,13 @@ function normalizeSet(value: unknown): LyftaSet {
     recordLevel: nullableText(set.record_level),
     recordValue: nullableText(set.record_value),
   }
+}
+
+/** Lyfta sends numbers as decimal strings like "35.000"; trims them to plain numbers for display. */
+function cleanDecimalString(value: string | null) {
+  if (value === null) return null
+  const number = Number(value)
+  return Number.isFinite(number) ? Number(number.toFixed(2)).toString() : value
 }
 
 function clampWholeNumber(value: number, min: number, max: number) {

@@ -134,6 +134,7 @@ Read endpoints:
 Write endpoints:
 
 - `POST /api/checkins`: upsert one daily check-in by date. Read the existing row first because omitted optional fields are cleared.
+- `PATCH /api/checkins`: partial update of `weight_kg` only, by `date`. Used by the dashboard's inline weight editor; unlike `POST`, it never touches other check-in fields.
 - `POST /api/nutrition-entries`: add one itemized food row and recalculate daily calorie/protein/fat/carb totals.
 - `DELETE /api/nutrition-entries/{entryId}`: delete one food row and recalculate totals.
 - `PUT /api/profile`: upsert profile and nutrition goals. Read first because omitted fields become null.

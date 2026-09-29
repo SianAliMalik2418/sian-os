@@ -1,5 +1,6 @@
 import { Boxes, Minus, Plus, Save, Search, Utensils, X } from 'lucide-react'
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -28,7 +29,12 @@ const emptyRecipeValues = {
   notes: '',
 }
 
-export function NutritionEntryTracker({ date, initialEntries, calorieGoal, proteinGoal, compact = false, showTotals = true, onCheckinChange }: {
+export interface NutritionEntryTrackerHandle {
+  /** Logs any recipes selected in the picker but not yet saved. Used by parent dialogs that expose a single combined save action. */
+  flushSelections: () => Promise<void>
+}
+
+export const NutritionEntryTracker = forwardRef<NutritionEntryTrackerHandle, {
   date: string
   initialEntries?: NutritionEntry[]
   calorieGoal: number
@@ -36,7 +42,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   compact?: boolean
   showTotals?: boolean
   onCheckinChange?: (checkin: DailyCheckin) => void
-}) {
+}>(function NutritionEntryTracker({ date, initialEntries, calorieGoal, proteinGoal, compact = false, showTotals = true, onCheckinChange }, ref) {
   const [entries, setEntries] = useState(initialEntries || [])
   const [itemName, setItemName] = useState('')
   const [calories, setCalories] = useState('')
@@ -58,6 +64,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
   const [error, setError] = useState<string>()
   const [addOpen, setAddOpen] = useState(false)
   const [entryMode, setEntryMode] = useState<NutritionEntryMode>('manual')
+  const [deleteTarget, setDeleteTarget] = useState<{ entryId: number; itemName: string } | null>(null)
 
   const calorieTotal = entries.reduce((total, entry) => total + entry.calories, 0)
   const proteinTotal = entries.reduce((total, entry) => total + entry.protein_grams, 0)
@@ -228,6 +235,12 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       setSaving(false)
     }
   }
+
+  useImperativeHandle(ref, () => ({
+    flushSelections: async () => {
+      if (selectedRecipeIds.size) await saveSelectedRecipes()
+    },
+  }))
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -438,9 +451,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       </TabsPanel>
       <TabsPanel value="recipes" className="space-y-4 pt-2">
         {recipePicker}
-        <div className="flex justify-end">
-          <Button type="button" loading={saving} onClick={saveSelectedRecipes}><Utensils /> Log selected</Button>
-        </div>
+        {selectedRecipeIds.size > 0 && <p className="text-xs font-semibold text-muted-foreground">Selected recipes log when you hit Save changes below.</p>}
       </TabsPanel>
       <TabsPanel value="bundles" className="space-y-4 pt-2">
         {bundlePicker}
@@ -487,7 +498,7 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
               <span className="min-w-0 truncate font-bold text-cream">{entry.item_name}{entry.quantity > 1 ? ` ×${entry.quantity}` : ''}</span>
               <span className="shrink-0 font-semibold text-muted-foreground tabular-nums">{entry.calories}</span>
               <span className="shrink-0 font-extrabold text-mint tabular-nums">{entry.protein_grams}g</span>
-              <button type="button" aria-label={`Delete one ${entry.item_name}`} onClick={() => deleteEntry(entry.ids.at(-1) ?? entry.ids[0], entry.item_name)} disabled={saving} className="grid size-7 shrink-0 place-items-center rounded-full bg-white/8 text-muted-foreground transition-colors hover:bg-destructive/20 hover:text-destructive-foreground disabled:opacity-50"><X className="size-3.5" strokeWidth={2.8} /></button>
+              <button type="button" aria-label={`Delete one ${entry.item_name}`} onClick={() => setDeleteTarget({ entryId: entry.ids.at(-1) ?? entry.ids[0], itemName: entry.item_name })} disabled={saving} className="grid size-7 shrink-0 place-items-center rounded-full bg-white/8 text-muted-foreground transition-colors hover:bg-destructive/20 hover:text-destructive-foreground disabled:opacity-50"><X className="size-3.5" strokeWidth={2.8} /></button>
             </li>
           ))}
         </ul>
@@ -513,11 +524,28 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
     />
   )
 
+  const deleteEntryDialog = (
+    <ConfirmDeleteDialog
+      open={Boolean(deleteTarget)}
+      onOpenChange={(open) => !open && setDeleteTarget(null)}
+      title="Delete food item?"
+      description={deleteTarget ? `This removes "${deleteTarget.itemName}" and recalculates today's totals.` : ''}
+      confirmLabel="Delete item"
+      deleting={saving}
+      onConfirm={async () => {
+        if (!deleteTarget) return
+        await deleteEntry(deleteTarget.entryId, deleteTarget.itemName)
+        setDeleteTarget(null)
+      }}
+    />
+  )
+
   if (compact) {
     return (
       <>
         {body}
         {recipeCreateDialog}
+        {deleteEntryDialog}
       </>
     )
   }
@@ -556,9 +584,10 @@ export function NutritionEntryTracker({ date, initialEntries, calorieGoal, prote
       </Dialog>
 
       {recipeCreateDialog}
+      {deleteEntryDialog}
     </>
   )
-}
+})
 
 function NutritionEntryFields({ itemName, calories, protein, onItemNameChange, onCaloriesChange, onProteinChange }: {
   itemName: string

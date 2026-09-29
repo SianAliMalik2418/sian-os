@@ -1,9 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
 import { db, recordApiWrite } from '@/lib/db'
 import { handleApi, HttpError, json, readJson } from '@/lib/http'
 import { checkinSchema, dateSchema } from '@/lib/schemas'
 import { nullable } from '@/lib/sql'
 import type { DailyCheckin } from '@/lib/types'
+
+const weightPatchSchema = z.object({ date: dateSchema, weight_kg: z.number().positive().max(500) })
 
 export const Route = createFileRoute('/api/checkins')({
   server: {
@@ -30,6 +33,17 @@ export const Route = createFileRoute('/api/checkins')({
         `).bind(input.date, nullable(input.weight_kg), nullable(input.waist_inches), null, null, nullable(input.sleep_hours), nullable(input.water_liters), nullable(input.protein_grams), nullable(input.fat_grams), nullable(input.carb_grams), nullable(input.calories), nullable(input.nutrition_notes), nullable(input.workout_text), nullable(input.notes)).first<DailyCheckin>()
         await recordApiWrite('upsert', 'daily_checkin', result?.id, input)
         return json({ ok: true, data: result }, { status: 201 })
+      }),
+      PATCH: async ({ request }) => handleApi(async () => {
+        const input = weightPatchSchema.parse(await readJson(request))
+        const result = await db().prepare(`
+          INSERT INTO daily_checkins (date, weight_kg, updated_at)
+          VALUES (?, ?, CURRENT_TIMESTAMP)
+          ON CONFLICT(date) DO UPDATE SET weight_kg=excluded.weight_kg, updated_at=CURRENT_TIMESTAMP
+          RETURNING *
+        `).bind(input.date, input.weight_kg).first<DailyCheckin>()
+        await recordApiWrite('update', 'daily_checkin', result?.id, input)
+        return json({ ok: true, data: result })
       }),
       DELETE: async ({ request }) => handleApi(async () => {
         const date = dateSchema.parse(new URL(request.url).searchParams.get('date'))

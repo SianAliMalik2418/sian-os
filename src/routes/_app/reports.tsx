@@ -2,6 +2,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Flame, Footprints, Moon, Pencil, Scale, Trash2, Utensils } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useMemo, useState, type CSSProperties } from 'react'
+import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { Area, Line } from '@/components/dither-kit/area'
 import { AreaChart, LineChart } from '@/components/dither-kit/area-chart'
@@ -15,7 +16,6 @@ import { Doodle } from '@/components/sunrise/illustrations'
 import { CountUp, Notice, Page, PageHeader, SectionTitle, ToneTile, Unit, type Tone } from '@/components/sunrise/primitives'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Dialog, DialogClose, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogPopup, DialogTitle } from '@/components/ui/dialog'
 import { getReportsData } from '@/lib/app.functions'
 import { aggregateReports, reportAverages, type DailyReportPoint } from '@/lib/reports'
 
@@ -46,10 +46,10 @@ function ReportsPage() {
   const allDaily = Route.useLoaderData()
   const router = useRouter()
   const { openCheckin } = useDailyCheckinDialog()
-  const [from, setFrom] = useState(daysAgo(89))
+  const [from, setFrom] = useState(daysAgo(6))
   const [to, setTo] = useState(today())
   const [interval, setInterval] = useState<Interval>('daily')
-  const [preset, setPreset] = useState('90d')
+  const [preset, setPreset] = useState('7d')
   const [deleteDate, setDeleteDate] = useState<string>()
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string>()
@@ -185,13 +185,15 @@ function ReportsPage() {
         </div>
       </section>
 
-      <Dialog open={Boolean(deleteDate)} onOpenChange={(open) => !open && setDeleteDate(undefined)}>
-        <DialogPopup className="max-w-md">
-          <DialogHeader><DialogTitle>Delete daily check-in?</DialogTitle><DialogDescription>This permanently removes the check-in for {deleteDate}. Progress photos for that date are kept.</DialogDescription></DialogHeader>
-          <DialogPanel><p className="text-sm text-muted-foreground">This action cannot be undone.</p></DialogPanel>
-          <DialogFooter><DialogClose render={<Button variant="outline" />}>Cancel</DialogClose><Button type="button" variant="destructive" loading={deleting} onClick={deleteCheckin}><Trash2 /> Delete check-in</Button></DialogFooter>
-        </DialogPopup>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={Boolean(deleteDate)}
+        onOpenChange={(open) => !open && setDeleteDate(undefined)}
+        title="Delete daily check-in?"
+        description={`This permanently removes the check-in for ${deleteDate}. Progress photos for that date are kept.`}
+        confirmLabel="Delete check-in"
+        deleting={deleting}
+        onConfirm={deleteCheckin}
+      />
     </Page>
   )
 }

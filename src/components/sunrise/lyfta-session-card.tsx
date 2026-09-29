@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight, Trophy } from 'lucide-react'
-import type { LyftaWorkout } from '@/lib/lyfta'
+import type { LyftaSet, LyftaWorkout } from '@/lib/lyfta'
 
 const dayFormatter = new Intl.DateTimeFormat('en', { weekday: 'short', month: 'short', day: 'numeric' })
 
@@ -10,11 +10,20 @@ export function workoutDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? value : dayFormatter.format(date)
 }
 
-/** First set Lyfta flagged as a personal record, if any. */
+/** Human-readable "weight x reps" (or reps/duration alone) for one set. LyftaSet's numeric fields are already display-clean (see normalizeSet in lib/lyfta.ts). */
+export function formatSetSummary(set: LyftaSet) {
+  if (set.weight && set.reps) return `${set.weight} x ${set.reps}`
+  if (set.reps) return `${set.reps} reps`
+  if (set.duration) return set.duration
+  return null
+}
+
+/** First set Lyfta flagged as a personal record, if any. record_value is an opaque internal
+ * composite (e.g. "51,35.000,455,13"), not user-facing, so we describe the PR from the set itself. */
 export function workoutRecord(workout: LyftaWorkout) {
   for (const exercise of workout.exercises) {
     const set = exercise.sets.find((item) => item.recordType && item.recordValue)
-    if (set) return { exercise: exercise.name, value: set.recordValue as string, type: set.recordType as string }
+    if (set) return { exercise: exercise.name, value: formatSetSummary(set) ?? '', type: set.recordType as string }
   }
   return null
 }
@@ -46,7 +55,7 @@ export function LyftaSessionCard({ workout, className, style }: { workout: Lyfta
       {record && (
         <div className="pop sun-shimmer mt-4 inline-flex max-w-full items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-extrabold text-[#3a1a05]" style={{ '--d': 4 } as React.CSSProperties}>
           <Trophy className="size-4 shrink-0" strokeWidth={2.6} />
-          <span className="truncate">PR · {record.exercise} {record.value}</span>
+          <span className="truncate">PR · {record.exercise}{record.value ? ` · ${record.value}` : ''}</span>
         </div>
       )}
     </Link>

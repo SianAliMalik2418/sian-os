@@ -3,11 +3,13 @@ import { Flame, Pencil } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
+import { EditableNumber } from '@/components/sunrise/editable-number'
 import { DaySun, Doodle, SunriseScene } from '@/components/sunrise/illustrations'
 import { LyftaSessionCard } from '@/components/sunrise/lyfta-session-card'
 import { CountUp, Page, SectionTitle, StripeBar, ToneTile, Unit } from '@/components/sunrise/primitives'
 import { getCoachNote, getDashboardData, getLatestLyftaWorkout } from '@/lib/app.functions'
 import type { LyftaWorkout } from '@/lib/lyfta'
+import type { DailyCheckin } from '@/lib/types'
 
 export const Route = createFileRoute('/_app/')({
   loader: async () => {
@@ -58,6 +60,18 @@ function Dashboard() {
   const weightDelta = data.weightTrend.length >= 2 ? data.weightTrend[0].weight_kg - data.weightTrend[data.weightTrend.length - 1].weight_kg : null
   const checkedInToday = checkin?.date === todayIso && checkin.weight_kg !== null
 
+  async function saveWeight(value: number) {
+    const response = await fetch('/api/checkins', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: todayIso, weight_kg: value }),
+    })
+    const result = await response.json() as { data?: DailyCheckin; error?: { message?: string } }
+    if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not save weight')
+    setCheckin(result.data)
+    await router.invalidate()
+  }
+
   useEffect(() => {
     setCheckin(data.checkin)
   }, [data.checkin])
@@ -100,7 +114,7 @@ function Dashboard() {
             <Doodle kind={checkedInToday ? 'check' : 'plate'} className="size-12 shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="font-extrabold text-cream">{checkedInToday ? 'Checked in today' : 'Daily check-in'}</p>
-              <p className="truncate text-sm font-semibold text-muted-foreground">{checkedInToday ? `${checkin?.weight_kg} kg logged. Tap to edit.` : 'Weight, workout notes, and meals for today.'}</p>
+              <p className="truncate text-sm font-semibold text-muted-foreground">{checkedInToday ? `${checkin?.weight_kg} kg logged. Tap to edit.` : 'Weight and meals for today.'}</p>
             </div>
             <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white/8 text-cream"><Pencil className="size-4" /></span>
           </button>
@@ -127,8 +141,8 @@ function Dashboard() {
             <SectionTitle title="Body today" meta="Wearable + check-in" className="rise" style={delay(5)} />
             <div className="grid grid-cols-2 gap-3">
               <ToneTile tone="sun" label="Weight" className="rise" style={delay(5)} doodle={<Doodle kind="scale" />}
-                value={checkin?.weight_kg != null ? <><CountUp value={checkin.weight_kg} decimals={1} /><Unit>kg</Unit></> : '—'}
-                footer={weightDelta !== null ? `${weightDelta <= 0 ? '▼' : '▲'} ${Math.abs(weightDelta).toFixed(1)} kg trend` : 'Log it in check-in'} />
+                value={<EditableNumber value={checkin?.weight_kg ?? null} unit="kg" max={500} step={0.1} decimals={1} ariaLabel="Weight in kilograms" onSave={saveWeight} />}
+                footer={weightDelta !== null ? `${weightDelta <= 0 ? '▼' : '▲'} ${Math.abs(weightDelta).toFixed(1)} kg trend` : 'Tap the weight to log it'} />
               <ToneTile tone="mint" label="Steps" className="rise" style={delay(6)} doodle={<Doodle kind="steps" />}
                 value={checkin?.steps != null ? <CountUp value={checkin.steps} /> : '—'} footer="From your wearable" />
               <ToneTile tone="butter" label="Active" className="rise" style={delay(7)} doodle={<Doodle kind="flame" />}

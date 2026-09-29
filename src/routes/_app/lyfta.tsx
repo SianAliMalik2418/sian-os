@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Trophy } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { Doodle } from '@/components/sunrise/illustrations'
-import { workoutDate, workoutRecord } from '@/components/sunrise/lyfta-session-card'
+import { formatSetSummary, workoutDate, workoutRecord } from '@/components/sunrise/lyfta-session-card'
 import { Page, PageHeader, SectionTitle } from '@/components/sunrise/primitives'
 import { getLyftaWorkoutsData } from '@/lib/app.functions'
 import type { LyftaExercise, LyftaSet, LyftaWorkout } from '@/lib/lyfta'
@@ -67,7 +67,7 @@ function WorkoutCard({ workout, index }: { workout: LyftaWorkout; index: number 
           <div key={label} className="rounded-2xl bg-white/6 px-3 py-2.5"><p className="truncate text-lg leading-tight font-extrabold text-cream">{value || '—'}</p><p className="text-xs font-semibold text-muted-foreground">{label}</p></div>
         ))}
       </div>
-      {record && <div className="sun-shimmer mt-4 inline-flex max-w-full items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-extrabold text-[#3a1a05]"><Trophy className="size-4 shrink-0" strokeWidth={2.6} /><span className="truncate">PR · {record.exercise} {record.value}</span></div>}
+      {record && <div className="sun-shimmer mt-4 inline-flex max-w-full items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-extrabold text-[#3a1a05]"><Trophy className="size-4 shrink-0" strokeWidth={2.6} /><span className="truncate">PR · {record.exercise}{record.value ? ` · ${record.value}` : ''}</span></div>}
 
       {workout.exercises.length ? (
         <div className="mt-5 space-y-4 border-t border-white/8 pt-4">
@@ -102,10 +102,8 @@ function ExerciseRow({ exercise }: { exercise: LyftaExercise }) {
 
 function formatSet(set: LyftaSet, index: number) {
   const parts = [`Set ${index + 1}`]
-  if (set.weight && set.reps) parts.push(`${set.weight} x ${set.reps}`)
-  else if (set.reps) parts.push(`${set.reps} reps`)
-  else if (set.duration) parts.push(set.duration)
+  const summary = formatSetSummary(set)
+  if (summary) parts.push(summary)
   if (set.rir) parts.push(`${set.rir} RIR`)
-  if (set.recordValue) parts.push(set.recordValue)
   return parts.join(' · ')
 }

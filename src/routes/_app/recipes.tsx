@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Boxes, MoreHorizontal, Minus, Pencil, Plus, Save, Search, Trash2, Utensils, X } from 'lucide-react'
 import { useEffect, useMemo, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react'
+import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { Doodle } from '@/components/sunrise/illustrations'
 import { Notice, Page, PageHeader, SectionTitle, Unit } from '@/components/sunrise/primitives'
 import { Badge } from '@/components/ui/badge'
@@ -54,6 +55,8 @@ function RecipesPage() {
   const [loggingBundleId, setLoggingBundleId] = useState<number | null>(null)
   const [status, setStatus] = useState<string>()
   const [error, setError] = useState<string>()
+  const [deleteTarget, setDeleteTarget] = useState<{ title: string; description: string; confirmLabel: string; run: () => Promise<void> } | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const filteredRecipes = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -222,6 +225,17 @@ function RecipesPage() {
     await router.invalidate()
   }
 
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await deleteTarget.run()
+      setDeleteTarget(null)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   async function logRecipeToday(recipe: Recipe) {
     setError(undefined)
     setStatus(undefined)
@@ -298,9 +312,9 @@ function RecipesPage() {
       {filteredBundles.length ? (
         <section className="space-y-3">
           <SectionTitle title="Bundles" meta={`${filteredBundles.length} templates`} />
-          <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
+          <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 xl:grid-cols-4">
             {filteredBundles.map((bundle, index) => (
-              <BundleCard key={bundle.id} bundle={bundle} index={index} logging={loggingBundleId === bundle.id} onLog={() => logBundleToday(bundle)} onEdit={() => beginEditBundle(bundle)} onDelete={() => deleteBundle(bundle)} />
+              <BundleCard key={bundle.id} bundle={bundle} index={index} logging={loggingBundleId === bundle.id} onLog={() => logBundleToday(bundle)} onEdit={() => beginEditBundle(bundle)} onDelete={() => setDeleteTarget({ title: 'Delete bundle?', description: `This permanently removes "${bundle.name}".`, confirmLabel: 'Delete bundle', run: () => deleteBundle(bundle) })} />
             ))}
           </div>
         </section>
@@ -309,7 +323,7 @@ function RecipesPage() {
       <section className="space-y-3">
         <SectionTitle title="Recipes" meta={`${filteredRecipes.length} saved`} />
         {filteredRecipes.length ? (
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredRecipes.map((recipe, index) => (
               <RecipeCard
                 key={recipe.id}
@@ -320,7 +334,7 @@ function RecipesPage() {
                 onQuantityChange={(nextQuantity) => setRecipeQuantity(recipe.id, nextQuantity)}
                 onLog={() => logRecipeToday(recipe)}
                 onEdit={() => beginEdit(recipe)}
-                onDelete={() => deleteRecipe(recipe)}
+                onDelete={() => setDeleteTarget({ title: 'Delete recipe?', description: `This permanently removes "${recipe.name}".`, confirmLabel: 'Delete recipe', run: () => deleteRecipe(recipe) })}
               />
             ))}
           </div>
@@ -346,6 +360,16 @@ function RecipesPage() {
         onSetItemQuantity={setBundleItemQuantity}
         onSubmit={submitBundle}
         onCancel={closeBundleForm}
+      />
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={deleteTarget?.title ?? ''}
+        description={deleteTarget?.description ?? ''}
+        confirmLabel={deleteTarget?.confirmLabel}
+        deleting={deleting}
+        onConfirm={confirmDelete}
       />
     </Page>
   )

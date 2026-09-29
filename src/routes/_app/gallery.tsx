@@ -1,16 +1,12 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Camera, ImagePlus, Trash2 } from 'lucide-react'
-import { useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react'
+import { Camera, ImagePlus, Trash2, X } from 'lucide-react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react'
+import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { HeaderIllustration } from '@/components/sunrise/illustrations'
-import { Notice, Page, PageHeader, SectionTitle } from '@/components/sunrise/primitives'
+import { Notice, Page, PageHeader } from '@/components/sunrise/primitives'
 import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/ui/date-picker'
-import { Field, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
-import { Textarea } from '@/components/ui/textarea'
 import { getProgressPhotos } from '@/lib/app.functions'
-import { groupProgressPhotosByDate } from '@/lib/progress-photos'
 import type { ProgressPhoto } from '@/lib/types'
 
 export const Route = createFileRoute('/_app/gallery')({
@@ -19,21 +15,18 @@ export const Route = createFileRoute('/_app/gallery')({
 })
 
 const today = () => new Date().toISOString().slice(0, 10)
-const dateFormatter = new Intl.DateTimeFormat('en', { dateStyle: 'medium' })
 
 function GalleryPage() {
   const photos = Route.useLoaderData()
   const router = useRouter()
   const galleryFileRef = useRef<HTMLInputElement>(null)
   const cameraFileRef = useRef<HTMLInputElement>(null)
-  const [date, setDate] = useState(() => today())
-  const [label, setLabel] = useState('')
-  const [notes, setNotes] = useState('')
   const [savingSource, setSavingSource] = useState<'gallery' | 'camera' | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<ProgressPhoto | null>(null)
+  const [viewingPhoto, setViewingPhoto] = useState<ProgressPhoto | null>(null)
   const [status, setStatus] = useState<string>()
   const [error, setError] = useState<string>()
-  const groups = useMemo(() => groupProgressPhotosByDate(photos), [photos])
 
   async function uploadPhoto(source: 'gallery' | 'camera', inputRef: RefObject<HTMLInputElement | null>) {
     const file = inputRef.current?.files?.[0]
@@ -47,9 +40,7 @@ function GalleryPage() {
     setError(undefined)
     setStatus(undefined)
     const form = new FormData()
-    form.set('date', date)
-    form.set('label', label)
-    form.set('notes', notes)
+    form.set('date', today())
     form.set('photo', file)
 
     try {
@@ -66,7 +57,9 @@ function GalleryPage() {
     }
   }
 
-  async function deletePhoto(photo: ProgressPhoto) {
+  async function confirmDeletePhoto() {
+    if (!deleteTarget) return
+    const photo = deleteTarget
     setDeletingId(photo.id)
     setError(undefined)
     setStatus(undefined)
@@ -78,6 +71,8 @@ function GalleryPage() {
         throw new Error(result.error?.message || 'Could not delete photo')
       }
       setStatus('Photo deleted.')
+      setDeleteTarget(null)
+      if (viewingPhoto?.id === photo.id) setViewingPhoto(null)
       await router.invalidate()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not delete photo')
@@ -87,8 +82,6 @@ function GalleryPage() {
   }
 
   function clearUploadInputs() {
-    setLabel('')
-    setNotes('')
     if (galleryFileRef.current) galleryFileRef.current.value = ''
     if (cameraFileRef.current) cameraFileRef.current.value = ''
   }
@@ -98,7 +91,7 @@ function GalleryPage() {
       <PageHeader
         kicker="Gallery"
         title="Progress, framed."
-        description="A dated timeline of your progress photos."
+        description="Your progress photo timeline."
         illustration="gallery"
         aside={<span className="rounded-full bg-white/8 px-3.5 py-1.5 text-sm font-extrabold text-cream">{photos.length} photo{photos.length === 1 ? '' : 's'}</span>}
       />
@@ -112,35 +105,29 @@ function GalleryPage() {
             <input ref={galleryFileRef} type="file" accept="image/*" className="sr-only" disabled={savingSource !== null} onChange={() => uploadPhoto('gallery', galleryFileRef)} />
           </UploadTile>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field><FieldLabel>Date</FieldLabel><DatePicker value={date} onValueChange={setDate} required /></Field>
-          <Field><FieldLabel>Label</FieldLabel><Input nativeInput value={label} onChange={(event) => setLabel(event.target.value)} placeholder="Front, side, month 3" /></Field>
-          <div className="sm:col-span-2"><Field><FieldLabel>Notes</FieldLabel><Textarea rows={2} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Optional context" /></Field></div>
-        </div>
-        <p className="px-1 text-xs font-semibold text-muted-foreground">Set the date and label first. The photo uploads as soon as you pick it.</p>
       </section>
 
       {status && <Notice tone="status">{status}</Notice>}
       {error && <Notice tone="error">{error}</Notice>}
 
-      {groups.length ? (
-        <div className="space-y-6">
-          {groups.map((group, groupIndex) => (
-            <section key={group.date} className="rise space-y-3" style={{ '--d': Math.min(groupIndex, 6) + 2 } as CSSProperties}>
-              <SectionTitle title={formatPhotoDate(group.date)} meta={`${group.photos.length} photo${group.photos.length === 1 ? '' : 's'}`} />
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {group.photos.map((photo) => (
-                  <figure key={photo.id} className="group relative overflow-hidden rounded-[1.5rem] border border-white/8 bg-card">
-                    <img src={`/api/progress-photos/${photo.id}`} alt={photo.label || `Progress photo from ${group.date}`} className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
-                    <figcaption className="absolute inset-x-0 bottom-0 bg-[linear-gradient(transparent,rgb(18_15_36/.92))] px-3 pt-8 pb-3">
-                      <p className="truncate text-sm font-extrabold text-cream">{photo.label || 'Progress photo'}</p>
-                      {photo.notes && <p className="line-clamp-1 text-xs font-medium text-cream/70">{photo.notes}</p>}
-                    </figcaption>
-                    <Button type="button" size="icon-sm" variant="destructive" className="absolute top-2 right-2 rounded-full sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100" loading={deletingId === photo.id} disabled={deletingId !== null} onClick={() => deletePhoto(photo)} aria-label="Delete photo"><Trash2 /></Button>
-                  </figure>
-                ))}
-              </div>
-            </section>
+      {photos.length ? (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {photos.map((photo, index) => (
+            <figure key={photo.id} className="group relative overflow-hidden rounded-[1.5rem] border border-white/8 bg-card">
+              <button type="button" onClick={() => setViewingPhoto(photo)} className="block w-full" aria-label="View photo full screen">
+                <img
+                  src={`/api/progress-photos/${photo.id}`}
+                  alt="Progress photo"
+                  width={480}
+                  height={640}
+                  className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  loading={index < 8 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  fetchPriority={index < 4 ? 'high' : 'auto'}
+                />
+              </button>
+              <Button type="button" size="icon-sm" variant="destructive" className="absolute top-2 right-2 rounded-full sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100" loading={deletingId === photo.id} disabled={deletingId !== null} onClick={() => setDeleteTarget(photo)} aria-label="Delete photo"><Trash2 /></Button>
+            </figure>
           ))}
         </div>
       ) : (
@@ -150,7 +137,42 @@ function GalleryPage() {
           <p className="max-w-xs text-sm text-muted-foreground">Snap your first one above. Future you will be glad you did.</p>
         </div>
       )}
+
+      <PhotoLightbox photo={viewingPhoto} onClose={() => setViewingPhoto(null)} onDelete={(photo) => setDeleteTarget(photo)} />
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete photo?"
+        description="This permanently removes this progress photo."
+        confirmLabel="Delete photo"
+        deleting={deletingId !== null}
+        onConfirm={confirmDeletePhoto}
+      />
     </Page>
+  )
+}
+
+function PhotoLightbox({ photo, onClose, onDelete }: { photo: ProgressPhoto | null; onClose: () => void; onDelete: (photo: ProgressPhoto) => void }) {
+  useEffect(() => {
+    if (!photo) return
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [photo, onClose])
+
+  if (!photo) return null
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/90 p-4" role="dialog" aria-modal="true" onClick={onClose}>
+      <img src={`/api/progress-photos/${photo.id}`} alt="Progress photo" className="max-h-full max-w-full rounded-2xl object-contain" onClick={(event) => event.stopPropagation()} />
+      <div className="absolute top-4 right-4 flex gap-2">
+        <Button type="button" size="icon" variant="secondary" className="rounded-full" onClick={() => onDelete(photo)} aria-label="Delete photo"><Trash2 /></Button>
+        <Button type="button" size="icon" variant="secondary" className="rounded-full" onClick={onClose} aria-label="Close full screen view"><X /></Button>
+      </div>
+    </div>
   )
 }
 
@@ -163,10 +185,4 @@ function UploadTile({ tone, icon: Icon, title, subtitle, loading, disabled, chil
       <span><span className="block font-extrabold text-cream">{loading ? 'Uploading…' : title}</span><span className="block text-xs font-semibold text-muted-foreground">{subtitle}</span></span>
     </label>
   )
-}
-
-function formatPhotoDate(value: string) {
-  const [year, month, day] = value.split('-').map(Number)
-  const date = new Date(year, month - 1, day)
-  return Number.isNaN(date.getTime()) ? value : dateFormatter.format(date)
 }

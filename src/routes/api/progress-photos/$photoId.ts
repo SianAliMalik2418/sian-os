@@ -12,13 +12,16 @@ function photoId(value: string) {
 export const Route = createFileRoute('/api/progress-photos/$photoId')({
   server: {
     handlers: {
-      GET: async ({ params }) => handleApi(async () => {
+      GET: async ({ request, params }) => handleApi(async () => {
         const photo = await db().prepare('SELECT r2_key FROM progress_photos WHERE id = ?').bind(photoId(params.photoId)).first<{ r2_key: string }>()
         if (!photo) throw new HttpError(404, 'NOT_FOUND', 'Photo not found')
-        const object = await env.FILES.get(photo.r2_key)
+        const ifNoneMatch = request.headers.get('If-None-Match')
+        const object = await env.FILES.get(photo.r2_key, ifNoneMatch ? { onlyIf: { etagDoesNotMatch: ifNoneMatch } } : undefined)
         if (!object) throw new HttpError(404, 'OBJECT_NOT_FOUND', 'Photo object not found')
-        const headers = new Headers({ 'Cache-Control': 'public, max-age=3600', ETag: object.httpEtag })
+        // Photos are immutable once uploaded (no edit endpoint), so cache aggressively and let ETag revalidation skip re-downloading unchanged bytes.
+        const headers = new Headers({ 'Cache-Control': 'public, max-age=31536000, immutable', ETag: object.httpEtag })
         object.writeHttpMetadata(headers)
+        if (!('body' in object) || !object.body) return new Response(null, { status: 304, headers })
         return new Response(object.body, { headers })
       }),
       DELETE: async ({ params }) => handleApi(async () => {
