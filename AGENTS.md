@@ -281,3 +281,5 @@ Deployment rules:
 8. Smoke-test `/`, `/profile`, `/reports`, `/api/health`, `/api/agent/context`, and the changed endpoints.
 
 Skip deployment for docs-only changes unless the owner asks for it.
+
+`npm run deploy` runs `scripts/deploy.sh`, which deploys non-interactively on any machine: it reads `CLOUDFLARE_API_TOKEN` from the environment (shell export, CI secret, or a local `.env` file) and fails fast with a clear message if it's unset, instead of falling into Wrangler's interactive OAuth login. `.env` is gitignored; never commit it or print its contents.
