@@ -18,6 +18,7 @@ import { Route as AppRecipesRouteImport } from './routes/_app/recipes'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as ApiCheckinsRouteImport } from './routes/api/checkins'
 import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
+import { Route as ApiDeviceTokensRouteImport } from './routes/api/device-tokens'
 import { Route as ApiExportRouteImport } from './routes/api/export'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
@@ -27,6 +28,7 @@ import { Route as ApiProgressPhotosRouteImport } from './routes/api/progress-pho
 import { Route as ApiRecipeBundlesRouteImport } from './routes/api/recipe-bundles'
 import { Route as ApiRecipesRouteImport } from './routes/api/recipes'
 import { Route as ApiReportsRouteImport } from './routes/api/reports'
+import { Route as ApiSyncRequestRouteImport } from './routes/api/sync-request'
 import { Route as ApiWearableMetricsRouteImport } from './routes/api/wearable-metrics'
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
 import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
@@ -82,6 +84,11 @@ const ApiDashboardRoute = ApiDashboardRouteImport.update({
   path: '/api/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDeviceTokensRoute = ApiDeviceTokensRouteImport.update({
+  id: '/api/device-tokens',
+  path: '/api/device-tokens',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiExportRoute = ApiExportRouteImport.update({
   id: '/api/export',
   path: '/api/export',
@@ -125,6 +132,11 @@ const ApiRecipesRoute = ApiRecipesRouteImport.update({
 const ApiReportsRoute = ApiReportsRouteImport.update({
   id: '/api/reports',
   path: '/api/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSyncRequestRoute = ApiSyncRequestRouteImport.update({
+  id: '/api/sync-request',
+  path: '/api/sync-request',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWearableMetricsRoute = ApiWearableMetricsRouteImport.update({
@@ -190,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
+  '/api/device-tokens': typeof ApiDeviceTokensRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
   '/api/mcp': typeof ApiMcpRoute
@@ -199,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/api/sync-request': typeof ApiSyncRequestRoute
   '/api/wearable-metrics': typeof ApiWearableMetricsRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
@@ -218,6 +232,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
+  '/api/device-tokens': typeof ApiDeviceTokensRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
   '/api/mcp': typeof ApiMcpRoute
@@ -227,6 +242,7 @@ export interface FileRoutesByTo {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/api/sync-request': typeof ApiSyncRequestRoute
   '/api/wearable-metrics': typeof ApiWearableMetricsRoute
   '/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
@@ -249,6 +265,7 @@ export interface FileRoutesById {
   '/_app/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
+  '/api/device-tokens': typeof ApiDeviceTokensRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
   '/api/mcp': typeof ApiMcpRoute
@@ -258,6 +275,7 @@ export interface FileRoutesById {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/api/sync-request': typeof ApiSyncRequestRoute
   '/api/wearable-metrics': typeof ApiWearableMetricsRoute
   '/_app/': typeof AppIndexRoute
   '/api/agent/context': typeof ApiAgentContextRoute
@@ -281,6 +299,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/api/checkins'
     | '/api/dashboard'
+    | '/api/device-tokens'
     | '/api/export'
     | '/api/health'
     | '/api/mcp'
@@ -290,6 +309,7 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/api/sync-request'
     | '/api/wearable-metrics'
     | '/api/agent/context'
     | '/api/agent/query'
@@ -309,6 +329,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/api/checkins'
     | '/api/dashboard'
+    | '/api/device-tokens'
     | '/api/export'
     | '/api/health'
     | '/api/mcp'
@@ -318,6 +339,7 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/api/sync-request'
     | '/api/wearable-metrics'
     | '/'
     | '/api/agent/context'
@@ -339,6 +361,7 @@ export interface FileRouteTypes {
     | '/_app/reports'
     | '/api/checkins'
     | '/api/dashboard'
+    | '/api/device-tokens'
     | '/api/export'
     | '/api/health'
     | '/api/mcp'
@@ -348,6 +371,7 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/api/sync-request'
     | '/api/wearable-metrics'
     | '/_app/'
     | '/api/agent/context'
@@ -365,6 +389,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ApiCheckinsRoute: typeof ApiCheckinsRoute
   ApiDashboardRoute: typeof ApiDashboardRoute
+  ApiDeviceTokensRoute: typeof ApiDeviceTokensRoute
   ApiExportRoute: typeof ApiExportRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMcpRoute: typeof ApiMcpRoute
@@ -374,6 +399,7 @@ export interface RootRouteChildren {
   ApiRecipeBundlesRoute: typeof ApiRecipeBundlesRouteWithChildren
   ApiRecipesRoute: typeof ApiRecipesRouteWithChildren
   ApiReportsRoute: typeof ApiReportsRoute
+  ApiSyncRequestRoute: typeof ApiSyncRequestRoute
   ApiWearableMetricsRoute: typeof ApiWearableMetricsRoute
   ApiAgentContextRoute: typeof ApiAgentContextRoute
   ApiAgentQueryRoute: typeof ApiAgentQueryRoute
@@ -446,6 +472,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/device-tokens': {
+      id: '/api/device-tokens'
+      path: '/api/device-tokens'
+      fullPath: '/api/device-tokens'
+      preLoaderRoute: typeof ApiDeviceTokensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/export': {
       id: '/api/export'
       path: '/api/export'
@@ -507,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/api/reports'
       fullPath: '/api/reports'
       preLoaderRoute: typeof ApiReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sync-request': {
+      id: '/api/sync-request'
+      path: '/api/sync-request'
+      fullPath: '/api/sync-request'
+      preLoaderRoute: typeof ApiSyncRequestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/wearable-metrics': {
@@ -662,6 +702,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ApiCheckinsRoute: ApiCheckinsRoute,
   ApiDashboardRoute: ApiDashboardRoute,
+  ApiDeviceTokensRoute: ApiDeviceTokensRoute,
   ApiExportRoute: ApiExportRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMcpRoute: ApiMcpRoute,
@@ -671,6 +712,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRecipeBundlesRoute: ApiRecipeBundlesRouteWithChildren,
   ApiRecipesRoute: ApiRecipesRouteWithChildren,
   ApiReportsRoute: ApiReportsRoute,
+  ApiSyncRequestRoute: ApiSyncRequestRoute,
   ApiWearableMetricsRoute: ApiWearableMetricsRoute,
   ApiAgentContextRoute: ApiAgentContextRoute,
   ApiAgentQueryRoute: ApiAgentQueryRoute,

@@ -20,6 +20,14 @@ export interface DailyCheckin {
   updated_at: string
 }
 
+export interface DevicePushToken {
+  id: number
+  fcm_token: string
+  platform: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Profile {
   id: number
   height_cm: number | null

@@ -142,6 +142,8 @@ Write endpoints:
 - `POST /api/recipe-bundles`, `PUT /api/recipe-bundles/{bundleId}`, `DELETE /api/recipe-bundles/{bundleId}`: manage saved meal templates.
 - `PUT /api/agent/state`: update `last_weekly_report_date` (`YYYY-MM-DD`) after giving a weekly report, or `last_nightly_review_note` (free text, max 2000 chars) after a nightly review. No other keys are accepted.
 - `POST /api/wearable-metrics`: partial upsert of `steps`, `active_calories`, and/or `sleep_hours` by date, synced from a wearable device (see "Wearable data" below). Unlike `/api/checkins`, this only touches the fields present in the request and never clears the rest of that day's check-in. Requires `Authorization: Bearer <MCP_API_KEY>` when that secret is set.
+- `POST /api/device-tokens`: upsert a device's FCM push token by `fcm_token`, used by the "Sian OS Sync" Android app to register for remote sync pushes. Requires `Authorization: Bearer <MCP_API_KEY>` when that secret is set, same as `/api/wearable-metrics`.
+- `POST /api/sync-request`: no auth (same public-app rationale as every other route); triggers a silent FCM push asking the Android app to sync now. Returns `{ requested: <count> }` so the UI can tell whether any device is registered.
 - `POST /api/export`: create a production backup.
 
 Routine food logging must use `/api/nutrition-entries`, not `nutrition_notes`. Each entry needs `date`, `item_name`, and `calories`, with optional `protein_grams`, `fat_grams`, and `carb_grams`.
@@ -157,7 +159,8 @@ Saved recipe bundles are quick templates. When logging a bundle, expand it into 
 - Tool definitions live in `src/lib/mcp/tools.ts`. Each tool validates arguments with the same Zod schemas the REST API uses (`src/lib/schemas.ts`) and proxies to the matching REST endpoint over `fetch`, so there is one source of truth for request shape and one place implementing the write logic.
 - The JSON-RPC/Streamable HTTP handler lives in `src/routes/api/mcp.ts`. It supports `initialize`, `tools/list`, and `tools/call`, and returns empty `resources/list`/`prompts/list` for client compatibility. It does not implement SSE server push or session resumability; both are optional in the MCP spec and unnecessary for a single-owner stateless tool server.
 - When adding, removing, or renaming an API endpoint or its request shape, update the matching tool in `src/lib/mcp/tools.ts` in the same change so MCP tools stay in sync with the API without a second manually maintained schema.
-- Auth: set the `MCP_API_KEY` secret in production (`wrangler secret put MCP_API_KEY`) and send it as `Authorization: Bearer <key>` from the MCP client. If the secret is unset, the endpoint accepts unauthenticated requests; only acceptable for local development, since MCP tools include writes and deletes. The same secret also gates `POST /api/wearable-metrics` directly (used by the Tasker wearable sync, not just MCP clients).
+- Auth: set the `MCP_API_KEY` secret in production (`wrangler secret put MCP_API_KEY`) and send it as `Authorization: Bearer <key>` from the MCP client. If the secret is unset, the endpoint accepts unauthenticated requests; only acceptable for local development, since MCP tools include writes and deletes. The same secret also gates `POST /api/wearable-metrics` directly (used by the "Sian OS Sync" Android app's wearable sync, not just MCP clients).
+- The sync-push feature (`src/lib/fcm.ts`, backing `POST /api/sync-request`) needs three more Worker secrets set via `wrangler secret put <NAME>`: `FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY`. Without all three, `/api/sync-request` fails with `FCM_NOT_CONFIGURED`; setting them in production is owner-only setup, not yet done as of this change.
 
 Connect from Claude:
 

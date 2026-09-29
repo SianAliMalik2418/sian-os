@@ -5,6 +5,9 @@ declare namespace Cloudflare {
     APP_NAME: string
     LYFTA_API_KEY?: string
     MCP_API_KEY?: string
+    FCM_PROJECT_ID?: string
+    FCM_CLIENT_EMAIL?: string
+    FCM_PRIVATE_KEY?: string
     SELF: Fetcher
   }
 }

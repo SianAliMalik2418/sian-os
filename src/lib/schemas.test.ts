@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkinSchema, nutritionEntrySchema, profileSchema, recipeSchema } from './schemas'
+import { checkinSchema, deviceTokenSchema, nutritionEntrySchema, profileSchema, recipeSchema } from './schemas'
 
 describe('daily check-in schema', () => {
   it('accepts the streamlined daily fields', () => {
@@ -73,6 +73,20 @@ describe('recipe schema', () => {
       fat_grams: 5,
       carb_grams: 1,
     })).toMatchObject({ name: 'Egg', calories: 100, protein_grams: 6, fat_grams: 5, carb_grams: 1 })
+  })
+})
+
+describe('device token schema', () => {
+  it('accepts a valid token', () => {
+    expect(deviceTokenSchema.parse({ token: 'a'.repeat(20) })).toMatchObject({ token: 'a'.repeat(20) })
+  })
+
+  it('rejects a too-short token', () => {
+    expect(() => deviceTokenSchema.parse({ token: 'short' })).toThrow()
+  })
+
+  it('rejects extra fields', () => {
+    expect(() => deviceTokenSchema.parse({ token: 'a'.repeat(20), platform: 'android' })).toThrow()
   })
 })
 

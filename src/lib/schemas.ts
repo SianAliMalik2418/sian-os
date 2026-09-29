@@ -34,6 +34,8 @@ export const wearableMetricsSchema = z.object({
     message: 'At least one of steps, active_calories, sleep_hours is required',
   })
 
+export const deviceTokenSchema = z.object({ token: z.string().min(10).max(4096) }).strict()
+
 export const profileSchema = z.object({
   height_cm: z.number().positive().max(300).optional(),
   weight_kg: z.number().positive().max(500).optional(),
@@ -82,6 +84,7 @@ export const recipeBundleSchema = z.object({
 }).strict()
 
 export type WearableMetricsInput = z.infer<typeof wearableMetricsSchema>
+export type DeviceTokenInput = z.infer<typeof deviceTokenSchema>
 export type CheckinInput = z.infer<typeof checkinSchema>
 export type NutritionEntryInput = z.infer<typeof nutritionEntrySchema>
 export type RecipeInput = z.infer<typeof recipeSchema>

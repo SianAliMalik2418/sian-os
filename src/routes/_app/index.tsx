@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Flame, Pencil } from 'lucide-react'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { Flame, Pencil, RefreshCw } from 'lucide-react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
 import { EditableNumber } from '@/components/sunrise/editable-number'
@@ -39,6 +39,9 @@ function Dashboard() {
   const [checkin, setCheckin] = useState(data.checkin)
   const [workout, setWorkout] = useState<LyftaWorkout | null>(null)
   const [greeting, setGreeting] = useState('Hey')
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle')
+  const [syncMessage, setSyncMessage] = useState('')
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const calorieGoal = data.profile?.calorie_goal || 2200
   const proteinGoal = data.profile?.protein_goal || 100
   const todayIso = new Date().toISOString().slice(0, 10)
@@ -72,9 +75,34 @@ function Dashboard() {
     await router.invalidate()
   }
 
+  async function requestSync() {
+    setSyncStatus('syncing')
+    setSyncMessage('')
+    try {
+      const response = await fetch('/api/sync-request', { method: 'POST' })
+      const result = await response.json() as { data?: { requested: number }; error?: { message?: string } }
+      if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not request sync')
+      setSyncStatus('done')
+      setSyncMessage(result.data.requested === 0 ? 'No device registered yet' : 'Sync requested')
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
+      syncTimeoutRef.current = setTimeout(() => {
+        router.invalidate()
+      }, 8000)
+    } catch (error) {
+      setSyncStatus('error')
+      setSyncMessage(error instanceof Error ? error.message : 'Could not request sync')
+    }
+  }
+
   useEffect(() => {
     setCheckin(data.checkin)
   }, [data.checkin])
+
+  useEffect(() => {
+    return () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     setGreeting(greetingFor(new Date().getHours()))
@@ -144,7 +172,8 @@ function Dashboard() {
                 value={<EditableNumber value={checkin?.weight_kg ?? null} unit="kg" max={500} step={0.1} decimals={1} ariaLabel="Weight in kilograms" onSave={saveWeight} />}
                 footer={weightDelta !== null ? `${weightDelta <= 0 ? '▼' : '▲'} ${Math.abs(weightDelta).toFixed(1)} kg trend` : 'Tap the weight to log it'} />
               <ToneTile tone="mint" label="Steps" className="rise" style={delay(6)} doodle={<Doodle kind="steps" />}
-                value={checkin?.steps != null ? <CountUp value={checkin.steps} /> : '—'} footer="From your wearable" />
+                value={checkin?.steps != null ? <CountUp value={checkin.steps} /> : '—'}
+                footer={<SyncFooter status={syncStatus} message={syncMessage} onSync={requestSync} />} />
               <ToneTile tone="butter" label="Active" className="rise" style={delay(7)} doodle={<Doodle kind="flame" />}
                 value={checkin?.active_calories != null ? <><CountUp value={checkin.active_calories} /><Unit>kcal</Unit></> : '—'} footer="Burned moving" />
               <ToneTile tone="lilac" label="Sleep" className="rise" style={delay(8)} doodle={<Doodle kind="moon" />}
@@ -171,6 +200,28 @@ function Dashboard() {
         await router.invalidate()
       }} />
     </Page>
+  )
+}
+
+function SyncFooter({ status, message, onSync }: {
+  status: 'idle' | 'syncing' | 'done' | 'error'
+  message: string
+  onSync: () => void
+}) {
+  return (
+    <span className="flex items-center justify-between gap-2">
+      <span className="truncate">{message || 'From your wearable'}</span>
+      <button
+        type="button"
+        onClick={onSync}
+        disabled={status === 'syncing'}
+        aria-label="Request wearable sync"
+        title={message || 'Request wearable sync'}
+        className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-white/8 hover:text-cream disabled:opacity-60"
+      >
+        <RefreshCw className={`size-3.5 ${status === 'syncing' ? 'animate-spin' : ''}`} />
+      </button>
+    </span>
   )
 }
 
