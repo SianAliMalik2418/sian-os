@@ -225,7 +225,7 @@ function valuesFromCheckin(existing: DailyCheckin | null, date = today()) {
   const values: Record<string, string> = { date }
   if (!existing) return values
   for (const [key, value] of Object.entries(existing)) {
-    if (value !== null && value !== undefined && !['id', 'created_at', 'updated_at', 'sleep_time', 'wake_time'].includes(key)) values[key] = String(value)
+    if (value !== null && value !== undefined && !['id', 'created_at', 'updated_at', 'sleep_time', 'wake_time', 'steps', 'active_calories'].includes(key)) values[key] = String(value)
   }
   return values
 }
