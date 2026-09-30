@@ -25,6 +25,19 @@ function percent(value: number | null | undefined, goal: number) {
   return value && goal > 0 ? Math.min((value / goal) * 100, 100) : 0
 }
 
+function formatLastSync(value: string | null | undefined) {
+  if (!value) return null
+  const iso = value.includes('T') ? value : `${value.replace(' ', 'T')}Z`
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return null
+  const diffMin = Math.round((Date.now() - date.getTime()) / 60000)
+  if (diffMin < 1) return 'Synced just now'
+  if (diffMin < 60) return `Synced ${diffMin}m ago`
+  const diffHr = Math.round(diffMin / 60)
+  if (diffHr < 24) return `Synced ${diffHr}h ago`
+  return `Synced ${date.toLocaleDateString('en', { month: 'short', day: 'numeric', timeZone: 'UTC' })}`
+}
+
 function greetingFor(hour: number) {
   if (hour < 5) return 'Up late'
   if (hour < 12) return 'Morning'
@@ -44,6 +57,7 @@ function Dashboard() {
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const calorieGoal = data.profile?.calorie_goal || 2200
   const proteinGoal = data.profile?.protein_goal || 100
+  const stepGoal = data.profile?.step_goal || 10000
   const todayIso = new Date().toISOString().slice(0, 10)
   const completedDays = new Set(data.weeklyCheckins.map((item) => item.date))
   const weekDays = Array.from({ length: 7 }, (_, index) => {
@@ -55,11 +69,14 @@ function Dashboard() {
 
   const calories = checkin?.calories ?? 0
   const protein = checkin?.protein_grams ?? 0
+  const steps = checkin?.steps ?? 0
   const caloriePercent = percent(calories, calorieGoal)
   const proteinPercent = percent(protein, proteinGoal)
+  const stepsPercent = percent(steps, stepGoal)
   const hill = Math.round((caloriePercent + proteinPercent) / 2)
   const caloriesLeft = calorieGoal - calories
   const proteinLeft = Math.max(proteinGoal - protein, 0)
+  const stepsLeft = Math.max(stepGoal - steps, 0)
   const weightDelta = data.weightTrend.length >= 2 ? data.weightTrend[0].weight_kg - data.weightTrend[data.weightTrend.length - 1].weight_kg : null
   const checkedInToday = checkin?.date === todayIso && checkin.weight_kg !== null
 
@@ -167,13 +184,13 @@ function Dashboard() {
         <div className="space-y-5 lg:pt-0">
           <section className="space-y-3">
             <SectionTitle title="Body today" meta="Wearable + check-in" className="rise" style={delay(5)} />
+            <MacroCard label="Steps" value={steps} goal={stepGoal} unit="" tone="mint" percentValue={stepsPercent} style={delay(6)}
+              footer={<StepsFooter left={stepsLeft > 0 ? <><b className="text-cream">{stepsLeft.toLocaleString()}</b> steps to go</> : <b className="text-mint">Goal smashed</b>}
+                lastSync={formatLastSync(checkin?.wearable_synced_at)} status={syncStatus} message={syncMessage} onSync={requestSync} />} />
             <div className="grid grid-cols-2 gap-3">
               <ToneTile tone="sun" label="Weight" className="rise" style={delay(5)} doodle={<Doodle kind="scale" />}
                 value={<EditableNumber value={checkin?.weight_kg ?? null} unit="kg" max={500} step={0.1} decimals={1} ariaLabel="Weight in kilograms" onSave={saveWeight} />}
                 footer={weightDelta !== null ? `${weightDelta <= 0 ? '▼' : '▲'} ${Math.abs(weightDelta).toFixed(1)} kg trend` : 'Tap the weight to log it'} />
-              <ToneTile tone="mint" label="Steps" className="rise" style={delay(6)} doodle={<Doodle kind="steps" />}
-                value={checkin?.steps != null ? <CountUp value={checkin.steps} /> : '—'}
-                footer={<SyncFooter status={syncStatus} message={syncMessage} onSync={requestSync} />} />
               <ToneTile tone="butter" label="Active" className="rise" style={delay(7)} doodle={<Doodle kind="flame" />}
                 value={checkin?.active_calories != null ? <><CountUp value={checkin.active_calories} /><Unit>kcal</Unit></> : '—'} footer="Burned moving" />
               <ToneTile tone="lilac" label="Sleep" className="rise" style={delay(8)} doodle={<Doodle kind="moon" />}
@@ -203,24 +220,29 @@ function Dashboard() {
   )
 }
 
-function SyncFooter({ status, message, onSync }: {
+function StepsFooter({ left, lastSync, status, message, onSync }: {
+  left: React.ReactNode
+  lastSync: string | null
   status: 'idle' | 'syncing' | 'done' | 'error'
   message: string
   onSync: () => void
 }) {
   return (
-    <span className="flex items-center justify-between gap-2">
-      <span className="truncate">{message || 'From your wearable'}</span>
-      <button
-        type="button"
-        onClick={onSync}
-        disabled={status === 'syncing'}
-        aria-label="Request wearable sync"
-        title={message || 'Request wearable sync'}
-        className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-white/8 hover:text-cream disabled:opacity-60"
-      >
-        <RefreshCw className={`size-3.5 ${status === 'syncing' ? 'animate-spin' : ''}`} />
-      </button>
+    <span className="flex flex-col gap-1.5">
+      <span>{left}</span>
+      <span className="flex items-center justify-between gap-2">
+        <span className="truncate">{message || lastSync || 'Not synced yet'}</span>
+        <button
+          type="button"
+          onClick={onSync}
+          disabled={status === 'syncing'}
+          aria-label="Request wearable sync"
+          title={message || lastSync || 'Request wearable sync'}
+          className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-white/8 hover:text-cream disabled:opacity-60"
+        >
+          <RefreshCw className={`size-3.5 ${status === 'syncing' ? 'animate-spin' : ''}`} />
+        </button>
+      </span>
     </span>
   )
 }

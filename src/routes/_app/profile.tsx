@@ -15,7 +15,14 @@ import type { Profile } from '@/lib/types'
 
 export const Route = createFileRoute('/_app/profile')({ loader: () => getProfileData(), component: ProfilePage })
 
-const numericFields = new Set(['height_cm', 'weight_kg', 'age', 'calorie_goal', 'protein_goal'])
+const numericFields = new Set(['height_cm', 'weight_kg', 'age', 'calorie_goal', 'protein_goal', 'step_goal'])
+const integerFields = new Set(['age', 'calorie_goal', 'protein_goal', 'step_goal'])
+
+function toNumericField(name: string, raw: string): number | undefined {
+  const parsed = Number(raw)
+  if (!Number.isFinite(parsed)) return undefined
+  return integerFields.has(name) ? Math.round(parsed) : parsed
+}
 
 function ProfilePage() {
   const loadedProfile = Route.useLoaderData()
@@ -43,7 +50,7 @@ function ProfilePage() {
     setValues((current) => ({ ...current, [name]: value }))
   }
 
-  async function saveGoal(field: 'calorie_goal' | 'protein_goal', value: number) {
+  async function saveGoal(field: 'calorie_goal' | 'protein_goal' | 'step_goal', value: number) {
     if (!profile) throw new Error('Create a profile first')
     const payload = Object.fromEntries(
       Object.entries({ ...profile, [field]: value }).flatMap(([key, value]) => (
@@ -66,9 +73,12 @@ function ProfilePage() {
     setSaving(true)
     setStatus(undefined)
     setError(undefined)
-    const payload = Object.fromEntries(Object.entries(values).flatMap(([key, value]) => (
-      value === '' ? [] : [[key, numericFields.has(key) ? Number(value) : value]]
-    )))
+    const payload = Object.fromEntries(Object.entries(values).flatMap(([key, value]): [string, string | number][] => {
+      if (value === '') return []
+      if (!numericFields.has(key)) return [[key, value]]
+      const numeric = toNumericField(key, value)
+      return numeric === undefined ? [] : [[key, numeric]]
+    }))
 
     try {
       const response = await fetch('/api/profile', {
@@ -142,7 +152,7 @@ function ProfileMiniPages() {
 function ProfileOverview({ profile, onEdit, onSaveGoal }: {
   profile: Profile | null
   onEdit: () => void
-  onSaveGoal: (field: 'calorie_goal' | 'protein_goal', value: number) => Promise<void>
+  onSaveGoal: (field: 'calorie_goal' | 'protein_goal' | 'step_goal', value: number) => Promise<void>
 }) {
   if (!profile) {
     return (
@@ -168,9 +178,10 @@ function ProfileOverview({ profile, onEdit, onSaveGoal }: {
       </div>
     </section>
 
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       <ToneTile tone="sun" label="Calorie goal" className="rise" style={delay(2)} doodle={<Doodle kind="flame" />} value={<EditableNumber value={profile.calorie_goal} unit="kcal" max={20000} ariaLabel="Calorie goal" placeholder="Tap to set" onSave={(next) => onSaveGoal('calorie_goal', next)} />} footer="Daily target · tap to edit" />
       <ToneTile tone="mint" label="Protein goal" className="rise" style={delay(3)} doodle={<Doodle kind="protein" />} value={<EditableNumber value={profile.protein_goal} unit="g" max={2000} ariaLabel="Protein goal" placeholder="Tap to set" onSave={(next) => onSaveGoal('protein_goal', next)} />} footer="Daily target · tap to edit" />
+      <ToneTile tone="butter" label="Step goal" className="rise" style={delay(4)} doodle={<Doodle kind="steps" />} value={<EditableNumber value={profile.step_goal} unit="" max={100000} ariaLabel="Step goal" placeholder="Tap to set" onSave={(next) => onSaveGoal('step_goal', next)} />} footer="Daily target · tap to edit" />
     </div>
 
     <section className="rise space-y-4 rounded-[1.8rem] border border-white/8 bg-card p-5" style={delay(4)}>
@@ -227,9 +238,10 @@ function ProfileEditor({ values, saving, onUpdate, onSubmit, onCancel, error }: 
         <CardAction><Target className="size-5 text-primary" /></CardAction>
       </CardHeader>
       <CardPanel className="grid grid-cols-1 gap-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <ProfileField label="Calorie goal" description="Daily kcal"><Input nativeInput type="number" min="0" max="20000" step="1" inputMode="numeric" value={values.calorie_goal || ''} onChange={(event) => onUpdate('calorie_goal', event.target.value)} placeholder="2200" /></ProfileField>
           <ProfileField label="Protein goal" description="Daily grams"><Input nativeInput type="number" min="0" max="2000" step="1" inputMode="numeric" value={values.protein_goal || ''} onChange={(event) => onUpdate('protein_goal', event.target.value)} placeholder="100" /></ProfileField>
+          <ProfileField label="Step goal" description="Daily steps"><Input nativeInput type="number" min="0" max="100000" step="1" inputMode="numeric" value={values.step_goal || ''} onChange={(event) => onUpdate('step_goal', event.target.value)} placeholder="10000" /></ProfileField>
         </div>
         <ProfileField label="Goals"><Textarea rows={4} value={values.goals || ''} onChange={(event) => onUpdate('goals', event.target.value)} placeholder="Your current health and fitness goals…" /></ProfileField>
         <ProfileField label="Long-term vision"><Textarea rows={4} value={values.long_term_vision || ''} onChange={(event) => onUpdate('long_term_vision', event.target.value)} placeholder="What sustainable progress looks like to you…" /></ProfileField>

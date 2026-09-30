@@ -26,13 +26,14 @@ export const Route = createFileRoute('/api/wearable-metrics')({
         // /api/checkins which fully replaces the row. Keeps an unattended wearable sync from
         // clearing manually-entered fields like weight_kg or notes when it writes.
         const result = await db().prepare(`
-          INSERT INTO daily_checkins (date, steps, active_calories, sleep_hours, updated_at)
-          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+          INSERT INTO daily_checkins (date, steps, active_calories, sleep_hours, updated_at, wearable_synced_at)
+          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
           ON CONFLICT(date) DO UPDATE SET
             steps = COALESCE(excluded.steps, daily_checkins.steps),
             active_calories = COALESCE(excluded.active_calories, daily_checkins.active_calories),
             sleep_hours = COALESCE(excluded.sleep_hours, daily_checkins.sleep_hours),
-            updated_at = CURRENT_TIMESTAMP
+            updated_at = CURRENT_TIMESTAMP,
+            wearable_synced_at = CURRENT_TIMESTAMP
           RETURNING *
         `).bind(input.date, nullable(input.steps), nullable(input.active_calories), nullable(input.sleep_hours)).first<DailyCheckin>()
         await recordApiWrite('upsert', 'wearable_metrics', result?.id, input)

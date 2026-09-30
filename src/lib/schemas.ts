@@ -49,6 +49,7 @@ export const profileSchema = z.object({
   long_term_vision: optionalText,
   calorie_goal: z.number().int().min(0).max(20000).optional(),
   protein_goal: z.number().int().min(0).max(2000).optional(),
+  step_goal: z.number().int().min(0).max(100000).optional(),
 })
 
 export const nutritionEntrySchema = z.object({

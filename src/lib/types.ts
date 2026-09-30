@@ -9,6 +9,7 @@ export interface DailyCheckin {
   water_liters: number | null
   steps: number | null
   active_calories: number | null
+  wearable_synced_at: string | null
   protein_grams: number | null
   fat_grams: number | null
   carb_grams: number | null
@@ -42,6 +43,7 @@ export interface Profile {
   long_term_vision: string | null
   calorie_goal: number | null
   protein_goal: number | null
+  step_goal: number | null
   updated_at: string
 }
 

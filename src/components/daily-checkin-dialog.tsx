@@ -112,7 +112,7 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
     setValues((current) => ({ ...current, [name]: value }))
   }
 
-  function updateNutritionTotals(nextCheckin: DailyCheckin) {
+  async function updateNutritionTotals(nextCheckin: DailyCheckin) {
     setEditing(nextCheckin)
     setValues((current) => ({
       ...current,
@@ -121,6 +121,7 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
       fat_grams: nextCheckin.fat_grams === null ? '' : String(nextCheckin.fat_grams),
       carb_grams: nextCheckin.carb_grams === null ? '' : String(nextCheckin.carb_grams),
     }))
+    await router.invalidate()
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
