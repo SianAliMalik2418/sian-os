@@ -18,6 +18,7 @@ import { Route as AppRecipesRouteImport } from './routes/_app/recipes'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as ApiCheckinsRouteImport } from './routes/api/checkins'
 import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
+import { Route as ApiDecisionsRouteImport } from './routes/api/decisions'
 import { Route as ApiDeviceTokensRouteImport } from './routes/api/device-tokens'
 import { Route as ApiExportRouteImport } from './routes/api/export'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
@@ -33,6 +34,7 @@ import { Route as ApiWearableMetricsRouteImport } from './routes/api/wearable-me
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
 import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
 import { Route as ApiAgentStateRouteImport } from './routes/api/agent/state'
+import { Route as ApiDecisionsDecisionIdRouteImport } from './routes/api/decisions/$decisionId'
 import { Route as ApiLyftaWorkoutsRouteImport } from './routes/api/lyfta/workouts'
 import { Route as ApiNutritionEntriesEntryIdRouteImport } from './routes/api/nutrition-entries/$entryId'
 import { Route as ApiProgressPhotosPhotoIdRouteImport } from './routes/api/progress-photos/$photoId'
@@ -82,6 +84,11 @@ const ApiCheckinsRoute = ApiCheckinsRouteImport.update({
 const ApiDashboardRoute = ApiDashboardRouteImport.update({
   id: '/api/dashboard',
   path: '/api/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDecisionsRoute = ApiDecisionsRouteImport.update({
+  id: '/api/decisions',
+  path: '/api/decisions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDeviceTokensRoute = ApiDeviceTokensRouteImport.update({
@@ -159,6 +166,11 @@ const ApiAgentStateRoute = ApiAgentStateRouteImport.update({
   path: '/api/agent/state',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDecisionsDecisionIdRoute = ApiDecisionsDecisionIdRouteImport.update({
+  id: '/$decisionId',
+  path: '/$decisionId',
+  getParentRoute: () => ApiDecisionsRoute,
+} as any)
 const ApiLyftaWorkoutsRoute = ApiLyftaWorkoutsRouteImport.update({
   id: '/api/lyfta/workouts',
   path: '/api/lyfta/workouts',
@@ -202,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
+  '/api/decisions': typeof ApiDecisionsRouteWithChildren
   '/api/device-tokens': typeof ApiDeviceTokensRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
@@ -217,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
+  '/api/decisions/$decisionId': typeof ApiDecisionsDecisionIdRoute
   '/api/lyfta/workouts': typeof ApiLyftaWorkoutsRoute
   '/api/nutrition-entries/$entryId': typeof ApiNutritionEntriesEntryIdRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
@@ -232,6 +246,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
+  '/api/decisions': typeof ApiDecisionsRouteWithChildren
   '/api/device-tokens': typeof ApiDeviceTokensRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
@@ -248,6 +263,7 @@ export interface FileRoutesByTo {
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
+  '/api/decisions/$decisionId': typeof ApiDecisionsDecisionIdRoute
   '/api/lyfta/workouts': typeof ApiLyftaWorkoutsRoute
   '/api/nutrition-entries/$entryId': typeof ApiNutritionEntriesEntryIdRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
@@ -265,6 +281,7 @@ export interface FileRoutesById {
   '/_app/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
+  '/api/decisions': typeof ApiDecisionsRouteWithChildren
   '/api/device-tokens': typeof ApiDeviceTokensRoute
   '/api/export': typeof ApiExportRoute
   '/api/health': typeof ApiHealthRoute
@@ -281,6 +298,7 @@ export interface FileRoutesById {
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
+  '/api/decisions/$decisionId': typeof ApiDecisionsDecisionIdRoute
   '/api/lyfta/workouts': typeof ApiLyftaWorkoutsRoute
   '/api/nutrition-entries/$entryId': typeof ApiNutritionEntriesEntryIdRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
@@ -299,6 +317,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/api/checkins'
     | '/api/dashboard'
+    | '/api/decisions'
     | '/api/device-tokens'
     | '/api/export'
     | '/api/health'
@@ -314,6 +333,7 @@ export interface FileRouteTypes {
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
+    | '/api/decisions/$decisionId'
     | '/api/lyfta/workouts'
     | '/api/nutrition-entries/$entryId'
     | '/api/progress-photos/$photoId'
@@ -329,6 +349,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/api/checkins'
     | '/api/dashboard'
+    | '/api/decisions'
     | '/api/device-tokens'
     | '/api/export'
     | '/api/health'
@@ -345,6 +366,7 @@ export interface FileRouteTypes {
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
+    | '/api/decisions/$decisionId'
     | '/api/lyfta/workouts'
     | '/api/nutrition-entries/$entryId'
     | '/api/progress-photos/$photoId'
@@ -361,6 +383,7 @@ export interface FileRouteTypes {
     | '/_app/reports'
     | '/api/checkins'
     | '/api/dashboard'
+    | '/api/decisions'
     | '/api/device-tokens'
     | '/api/export'
     | '/api/health'
@@ -377,6 +400,7 @@ export interface FileRouteTypes {
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
+    | '/api/decisions/$decisionId'
     | '/api/lyfta/workouts'
     | '/api/nutrition-entries/$entryId'
     | '/api/progress-photos/$photoId'
@@ -389,6 +413,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ApiCheckinsRoute: typeof ApiCheckinsRoute
   ApiDashboardRoute: typeof ApiDashboardRoute
+  ApiDecisionsRoute: typeof ApiDecisionsRouteWithChildren
   ApiDeviceTokensRoute: typeof ApiDeviceTokensRoute
   ApiExportRoute: typeof ApiExportRoute
   ApiHealthRoute: typeof ApiHealthRoute
@@ -470,6 +495,13 @@ declare module '@tanstack/react-router' {
       path: '/api/dashboard'
       fullPath: '/api/dashboard'
       preLoaderRoute: typeof ApiDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/decisions': {
+      id: '/api/decisions'
+      path: '/api/decisions'
+      fullPath: '/api/decisions'
+      preLoaderRoute: typeof ApiDecisionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/device-tokens': {
@@ -577,6 +609,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgentStateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/decisions/$decisionId': {
+      id: '/api/decisions/$decisionId'
+      path: '/$decisionId'
+      fullPath: '/api/decisions/$decisionId'
+      preLoaderRoute: typeof ApiDecisionsDecisionIdRouteImport
+      parentRoute: typeof ApiDecisionsRoute
+    }
     '/api/lyfta/workouts': {
       id: '/api/lyfta/workouts'
       path: '/api/lyfta/workouts'
@@ -642,6 +681,18 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface ApiDecisionsRouteChildren {
+  ApiDecisionsDecisionIdRoute: typeof ApiDecisionsDecisionIdRoute
+}
+
+const ApiDecisionsRouteChildren: ApiDecisionsRouteChildren = {
+  ApiDecisionsDecisionIdRoute: ApiDecisionsDecisionIdRoute,
+}
+
+const ApiDecisionsRouteWithChildren = ApiDecisionsRoute._addFileChildren(
+  ApiDecisionsRouteChildren,
+)
+
 interface ApiNutritionEntriesRouteChildren {
   ApiNutritionEntriesEntryIdRoute: typeof ApiNutritionEntriesEntryIdRoute
 }
@@ -702,6 +753,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ApiCheckinsRoute: ApiCheckinsRoute,
   ApiDashboardRoute: ApiDashboardRoute,
+  ApiDecisionsRoute: ApiDecisionsRouteWithChildren,
   ApiDeviceTokensRoute: ApiDeviceTokensRoute,
   ApiExportRoute: ApiExportRoute,
   ApiHealthRoute: ApiHealthRoute,

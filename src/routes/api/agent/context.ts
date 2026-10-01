@@ -54,18 +54,25 @@ const nightlyReviewGuidance = {
   rule: "Read last night's note first to check whether its calls/adjustments were followed, then overwrite it with tonight's summary. Only one note is kept; it is not a history log.",
 }
 
+const decisionLogGuidance = {
+  source: 'GET /api/decisions (also bundled as recentDecisions below)',
+  writeEndpoint: 'POST /api/decisions with { "date": "YYYY-MM-DD", "decision": "<one line, max 300 chars>" }',
+  rule: 'Log only major, owner-confirmed pivots meant to be remembered months later: switching bulk/cut, changing the primary goal, a meaningful calorie/protein target change, a training split change. Do not log routine daily facts, minor tweaks, or anything not yet confirmed by the owner. Keep each entry to one line; this log is meant to stay short, not a daily journal.',
+}
+
 export const Route = createFileRoute('/api/agent/context')({
   server: {
     handlers: {
       GET: async () => handleApi(async () => {
         const database = db()
         const today = new Date().toISOString().slice(0, 10)
-        const [profile, dashboard, checkins, nutritionEntries, recipes, bundles] = await Promise.all([
+        const [profile, dashboard, checkins, nutritionEntries, recipes, decisions, bundles] = await Promise.all([
           database.prepare('SELECT * FROM profile WHERE id = 1').first(),
           dashboardSummary(),
           database.prepare('SELECT * FROM daily_checkins ORDER BY date DESC LIMIT 30').all(),
           database.prepare('SELECT * FROM nutrition_entries WHERE date >= date(?, \'-30 days\') ORDER BY date DESC, id DESC LIMIT 500').bind(today).all(),
           database.prepare('SELECT id, name, aliases, category, serving_description, calories, protein_grams, fat_grams, carb_grams, ingredients, notes, updated_at FROM recipes ORDER BY name COLLATE NOCASE LIMIT 500').all(),
+          database.prepare('SELECT * FROM decisions ORDER BY date DESC, id DESC LIMIT 50').all(),
           database.prepare(`
             SELECT b.id AS bundle_id, b.name AS bundle_name, b.notes AS bundle_notes, i.recipe_id, i.default_quantity, i.position, r.name AS recipe_name
             FROM recipe_bundles b
@@ -85,10 +92,12 @@ export const Route = createFileRoute('/api/agent/context')({
             recentNutritionEntries: nutritionEntries.results,
             savedRecipes: recipes.results,
             savedRecipeBundles: bundles.results,
+            recentDecisions: decisions.results,
             agent: {
               checkinWriteContract,
               weeklyReportGuidance,
               nightlyReviewGuidance,
+              decisionLogGuidance,
               recipeGuidance,
               nutritionTargetGuidance,
             },

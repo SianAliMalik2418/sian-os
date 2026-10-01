@@ -1,5 +1,5 @@
 import { z, type ZodType } from 'zod'
-import { checkinSchema, dateSchema, nutritionEntrySchema, profileSchema, recipeBundleSchema, recipeSchema, wearableMetricsSchema } from '@/lib/schemas'
+import { checkinSchema, dateSchema, decisionSchema, nutritionEntrySchema, profileSchema, recipeBundleSchema, recipeSchema, wearableMetricsSchema } from '@/lib/schemas'
 
 const empty = z.object({}).strict()
 
@@ -39,6 +39,9 @@ const getLyftaWorkoutsArgs = z.object({
   page: z.number().int().min(1).optional(),
 }).strict()
 
+const getDecisionsArgs = z.object({ limit: z.number().int().min(1).max(200).optional() }).strict()
+const deleteDecisionArgs = z.object({ decisionId: z.number().int().min(1) }).strict()
+
 const agentStateKey = z.enum(['last_weekly_report_date', 'last_nightly_review_note'])
 const getAgentStateArgs = z.object({ key: agentStateKey.optional() }).strict()
 const saveAgentStateArgs = z.object({
@@ -75,7 +78,7 @@ function query(params: Record<string, string | number | undefined>) {
 export const tools: Tool[] = [
   {
     name: 'get_agent_context',
-    description: 'Get the full daily coaching context in one call: profile and nutrition goals, dashboard summary, recent check-ins, recent nutrition entries, saved recipes, saved recipe bundles, and agent workflow guidance (write contracts, recipe-matching rules, weekly report cadence). Call this first in a new conversation to load current context.',
+    description: 'Get the full daily coaching context in one call: profile and nutrition goals, dashboard summary, recent check-ins, recent nutrition entries, saved recipes, saved recipe bundles, the standing decision log, and agent workflow guidance (write contracts, recipe-matching rules, weekly report cadence). Call this first in a new conversation to load current context.',
     argsSchema: empty,
     buildRequest: () => ({ method: 'GET', path: '/api/agent/context' }),
   },
@@ -216,6 +219,24 @@ export const tools: Tool[] = [
     description: 'Save agent cadence state. Use last_weekly_report_date (YYYY-MM-DD) immediately after giving a weekly report. Use last_nightly_review_note (free text, max 2000 chars) after a nightly review to summarize the calls/adjustments made, so the next nightly review can check whether they were followed.',
     argsSchema: saveAgentStateArgs,
     buildRequest: (args: z.infer<typeof saveAgentStateArgs>) => ({ method: 'PUT', path: '/api/agent/state', body: args }),
+  },
+  {
+    name: 'get_decisions',
+    description: 'Get the standing decision log: major confirmed calls like switching bulk/cut, changing the primary goal, a meaningful calorie/protein target change, or a training split change. This is a short durable history, not a daily activity log — pass limit to bound it (default 50, max 200).',
+    argsSchema: getDecisionsArgs,
+    buildRequest: (args: z.infer<typeof getDecisionsArgs>) => ({ method: 'GET', path: `/api/decisions${query({ limit: args.limit })}` }),
+  },
+  {
+    name: 'save_decision',
+    description: "Record one major, owner-confirmed decision (date plus a one-line summary, max 300 chars). Use this only for significant pivots worth remembering months later, such as switching from bulk to cut, changing the primary goal, a meaningful calorie/protein target change, or a training split change. Do not log routine daily facts, minor tweaks, or anything not yet confirmed by the owner — this log is meant to stay short.",
+    argsSchema: decisionSchema,
+    buildRequest: (args: z.infer<typeof decisionSchema>) => ({ method: 'POST', path: '/api/decisions', body: args }),
+  },
+  {
+    name: 'delete_decision',
+    description: 'Delete one decision log entry by id, for example to correct a mistaken entry. Ask for confirmation before calling this.',
+    argsSchema: deleteDecisionArgs,
+    buildRequest: (args: z.infer<typeof deleteDecisionArgs>) => ({ method: 'DELETE', path: `/api/decisions/${args.decisionId}` }),
   },
 ]
 

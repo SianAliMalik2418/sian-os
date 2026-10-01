@@ -36,6 +36,11 @@ export const wearableMetricsSchema = z.object({
 
 export const deviceTokenSchema = z.object({ token: z.string().min(10).max(4096) }).strict()
 
+export const decisionSchema = z.object({
+  date,
+  decision: z.string().trim().min(1).max(300),
+}).strict()
+
 export const profileSchema = z.object({
   height_cm: z.number().positive().max(300).optional(),
   weight_kg: z.number().positive().max(500).optional(),

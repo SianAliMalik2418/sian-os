@@ -29,6 +29,13 @@ export interface DevicePushToken {
   updated_at: string
 }
 
+export interface Decision {
+  id: number
+  date: string
+  decision: string
+  created_at: string
+}
+
 export interface Profile {
   id: number
   height_cm: number | null

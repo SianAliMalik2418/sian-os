@@ -41,7 +41,7 @@ Before fitness coaching, coaching-related product changes, wellness interpretati
 
 Lyfta remains the upstream workout tracker, but Sian OS now proxies read-only Lyfta workout data through `/api/lyfta/workouts`. GPTs and agents should call Sian OS, not Lyfta directly. Sian OS may store reviewer-facing Lyfta summaries in the daily check-in `workout_text` field.
 
-Sian OS owns check-ins, sleep hours, body weight, waist, water, itemized nutrition entries, derived daily macro totals, profile goals, saved recipes, saved recipe bundles, reports, agent state, and progress photos.
+Sian OS owns check-ins, sleep hours, body weight, waist, water, itemized nutrition entries, derived daily macro totals, profile goals, saved recipes, saved recipe bundles, reports, agent state, the decision log, and progress photos.
 
 ## Fitness role routing
 
@@ -55,7 +55,7 @@ Coach rules:
 
 - read Sian OS records and Lyfta evidence;
 - do not inspect or modify source code during a fitness operation;
-- do not write, edit, or delete operational Sian OS records;
+- do not write, edit, or delete operational Sian OS records, with one exception: write a one-line entry to `/api/decisions` immediately after the owner explicitly confirms a major pivot (see "Decision log" below);
 - give one evidence-based verdict and one next action;
 - update `docs/FITNESS_COACHING_CONTEXT.md` only after a new coaching decision is explicitly confirmed.
 
@@ -130,6 +130,7 @@ Read endpoints:
 - `GET /api/recipe-bundles`
 - `GET /api/lyfta/workouts?limit=20&page=1`
 - `GET /api/reports?interval=daily|weekly|monthly&from=YYYY-MM-DD&to=YYYY-MM-DD`
+- `GET /api/decisions?limit=50`: the standing decision log (see "Decision log" below).
 
 Write endpoints:
 
@@ -145,6 +146,13 @@ Write endpoints:
 - `POST /api/device-tokens`: upsert a device's FCM push token by `fcm_token`, used by the "Sian OS Sync" Android app to register for remote sync pushes. Requires `Authorization: Bearer <MCP_API_KEY>` when that secret is set, same as `/api/wearable-metrics`.
 - `POST /api/sync-request`: no auth (same public-app rationale as every other route); triggers a silent FCM push asking the Android app to sync now. Returns `{ requested: <count> }` so the UI can tell whether any device is registered.
 - `POST /api/export`: create a production backup.
+- `POST /api/decisions`, `DELETE /api/decisions/{decisionId}`: manage the standing decision log (see "Decision log" below).
+
+### Decision log
+
+`decisions` is a short, standing history of major owner-confirmed pivots the Coach can write during a normal conversation, without a coding session: switching bulk/cut, changing the primary goal, a meaningful calorie/protein target change, a training split change. Each entry is `date` plus a one-line `decision` (max 300 chars) and is meant to stay short, not become a daily journal — do not log routine daily facts, minor tweaks, or anything not yet confirmed by the owner. `GET /api/agent/context` already bundles the most recent 50 entries as `recentDecisions`, so read context first rather than calling `/api/decisions` separately.
+
+This is distinct from the dated decision-log table inside `docs/FITNESS_COACHING_CONTEXT.md`: that one is the deep, narrative record (decision + consequence + superseded markers) maintained during a coding session per "Coaching document maintenance" below. When a decision is big enough to change active coaching rules or guidance, do both — write the one-liner to `/api/decisions` immediately for the live record, and update the markdown document the next time a coding session touches this repo.
 
 Routine food logging must use `/api/nutrition-entries`, not `nutrition_notes`. Each entry needs `date`, `item_name`, and `calories`, with optional `protein_grams`, `fat_grams`, and `carb_grams`.
 
