@@ -24,6 +24,15 @@ function toNumericField(name: string, raw: string): number | undefined {
   return integerFields.has(name) ? Math.round(parsed) : parsed
 }
 
+type ApiErrorResult = { error?: { message?: string; details?: { fieldErrors?: Record<string, string[]> } } }
+
+function errorMessageFrom(result: ApiErrorResult, fallback: string) {
+  const fieldErrors = result.error?.details?.fieldErrors
+  const entries = fieldErrors ? Object.entries(fieldErrors).filter(([, messages]) => messages.length) : []
+  if (entries.length) return entries.map(([field, messages]) => `${field}: ${messages.join(', ')}`).join('; ')
+  return result.error?.message || fallback
+}
+
 function ProfilePage() {
   const loadedProfile = Route.useLoaderData()
   const [profile, setProfile] = useState(loadedProfile)
@@ -62,8 +71,8 @@ function ProfilePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    const result = await response.json() as { data?: Profile; error?: { message?: string } }
-    if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not save goal')
+    const result = await response.json() as { data?: Profile } & ApiErrorResult
+    if (!response.ok || !result.data) throw new Error(errorMessageFrom(result, 'Could not save goal'))
     setProfile(result.data)
     setValues(valuesFromProfile(result.data))
   }
@@ -86,8 +95,8 @@ function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      const result = await response.json() as { data?: Profile; error?: { message?: string } }
-      if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not save profile')
+      const result = await response.json() as { data?: Profile } & ApiErrorResult
+      if (!response.ok || !result.data) throw new Error(errorMessageFrom(result, 'Could not save profile'))
       setProfile(result.data)
       setValues(valuesFromProfile(result.data))
       setEditing(false)

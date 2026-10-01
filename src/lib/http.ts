@@ -1,4 +1,11 @@
-import { ZodError } from 'zod'
+import { config, locales, ZodError } from 'zod'
+
+// zod sets its detailed English error messages via a side-effecting config(en()) call on import,
+// but zod's package.json declares sideEffects: false, so production bundlers (Rollup via `vite
+// build`) can tree-shake that call away. When that happens every zod issue falls back to the
+// terse core locale ("Invalid input" for everything), which is what the Workers build was
+// actually shipping. Force it explicitly here so detailed messages survive the production build.
+config(locales.en())
 
 export class HttpError extends Error {
   constructor(
