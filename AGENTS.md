@@ -41,7 +41,7 @@ Before fitness coaching, coaching-related product changes, wellness interpretati
 
 Lyfta remains the upstream workout tracker, but Sian OS now proxies read-only Lyfta workout data through `/api/lyfta/workouts`. GPTs and agents should call Sian OS, not Lyfta directly. Sian OS may store reviewer-facing Lyfta summaries in the daily check-in `workout_text` field.
 
-Sian OS owns check-ins, sleep hours, body weight, waist, water, itemized nutrition entries, derived daily macro totals, profile goals, saved recipes, saved recipe bundles, reports, agent state, the decision log, and progress photos.
+Sian OS owns check-ins, body weight, waist, water, steps, active calories, itemized nutrition entries, derived daily macro totals, profile goals, saved recipes, saved recipe bundles, reports, agent state, the decision log, and progress photos.
 
 ## Fitness role routing
 
@@ -105,10 +105,11 @@ Error response:
 Units and formats:
 
 - dates: `YYYY-MM-DD`;
-- sleep: numeric hours;
 - weight: kilograms;
 - waist: inches;
 - water: liters;
+- steps: count;
+- active calories: estimated kcal burned moving;
 - protein, fats, and carbs: grams;
 - calories: estimated kcal.
 
@@ -142,9 +143,6 @@ Write endpoints:
 - `POST /api/recipes`, `PUT /api/recipes/{recipeId}`, `DELETE /api/recipes/{recipeId}`: manage one-serving saved recipes.
 - `POST /api/recipe-bundles`, `PUT /api/recipe-bundles/{bundleId}`, `DELETE /api/recipe-bundles/{bundleId}`: manage saved meal templates.
 - `PUT /api/agent/state`: update `last_weekly_report_date` (`YYYY-MM-DD`) after giving a weekly report, or `last_nightly_review_note` (free text, max 2000 chars) after a nightly review. No other keys are accepted.
-- `POST /api/wearable-metrics`: partial upsert of `steps`, `active_calories`, and/or `sleep_hours` by date, synced from a wearable device (see "Wearable data" below). Unlike `/api/checkins`, this only touches the fields present in the request and never clears the rest of that day's check-in. Requires `Authorization: Bearer <MCP_API_KEY>` when that secret is set.
-- `POST /api/device-tokens`: upsert a device's FCM push token by `fcm_token`, used by the "Sian OS Sync" Android app to register for remote sync pushes. Requires `Authorization: Bearer <MCP_API_KEY>` when that secret is set, same as `/api/wearable-metrics`.
-- `POST /api/sync-request`: no auth (same public-app rationale as every other route); triggers a silent FCM push asking the Android app to sync now. Returns `{ requested: <count> }` so the UI can tell whether any device is registered.
 - `POST /api/export`: create a production backup.
 - `POST /api/decisions`, `DELETE /api/decisions/{decisionId}`: manage the standing decision log (see "Decision log" below).
 
@@ -167,8 +165,7 @@ Saved recipe bundles are quick templates. When logging a bundle, expand it into 
 - Tool definitions live in `src/lib/mcp/tools.ts`. Each tool validates arguments with the same Zod schemas the REST API uses (`src/lib/schemas.ts`) and proxies to the matching REST endpoint over `fetch`, so there is one source of truth for request shape and one place implementing the write logic.
 - The JSON-RPC/Streamable HTTP handler lives in `src/routes/api/mcp.ts`. It supports `initialize`, `tools/list`, and `tools/call`, and returns empty `resources/list`/`prompts/list` for client compatibility. It does not implement SSE server push or session resumability; both are optional in the MCP spec and unnecessary for a single-owner stateless tool server.
 - When adding, removing, or renaming an API endpoint or its request shape, update the matching tool in `src/lib/mcp/tools.ts` in the same change so MCP tools stay in sync with the API without a second manually maintained schema.
-- Auth: set the `MCP_API_KEY` secret in production (`wrangler secret put MCP_API_KEY`) and send it as `Authorization: Bearer <key>` from the MCP client. If the secret is unset, the endpoint accepts unauthenticated requests; only acceptable for local development, since MCP tools include writes and deletes. The same secret also gates `POST /api/wearable-metrics` directly (used by the "Sian OS Sync" Android app's wearable sync, not just MCP clients).
-- The sync-push feature (`src/lib/fcm.ts`, backing `POST /api/sync-request`) needs three more Worker secrets set via `wrangler secret put <NAME>`: `FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY`. Without all three, `/api/sync-request` fails with `FCM_NOT_CONFIGURED`; setting them in production is owner-only setup, not yet done as of this change.
+- Auth: set the `MCP_API_KEY` secret in production (`wrangler secret put MCP_API_KEY`) and send it as `Authorization: Bearer <key>` from the MCP client. If the secret is unset, the endpoint accepts unauthenticated requests; only acceptable for local development, since MCP tools include writes and deletes.
 
 Connect from Claude:
 
@@ -237,10 +234,10 @@ Do not put daily operational data in the coaching context when it belongs in Sia
 - The app remains mobile-first but must work cleanly on laptop and desktop.
 - Use Coss UI and shared app components where they already exist.
 - Mood and readiness do not belong in the UI, API, types, or database.
-- Sleep is logged as numeric hours, not separate sleep/wake fields.
-- Waist and water are legacy fields: the database and `/api/checkins` still store them, but the check-in UI, dashboard, Reports page, and MCP tools no longer show or request them. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
-- Sleep hours are shown again on the dashboard and Reports page, but as a wearable-synced field via `/api/wearable-metrics`, not a manual check-in input; the check-in dialog itself still has no sleep field. See `docs/FITNESS_COACHING_CONTEXT.md` Wearable data.
-- Steps and active calories come only from `/api/wearable-metrics` (wearable sync); there is no manual input for them in the check-in dialog.
+- Sleep is removed entirely: no `sleep_time`/`wake_time`/`sleep_hours` fields in the UI, API schemas, types, MCP tools, dashboard, or Reports page. The database columns are gone from `DailyCheckin`; do not reintroduce them without the owner explicitly asking.
+- Water is a legacy field: the database and `/api/checkins` still store it, but the check-in UI, dashboard, Reports page, and MCP tools no longer show or request it. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
+- Waist, steps, and active calories are manual check-in dialog inputs (alongside weight). There is no wearable sync pipeline: `/api/wearable-metrics`, `/api/device-tokens`, `/api/sync-request`, and `src/lib/fcm.ts` do not exist; steps and active calories are logged manually only.
+- The dashboard shows only the single weight widget (`ToneTile` + inline-editable value); there are no separate steps/active-calories/sleep widgets.
 - Fats and carbs are legacy nutrition fields: the database and API still store `fat_grams`/`carb_grams` on check-ins, nutrition entries, and recipes, but the nutrition tracker, check-in UI, dashboard, Reports page, and MCP tool descriptions no longer show or request them. Daily nutrition focus is calories and protein only. See `docs/FITNESS_COACHING_CONTEXT.md` Legacy features.
 - Do not rebuild Sian OS as a competing workout tracker.
 - Reports are derived from source records.

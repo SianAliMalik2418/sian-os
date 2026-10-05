@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { aggregateReports, buildDailyReports, reportAverages } from './reports'
 
 const daily = buildDailyReports([
-  { date: '2026-07-27', weight_kg: 70, waist_inches: 31, sleep_hours: 7, water_liters: 2, steps: 8000, active_calories: 400, protein_grams: 120, fat_grams: 70, carb_grams: 250, calories: 2200 },
-  { date: '2026-07-28', weight_kg: 71, waist_inches: null, sleep_hours: 8, water_liters: null, steps: null, active_calories: null, protein_grams: null, fat_grams: null, carb_grams: null, calories: null },
-  { date: '2026-08-02', weight_kg: 72, waist_inches: 31.5, sleep_hours: 6, water_liters: 3, steps: 10000, active_calories: 500, protein_grams: 140, fat_grams: 80, carb_grams: 300, calories: 2600 },
+  { date: '2026-07-27', weight_kg: 70, waist_inches: 31, water_liters: 2, steps: 8000, active_calories: 400, protein_grams: 120, fat_grams: 70, carb_grams: 250, calories: 2200 },
+  { date: '2026-07-28', weight_kg: 71, waist_inches: null, water_liters: null, steps: null, active_calories: null, protein_grams: null, fat_grams: null, carb_grams: null, calories: null },
+  { date: '2026-08-02', weight_kg: 72, waist_inches: 31.5, water_liters: 3, steps: 10000, active_calories: 500, protein_grams: 140, fat_grams: 80, carb_grams: 300, calories: 2600 },
 ])
 
 describe('reports', () => {
@@ -27,6 +27,6 @@ describe('reports', () => {
   })
 
   it('calculates summary averages without treating missing values as zero', () => {
-    expect(reportAverages(daily)).toMatchObject({ weight_kg: 71, waist_inches: 31.25, sleep_hours: 7, fat_grams: 75, carb_grams: 275, calories: 2400, checkins: 3 })
+    expect(reportAverages(daily)).toMatchObject({ weight_kg: 71, waist_inches: 31.25, fat_grams: 75, carb_grams: 275, calories: 2400, checkins: 3 })
   })
 })

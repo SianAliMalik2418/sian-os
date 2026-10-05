@@ -1,13 +1,13 @@
 import { z, type ZodType } from 'zod'
-import { checkinSchema, dateSchema, decisionSchema, nutritionEntrySchema, profileSchema, recipeBundleSchema, recipeSchema, wearableMetricsSchema } from '@/lib/schemas'
+import { checkinSchema, dateSchema, decisionSchema, nutritionEntrySchema, profileSchema, recipeBundleSchema, recipeSchema } from '@/lib/schemas'
 
 const empty = z.object({}).strict()
 
-// Sleep, waist, and water are legacy check-in fields; fats and carbs are legacy nutrition
-// fields (see docs/FITNESS_COACHING_CONTEXT.md Legacy features). The REST API and database
-// still accept and return them unchanged, but MCP tools intentionally do not advertise them
+// Water is a legacy check-in field; fats and carbs are legacy nutrition fields (see
+// docs/FITNESS_COACHING_CONTEXT.md Legacy features). The REST API and database still
+// accept and return them unchanged, but MCP tools intentionally do not advertise them
 // as writable so agents do not start asking about or logging them again.
-const saveCheckinArgs = checkinSchema.omit({ waist_inches: true, sleep_hours: true, water_liters: true, fat_grams: true, carb_grams: true })
+const saveCheckinArgs = checkinSchema.omit({ water_liters: true, fat_grams: true, carb_grams: true })
 const addNutritionEntryArgs = nutritionEntrySchema.omit({ fat_grams: true, carb_grams: true })
 const createRecipeArgs = recipeSchema.omit({ fat_grams: true, carb_grams: true })
 
@@ -99,12 +99,6 @@ export const tools: Tool[] = [
     description: 'Create or update a daily check-in by date (upsert). This is a full upsert: omitted optional fields are cleared, so call get_checkins for that date first and pass through any existing confirmed values you want to keep. Use nutrition entry tools for itemized food instead of this.',
     argsSchema: saveCheckinArgs,
     buildRequest: (args: z.infer<typeof saveCheckinArgs>) => ({ method: 'POST', path: '/api/checkins', body: args }),
-  },
-  {
-    name: 'save_wearable_metrics',
-    description: 'Record steps, active calories, and/or sleep hours synced from a wearable device for one date. Partial upsert: only the fields you pass are changed, everything else on that day is left alone. Use this to correct a bad wearable sync, not for manually-estimated data.',
-    argsSchema: wearableMetricsSchema,
-    buildRequest: (args: z.infer<typeof wearableMetricsSchema>) => ({ method: 'POST', path: '/api/wearable-metrics', body: args }),
   },
   {
     name: 'delete_checkin',

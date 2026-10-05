@@ -21,14 +21,3 @@ export function calculateDailyStreak(rows: Array<{ date: string }>, now = new Da
   }
   return streak
 }
-
-export function calculateSleepHours(sleepTime: string, wakeTime: string) {
-  const toMinutes = (value: string) => {
-    const [hours, minutes] = value.split(':').map(Number)
-    return hours * 60 + minutes
-  }
-  const sleepMinutes = toMinutes(sleepTime)
-  let wakeMinutes = toMinutes(wakeTime)
-  if (wakeMinutes <= sleepMinutes) wakeMinutes += 24 * 60
-  return Math.round(((wakeMinutes - sleepMinutes) / 60) * 100) / 100
-}

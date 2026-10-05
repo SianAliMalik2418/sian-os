@@ -36,7 +36,7 @@ export const getProgressPhotos = createServerFn({ method: 'GET' }).handler(async
 
 export const getReportsData = createServerFn({ method: 'GET' }).handler(async () => {
   disableCaching()
-  const checkins = await db().prepare('SELECT date, weight_kg, waist_inches, sleep_hours, water_liters, steps, active_calories, protein_grams, fat_grams, carb_grams, calories FROM daily_checkins ORDER BY date').all<DailyCheckin>()
+  const checkins = await db().prepare('SELECT date, weight_kg, waist_inches, water_liters, steps, active_calories, protein_grams, fat_grams, carb_grams, calories FROM daily_checkins ORDER BY date').all<DailyCheckin>()
   return buildDailyReports(checkins.results)
 })
 

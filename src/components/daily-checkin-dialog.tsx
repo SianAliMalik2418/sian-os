@@ -13,7 +13,7 @@ import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offl
 import type { CheckinInput } from '@/lib/schemas'
 import type { DailyCheckin, Profile } from '@/lib/types'
 
-const numericFields = ['weight_kg', 'waist_inches', 'sleep_hours', 'water_liters', 'protein_grams', 'fat_grams', 'carb_grams', 'calories'] as const
+const numericFields = ['weight_kg', 'waist_inches', 'water_liters', 'steps', 'active_calories', 'protein_grams', 'fat_grams', 'carb_grams', 'calories'] as const
 const today = () => new Date().toISOString().slice(0, 10)
 
 const DailyCheckinDialogContext = createContext<{ openCheckin: (date?: string) => void } | null>(null)
@@ -182,7 +182,7 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
                 {editing && <Badge variant="success"><Check /> Saved</Badge>}
                 {pendingCount > 0 && <Badge variant="warning">{pendingCount} offline</Badge>}
               </div>
-              <DialogDescription>Weight and meals for one day. Steps, active calories, and sleep sync from your wearable.</DialogDescription>
+              <DialogDescription>Weight, waist, steps, active calories, and meals for one day.</DialogDescription>
             </DialogHeader>
 
             <DialogPanel className="grid grid-cols-1 gap-5">
@@ -194,6 +194,15 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
                 </CheckinField>
                 <CheckinField label="Weight" description="Kilograms">
                   <Input nativeInput type="number" min="0" step="0.1" inputMode="decimal" placeholder="72.4" value={values.weight_kg || ''} onChange={(event) => update('weight_kg', event.target.value)} />
+                </CheckinField>
+                <CheckinField label="Waist" description="Inches">
+                  <Input nativeInput type="number" min="0" step="0.1" inputMode="decimal" placeholder="31.5" value={values.waist_inches || ''} onChange={(event) => update('waist_inches', event.target.value)} />
+                </CheckinField>
+                <CheckinField label="Steps">
+                  <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="8000" value={values.steps || ''} onChange={(event) => update('steps', event.target.value)} />
+                </CheckinField>
+                <CheckinField label="Active calories" description="Kcal burned moving">
+                  <Input nativeInput type="number" min="0" step="1" inputMode="numeric" placeholder="400" value={values.active_calories || ''} onChange={(event) => update('active_calories', event.target.value)} />
                 </CheckinField>
               </div>
 
@@ -226,7 +235,7 @@ function valuesFromCheckin(existing: DailyCheckin | null, date = today()) {
   const values: Record<string, string> = { date }
   if (!existing) return values
   for (const [key, value] of Object.entries(existing)) {
-    if (value !== null && value !== undefined && !['id', 'created_at', 'updated_at', 'sleep_time', 'wake_time', 'steps', 'active_calories'].includes(key)) values[key] = String(value)
+    if (value !== null && value !== undefined && !['id', 'created_at', 'updated_at'].includes(key)) values[key] = String(value)
   }
   return values
 }

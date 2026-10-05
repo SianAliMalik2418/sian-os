@@ -3,13 +3,9 @@ export interface DailyCheckin {
   date: string
   weight_kg: number | null
   waist_inches: number | null
-  sleep_time: string | null
-  wake_time: string | null
-  sleep_hours: number | null
   water_liters: number | null
   steps: number | null
   active_calories: number | null
-  wearable_synced_at: string | null
   protein_grams: number | null
   fat_grams: number | null
   carb_grams: number | null
@@ -17,14 +13,6 @@ export interface DailyCheckin {
   nutrition_notes: string | null
   workout_text: string | null
   notes: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface DevicePushToken {
-  id: number
-  fcm_token: string
-  platform: string
   created_at: string
   updated_at: string
 }

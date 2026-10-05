@@ -343,8 +343,8 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Estimated calories and protein by food item | Sian OS nutrition entries |
 | Repeat recipe macros and aliases | Sian OS saved recipes |
 | Repeat meal templates | Sian OS saved recipe bundles |
-| Waist and water | Sian personally, outside Sian OS (legacy check-in fields; see Legacy features) |
-| Steps, active calories, and sleep hours | Sian OS, synced automatically from a wearable device (see Wearable data) |
+| Water | Sian personally, outside Sian OS (legacy check-in field; see Legacy features) |
+| Waist, steps, and active calories | Sian OS daily check-in (manual entry only; no wearable sync) |
 | Fats and carbs | Not tracked (legacy nutrition fields; see Legacy features) |
 | Reviewer-facing workout notes derived from Lyfta | Sian OS daily check-in workout textarea |
 | Progress photos | Sian OS check-in dialog/R2 |
@@ -356,27 +356,17 @@ Do not make Sian OS a competing workout log. The daily logger should copy a usef
 
 ## Legacy features
 
-Waist measurement, water intake, fats, and carbs are legacy Sian OS daily check-in/nutrition fields. Sian chose to stop logging waist/water daily because he tracks them himself, and chose to stop tracking fats/carbs to focus daily nutrition coaching on calories and protein only.
+Water intake, fats, and carbs are legacy Sian OS daily check-in/nutrition fields. Sian chose to stop logging water daily because he tracks it himself, and chose to stop tracking fats/carbs to focus daily nutrition coaching on calories and protein only.
 
-- The database columns and API fields for `waist_inches`, `water_liters`, `fat_grams`, and `carb_grams` (on check-ins, nutrition entries, and recipes) still exist and continue to accept and return data, so historical records and any future manual API write remain intact.
+- The database columns and API fields for `water_liters`, `fat_grams`, and `carb_grams` (on check-ins, nutrition entries, and recipes) still exist and continue to accept and return data, so historical records and any future manual API write remain intact.
 - The check-in dialog, dashboard, and Reports UI no longer show inputs, cards, charts, or table columns for these fields.
 - MCP tool descriptions no longer ask about, extract, or send these fields; do not reintroduce them into agent-facing daily logging or coaching evidence.
 - Daily and weekly nutrition coaching now runs on calories and protein only.
 - If Sian asks to bring one of these back into daily coaching evidence, treat it as a new confirmed decision and update this document together rather than assuming the old behavior still applies.
 
-`sleep_hours` was legacy under this same reasoning until 2026-09-28, when it became a live wearable-synced field again — see Wearable data below. It is no longer part of this legacy group.
+`waist_inches` was legacy under this same reasoning until 2026-10-05, when it became a manual check-in field again. `sleep_hours` was legacy, then briefly a wearable-synced field, and as of 2026-10-05 is removed entirely (no database column, API field, UI, or MCP tool support anywhere). It is not part of this legacy group — it no longer exists at all.
 
-## Wearable data
-
-As of 2026-09-28, a Xiaomi Smart Band 10 is the source for daily `steps`, `active_calories`, and `sleep_hours`.
-
-- Pipeline: Mi Fitness syncs the band's data into Android Health Connect; a purpose-built Android app ("Sian OS Sync", source in the sibling `sian-os-wearable-sync` project, not this repo) reads Health Connect hourly via WorkManager and pushes it to Sian OS via `POST /api/wearable-metrics`. Tasker was the original plan but was replaced by this custom app before launch.
-- A dashboard sync button that pushes a remote wake-up to the app via Firebase Cloud Messaging is in progress (see `sian-os-wearable-sync` project); until that lands, syncing only happens on the hourly background job or manually opening the app.
-- Sian OS is the store of record for these fields once synced; Health Connect and Mi Fitness are not queried directly by agents.
-- `/api/wearable-metrics` is a partial upsert by date — it only changes the fields present in a given sync and never clears the rest of that day's check-in, unlike `/api/checkins`.
-- `sleep_hours` is populated by this sync now, not manual entry; the check-in dialog still has no sleep input.
-- Stress is not captured. Xiaomi does not expose stress data outside the Mi Fitness app, on Health Connect or otherwise, so there is no ingestion path for it.
-- These are wearable facts, not coaching evidence by default: use them in Coach analysis the same way as any other Sian OS record, but treat gaps (a day with no wearable sync) as missing data, not zero.
+The wearable sync pipeline (Xiaomi Smart Band 10 → Mi Fitness → Android Health Connect → the "Sian OS Sync" Android app → `POST /api/wearable-metrics`) that briefly supplied `steps`, `active_calories`, and `sleep_hours` was removed on 2026-10-05. `steps` and `active_calories` are manual check-in dialog fields now, logged by Sian directly; there is no wearable data source, no device-token registration, and no sync-push feature in this repo.
 
 ## Two-agent coaching workflow
 
@@ -550,3 +540,5 @@ These references support the standing targets but do not replace individualized 
 | 2026-09-17 | Sleep hours, waist, and water become legacy Sian OS check-in fields; Sian tracks them himself instead of logging them daily. | The check-in UI, dashboard, and Reports page no longer show these fields; the Custom GPT Instructions and Knowledge files no longer ask about or extract them. The database/API fields remain unchanged for historical data and any future manual write. Superseded on 2026-09-28 for `sleep_hours` only: it becomes a live wearable-synced field again. |
 | 2026-09-28 | Add a Xiaomi Smart Band 10 as a wearable data source for steps, active calories, and sleep, synced via Mi Fitness → Android Health Connect → a custom "Sian OS Sync" Android app → `POST /api/wearable-metrics`. | `sleep_hours` is reactivated as an auto-synced field (no longer legacy) and steps/active calories are new fields, all shown again on the dashboard and Reports page. Stress is not captured; Xiaomi does not expose it outside the Mi Fitness app. Tasker was the original plan but was replaced by the custom app before launch since Tasker wasn't installable on the owner's phone. |
 | 2026-09-21 | Fats and carbs become legacy nutrition fields; Sian wants daily nutrition coaching to focus on calories and protein only. | The nutrition entry tracker, check-in dialog, dashboard, and Reports page no longer show fat/carb inputs, totals, charts, or table columns; the Custom GPT Instructions and Knowledge files no longer ask about or extract them. The database/API fields for `fat_grams`/`carb_grams` on check-ins, nutrition entries, and recipes remain unchanged for historical data and any future manual write. |
+| 2026-10-05 | Remove sleep entirely (dashboard widget, Reports widget/chart/table column, check-in API schema, `DailyCheckin` type, MCP tools, wearable-metrics endpoint) and add waist, steps, and active calories as manual check-in dialog fields. The dashboard body-metrics section is consolidated to a single weight-style widget; the separate steps/active/sleep widgets are removed. | Supersedes the 2026-09-17/2026-09-28 sleep decisions. Database columns `sleep_time`/`wake_time`/`sleep_hours` are left in place per the append-only migration rule but are no longer read or written anywhere in the app. |
+| 2026-10-05 | Remove the entire wearable sync pipeline: `/api/wearable-metrics`, `/api/device-tokens`, `/api/sync-request`, `src/lib/fcm.ts`, the `save_wearable_metrics` MCP tool, and the FCM Worker secrets. | Same-day follow-up to the sleep removal above. Sian is logging steps and active calories himself in the check-in dialog and no longer wants the Xiaomi Smart Band/Mi Fitness/Health Connect/"Sian OS Sync" Android app pipeline from 2026-09-28. `device_push_tokens` table and `wearable_synced_at`/`fcm_*` database columns are left in place per the append-only migration rule but are unused. |

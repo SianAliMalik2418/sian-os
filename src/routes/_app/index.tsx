@@ -1,12 +1,12 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Flame, Pencil, RefreshCw } from 'lucide-react'
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { Flame, Pencil } from 'lucide-react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
 import { EditableNumber } from '@/components/sunrise/editable-number'
 import { DaySun, Doodle, SunriseScene } from '@/components/sunrise/illustrations'
 import { LyftaSessionCard } from '@/components/sunrise/lyfta-session-card'
-import { CountUp, Page, SectionTitle, StripeBar, ToneTile, Unit } from '@/components/sunrise/primitives'
+import { CountUp, Page, SectionTitle, StripeBar, ToneTile } from '@/components/sunrise/primitives'
 import { getCoachNote, getDashboardData, getLatestLyftaWorkout } from '@/lib/app.functions'
 import type { LyftaWorkout } from '@/lib/lyfta'
 import type { DailyCheckin } from '@/lib/types'
@@ -25,19 +25,6 @@ function percent(value: number | null | undefined, goal: number) {
   return value && goal > 0 ? Math.min((value / goal) * 100, 100) : 0
 }
 
-function formatLastSync(value: string | null | undefined) {
-  if (!value) return null
-  const iso = value.includes('T') ? value : `${value.replace(' ', 'T')}Z`
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return null
-  const diffMin = Math.round((Date.now() - date.getTime()) / 60000)
-  if (diffMin < 1) return 'Synced just now'
-  if (diffMin < 60) return `Synced ${diffMin}m ago`
-  const diffHr = Math.round(diffMin / 60)
-  if (diffHr < 24) return `Synced ${diffHr}h ago`
-  return `Synced ${date.toLocaleDateString('en', { month: 'short', day: 'numeric', timeZone: 'UTC' })}`
-}
-
 function greetingFor(hour: number) {
   if (hour < 5) return 'Up late'
   if (hour < 12) return 'Morning'
@@ -52,12 +39,8 @@ function Dashboard() {
   const [checkin, setCheckin] = useState(data.checkin)
   const [workout, setWorkout] = useState<LyftaWorkout | null>(null)
   const [greeting, setGreeting] = useState('Hey')
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle')
-  const [syncMessage, setSyncMessage] = useState('')
-  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const calorieGoal = data.profile?.calorie_goal || 2200
   const proteinGoal = data.profile?.protein_goal || 100
-  const stepGoal = data.profile?.step_goal || 10000
   const todayIso = new Date().toISOString().slice(0, 10)
   const completedDays = new Set(data.weeklyCheckins.map((item) => item.date))
   const weekDays = Array.from({ length: 7 }, (_, index) => {
@@ -69,14 +52,11 @@ function Dashboard() {
 
   const calories = checkin?.calories ?? 0
   const protein = checkin?.protein_grams ?? 0
-  const steps = checkin?.steps ?? 0
   const caloriePercent = percent(calories, calorieGoal)
   const proteinPercent = percent(protein, proteinGoal)
-  const stepsPercent = percent(steps, stepGoal)
   const hill = Math.round((caloriePercent + proteinPercent) / 2)
   const caloriesLeft = calorieGoal - calories
   const proteinLeft = Math.max(proteinGoal - protein, 0)
-  const stepsLeft = Math.max(stepGoal - steps, 0)
   const weightDelta = data.weightTrend.length >= 2 ? data.weightTrend[0].weight_kg - data.weightTrend[data.weightTrend.length - 1].weight_kg : null
   const checkedInToday = checkin?.date === todayIso && checkin.weight_kg !== null
 
@@ -92,34 +72,9 @@ function Dashboard() {
     await router.invalidate()
   }
 
-  async function requestSync() {
-    setSyncStatus('syncing')
-    setSyncMessage('')
-    try {
-      const response = await fetch('/api/sync-request', { method: 'POST' })
-      const result = await response.json() as { data?: { requested: number }; error?: { message?: string } }
-      if (!response.ok || !result.data) throw new Error(result.error?.message || 'Could not request sync')
-      setSyncStatus('done')
-      setSyncMessage(result.data.requested === 0 ? 'No device registered yet' : 'Sync requested')
-      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
-      syncTimeoutRef.current = setTimeout(() => {
-        router.invalidate()
-      }, 8000)
-    } catch (error) {
-      setSyncStatus('error')
-      setSyncMessage(error instanceof Error ? error.message : 'Could not request sync')
-    }
-  }
-
   useEffect(() => {
     setCheckin(data.checkin)
   }, [data.checkin])
-
-  useEffect(() => {
-    return () => {
-      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
-    }
-  }, [])
 
   useEffect(() => {
     setGreeting(greetingFor(new Date().getHours()))
@@ -183,19 +138,10 @@ function Dashboard() {
 
         <div className="space-y-5 lg:pt-0">
           <section className="space-y-3">
-            <SectionTitle title="Body today" meta="Wearable + check-in" className="rise" style={delay(5)} />
-            <MacroCard label="Steps" value={steps} goal={stepGoal} unit="" tone="mint" percentValue={stepsPercent} style={delay(6)}
-              footer={<StepsFooter left={stepsLeft > 0 ? <><b className="text-cream">{stepsLeft.toLocaleString()}</b> steps to go</> : <b className="text-mint">Goal smashed</b>}
-                lastSync={formatLastSync(checkin?.wearable_synced_at)} status={syncStatus} message={syncMessage} onSync={requestSync} />} />
-            <div className="grid grid-cols-2 gap-3">
-              <ToneTile tone="sun" label="Weight" className="rise" style={delay(5)} doodle={<Doodle kind="scale" />}
-                value={<EditableNumber value={checkin?.weight_kg ?? null} unit="kg" max={500} step={0.1} decimals={1} ariaLabel="Weight in kilograms" onSave={saveWeight} />}
-                footer={weightDelta !== null ? `${weightDelta <= 0 ? '▼' : '▲'} ${Math.abs(weightDelta).toFixed(1)} kg trend` : 'Tap the weight to log it'} />
-              <ToneTile tone="butter" label="Active" className="rise" style={delay(7)} doodle={<Doodle kind="flame" />}
-                value={checkin?.active_calories != null ? <><CountUp value={checkin.active_calories} /><Unit>kcal</Unit></> : '—'} footer="Burned moving" />
-              <ToneTile tone="lilac" label="Sleep" className="rise" style={delay(8)} doodle={<Doodle kind="moon" />}
-                value={checkin?.sleep_hours != null ? <><CountUp value={checkin.sleep_hours} decimals={1} /><Unit>hrs</Unit></> : '—'} footer="Last night" />
-            </div>
+            <SectionTitle title="Body today" meta="Check-in" className="rise" style={delay(5)} />
+            <ToneTile tone="sun" label="Weight" className="rise" style={delay(5)} doodle={<Doodle kind="scale" />}
+              value={<EditableNumber value={checkin?.weight_kg ?? null} unit="kg" max={500} step={0.1} decimals={1} ariaLabel="Weight in kilograms" onSave={saveWeight} />}
+              footer={weightDelta !== null ? `${weightDelta <= 0 ? '▼' : '▲'} ${Math.abs(weightDelta).toFixed(1)} kg trend` : 'Tap the weight to log it'} />
           </section>
 
           {workout && <LyftaSessionCard workout={workout} className="rise" />}
@@ -217,33 +163,6 @@ function Dashboard() {
         await router.invalidate()
       }} />
     </Page>
-  )
-}
-
-function StepsFooter({ left, lastSync, status, message, onSync }: {
-  left: React.ReactNode
-  lastSync: string | null
-  status: 'idle' | 'syncing' | 'done' | 'error'
-  message: string
-  onSync: () => void
-}) {
-  return (
-    <span className="flex flex-col gap-1.5">
-      <span>{left}</span>
-      <span className="flex items-center justify-between gap-2">
-        <span className="truncate">{message || lastSync || 'Not synced yet'}</span>
-        <button
-          type="button"
-          onClick={onSync}
-          disabled={status === 'syncing'}
-          aria-label="Request wearable sync"
-          title={message || lastSync || 'Request wearable sync'}
-          className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-white/8 hover:text-cream disabled:opacity-60"
-        >
-          <RefreshCw className={`size-3.5 ${status === 'syncing' ? 'animate-spin' : ''}`} />
-        </button>
-      </span>
-    </span>
   )
 }
 

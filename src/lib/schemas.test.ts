@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkinSchema, deviceTokenSchema, nutritionEntrySchema, profileSchema, recipeSchema } from './schemas'
+import { checkinSchema, nutritionEntrySchema, profileSchema, recipeSchema } from './schemas'
 
 describe('daily check-in schema', () => {
   it('accepts the streamlined daily fields', () => {
@@ -7,8 +7,9 @@ describe('daily check-in schema', () => {
       date: '2026-07-30',
       weight_kg: 80,
       waist_inches: 31.5,
-      sleep_hours: 7.5,
       water_liters: 2.5,
+      steps: 8000,
+      active_calories: 400,
       protein_grams: 150,
       fat_grams: 70,
       carb_grams: 300,
@@ -16,7 +17,7 @@ describe('daily check-in schema', () => {
       nutrition_notes: 'Breakfast: eggs\nLunch: daal\nDinner: chicken',
       workout_text: 'Lower re-entry session logged in Lyfta',
       notes: 'Good day',
-    })).toMatchObject({ date: '2026-07-30', waist_inches: 31.5, sleep_hours: 7.5, fat_grams: 70, carb_grams: 300 })
+    })).toMatchObject({ date: '2026-07-30', waist_inches: 31.5, steps: 8000, active_calories: 400, fat_grams: 70, carb_grams: 300 })
   })
 
   it('accepts decimal daily nutrition totals from itemized foods', () => {
@@ -29,12 +30,8 @@ describe('daily check-in schema', () => {
     })).toMatchObject({ calories: 1.5, protein_grams: 1.5, fat_grams: 1.5, carb_grams: 1.5 })
   })
 
-  it.each(['sleep_time', 'wake_time', 'sleep_quality', 'energy', 'motivation', 'recovery', 'soreness', 'stress', 'mood'])('rejects removed field %s', (field) => {
+  it.each(['sleep_time', 'wake_time', 'sleep_hours', 'sleep_quality', 'energy', 'motivation', 'recovery', 'soreness', 'stress', 'mood'])('rejects removed field %s', (field) => {
     expect(() => checkinSchema.parse({ date: '2026-07-30', [field]: 5 })).toThrow()
-  })
-
-  it('rejects impossible sleep hours', () => {
-    expect(() => checkinSchema.parse({ date: '2026-07-30', sleep_hours: 25 })).toThrow()
   })
 })
 
@@ -73,20 +70,6 @@ describe('recipe schema', () => {
       fat_grams: 5,
       carb_grams: 1,
     })).toMatchObject({ name: 'Egg', calories: 100, protein_grams: 6, fat_grams: 5, carb_grams: 1 })
-  })
-})
-
-describe('device token schema', () => {
-  it('accepts a valid token', () => {
-    expect(deviceTokenSchema.parse({ token: 'a'.repeat(20) })).toMatchObject({ token: 'a'.repeat(20) })
-  })
-
-  it('rejects a too-short token', () => {
-    expect(() => deviceTokenSchema.parse({ token: 'short' })).toThrow()
-  })
-
-  it('rejects extra fields', () => {
-    expect(() => deviceTokenSchema.parse({ token: 'a'.repeat(20), platform: 'android' })).toThrow()
   })
 })
 

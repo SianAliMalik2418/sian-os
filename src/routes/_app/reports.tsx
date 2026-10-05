@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Flame, Footprints, Moon, Pencil, Scale, Trash2, Utensils } from 'lucide-react'
+import { Flame, Footprints, Pencil, Scale, Trash2, Utensils } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useMemo, useState, type CSSProperties } from 'react'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
@@ -22,7 +22,7 @@ import { aggregateReports, reportAverages, type DailyReportPoint } from '@/lib/r
 export const Route = createFileRoute('/_app/reports')({ loader: () => getReportsData(), component: ReportsPage })
 
 type Interval = 'daily' | 'weekly' | 'monthly'
-type MetricKey = 'weight_kg' | 'protein_grams' | 'calories' | 'steps' | 'active_calories' | 'sleep_hours'
+type MetricKey = 'weight_kg' | 'protein_grams' | 'calories' | 'steps' | 'active_calories'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -128,7 +128,6 @@ function ReportsPage() {
         <ToneTile tone="butter" label="Avg calories" className="rise" style={{ '--d': 5 } as CSSProperties} doodle={<Doodle kind="flame" />} value={<Metric value={summary.calories} unit="kcal" whole />} />
         <ToneTile tone="mint" label="Avg steps" className="rise" style={{ '--d': 6 } as CSSProperties} doodle={<Doodle kind="steps" />} value={<Metric value={summary.steps} unit="" whole />} />
         <ToneTile tone="butter" label="Avg active" className="rise" style={{ '--d': 7 } as CSSProperties} value={<Metric value={summary.active_calories} unit="kcal" whole />} />
-        <ToneTile tone="lilac" label="Avg sleep" className="rise" style={{ '--d': 8 } as CSSProperties} doodle={<Doodle kind="moon" />} value={<Metric value={summary.sleep_hours} unit="hrs" />} />
       </div>
 
       <section className="space-y-4">
@@ -144,7 +143,6 @@ function ReportsPage() {
             <MetricChart title="Calories" description="Estimated daily intake" icon={Flame} tone="butter" data={chartPoints} dataKey="calories" color="red" suffix=" kcal" kind="bar" />
             <MetricChart title="Steps" description="From wearable sync" icon={Footprints} tone="mint" data={chartPoints} dataKey="steps" color="green" suffix="" kind="bar" />
             <MetricChart title="Active calories" description="Burned moving, from wearable sync" icon={Flame} tone="butter" data={chartPoints} dataKey="active_calories" color="orange" suffix=" kcal" kind="bar" />
-            <MetricChart title="Sleep" description="Hours from wearable sync" icon={Moon} tone="lilac" data={chartPoints} dataKey="sleep_hours" color="purple" suffix=" hrs" kind="line" />
           </div>
         ) : (
           <EmptyRange />
@@ -169,7 +167,6 @@ function ReportsPage() {
                 <LogChip tone="text-butter" value={formatMetric(point.calories, '')} label="kcal" />
                 <LogChip tone="text-mint" value={formatMetric(point.steps, '')} label="steps" />
                 <LogChip tone="text-butter" value={formatMetric(point.active_calories, '')} label="active" />
-                <LogChip tone="text-lilac" value={formatMetric(point.sleep_hours, 'h')} label="sleep" />
               </div>
             </article>
           ))}
@@ -178,8 +175,8 @@ function ReportsPage() {
 
         <div className="hidden overflow-hidden rounded-[1.8rem] border border-white/8 bg-card lg:block">
           <table className="w-full text-sm">
-            <thead className="border-b border-white/8 text-left text-xs font-extrabold tracking-wide text-muted-foreground uppercase"><tr><th className="px-5 py-4">Period</th><th className="px-4 py-4">Check-ins</th><th className="px-4 py-4">Weight</th><th className="px-4 py-4">Protein</th><th className="px-4 py-4">Calories</th><th className="px-4 py-4">Steps</th><th className="px-4 py-4">Active cal</th><th className="px-4 py-4">Sleep</th>{interval === 'daily' && <th className="px-5 py-4 text-right">Actions</th>}</tr></thead>
-            <tbody>{points.map((point) => <tr key={point.period} className="border-b border-white/6 font-semibold last:border-0 hover:bg-white/3"><td className="px-5 py-3.5 font-extrabold text-cream">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3.5 tabular-nums">{point.checkins}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.calories, ' kcal')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.steps, '')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.active_calories, ' kcal')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.sleep_hours, ' hrs')}</td>{interval === 'daily' && <td className="px-5 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive-foreground"><Trash2 /></Button></div></td>}</tr>)}</tbody>
+            <thead className="border-b border-white/8 text-left text-xs font-extrabold tracking-wide text-muted-foreground uppercase"><tr><th className="px-5 py-4">Period</th><th className="px-4 py-4">Check-ins</th><th className="px-4 py-4">Weight</th><th className="px-4 py-4">Protein</th><th className="px-4 py-4">Calories</th><th className="px-4 py-4">Steps</th><th className="px-4 py-4">Active cal</th>{interval === 'daily' && <th className="px-5 py-4 text-right">Actions</th>}</tr></thead>
+            <tbody>{points.map((point) => <tr key={point.period} className="border-b border-white/6 font-semibold last:border-0 hover:bg-white/3"><td className="px-5 py-3.5 font-extrabold text-cream">{formatPeriod(point.period, interval)}</td><td className="px-4 py-3.5 tabular-nums">{point.checkins}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.weight_kg, ' kg')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.protein_grams, ' g')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.calories, ' kcal')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.steps, '')}</td><td className="px-4 py-3.5 tabular-nums">{formatMetric(point.active_calories, ' kcal')}</td>{interval === 'daily' && <td className="px-5 py-2"><div className="flex justify-end gap-1"><Button type="button" size="icon-sm" variant="ghost" onClick={() => openCheckin(point.period)} aria-label={`Edit check-in for ${point.period}`}><Pencil /></Button><Button type="button" size="icon-sm" variant="ghost" onClick={() => setDeleteDate(point.period)} aria-label={`Delete check-in for ${point.period}`} className="text-destructive-foreground"><Trash2 /></Button></div></td>}</tr>)}</tbody>
           </table>
           {!points.length && <p className="py-10 text-center text-sm font-semibold text-muted-foreground">No rows to display.</p>}
         </div>
