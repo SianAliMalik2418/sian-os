@@ -10,7 +10,7 @@ import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offline-checkins'
-import type { CheckinInput } from '@/lib/schemas'
+import { checkinSchema, type CheckinInput } from '@/lib/schemas'
 import type { DailyCheckin, Profile } from '@/lib/types'
 
 const numericFields = ['weight_kg', 'waist_inches', 'water_liters', 'steps', 'active_calories', 'protein_grams', 'fat_grams', 'carb_grams', 'calories'] as const
@@ -231,11 +231,13 @@ function isOfflineSave(error: unknown) {
   return (typeof navigator !== 'undefined' && !navigator.onLine) || error instanceof TypeError
 }
 
+const checkinFields = new Set(Object.keys(checkinSchema.shape))
+
 function valuesFromCheckin(existing: DailyCheckin | null, date = today()) {
   const values: Record<string, string> = { date }
   if (!existing) return values
   for (const [key, value] of Object.entries(existing)) {
-    if (value !== null && value !== undefined && !['id', 'created_at', 'updated_at'].includes(key)) values[key] = String(value)
+    if (value !== null && value !== undefined && checkinFields.has(key)) values[key] = String(value)
   }
   return values
 }
