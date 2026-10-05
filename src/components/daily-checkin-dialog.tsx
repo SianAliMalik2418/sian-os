@@ -13,7 +13,11 @@ import { queueCheckin, readQueuedCheckins, syncQueuedCheckins } from '@/lib/offl
 import { checkinSchema, type CheckinInput } from '@/lib/schemas'
 import type { DailyCheckin, Profile } from '@/lib/types'
 
-const numericFields = ['weight_kg', 'waist_inches', 'water_liters', 'steps', 'active_calories', 'protein_grams', 'fat_grams', 'carb_grams', 'calories'] as const
+const numericFields = ['weight_kg', 'waist_inches', 'water_liters', 'steps', 'active_calories'] as const
+// calories/protein_grams/fat_grams/carb_grams are owned entirely by the nutrition entry sync
+// (see syncDailyNutritionTotals); this form has no inputs for them and must never submit them,
+// or it would overwrite freshly-synced totals with a stale snapshot on every full-upsert save.
+const derivedNutritionFields = new Set(['calories', 'protein_grams', 'fat_grams', 'carb_grams'])
 const today = () => new Date().toISOString().slice(0, 10)
 
 const DailyCheckinDialogContext = createContext<{ openCheckin: (date?: string) => void } | null>(null)
@@ -114,13 +118,6 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
 
   async function updateNutritionTotals(nextCheckin: DailyCheckin) {
     setEditing(nextCheckin)
-    setValues((current) => ({
-      ...current,
-      calories: nextCheckin.calories === null ? '' : String(nextCheckin.calories),
-      protein_grams: nextCheckin.protein_grams === null ? '' : String(nextCheckin.protein_grams),
-      fat_grams: nextCheckin.fat_grams === null ? '' : String(nextCheckin.fat_grams),
-      carb_grams: nextCheckin.carb_grams === null ? '' : String(nextCheckin.carb_grams),
-    }))
     await router.invalidate()
   }
 
@@ -139,7 +136,7 @@ export function DailyCheckinDialogProvider({ existing, profile, children }: { ex
 
     const numeric = new Set<string>(numericFields)
     const payload = Object.fromEntries(Object.entries(values).flatMap(([key, value]) => {
-      if (value === '') return []
+      if (derivedNutritionFields.has(key) || value === '') return []
       return [[key, numeric.has(key) ? Number(value) : value]]
     })) as CheckinInput
 
@@ -237,7 +234,7 @@ function valuesFromCheckin(existing: DailyCheckin | null, date = today()) {
   const values: Record<string, string> = { date }
   if (!existing) return values
   for (const [key, value] of Object.entries(existing)) {
-    if (value !== null && value !== undefined && checkinFields.has(key)) values[key] = String(value)
+    if (value !== null && value !== undefined && checkinFields.has(key) && !derivedNutritionFields.has(key)) values[key] = String(value)
   }
   return values
 }
