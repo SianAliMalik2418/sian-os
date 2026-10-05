@@ -20,6 +20,7 @@ import { Route as ApiCheckinsRouteImport } from './routes/api/checkins'
 import { Route as ApiDashboardRouteImport } from './routes/api/dashboard'
 import { Route as ApiDecisionsRouteImport } from './routes/api/decisions'
 import { Route as ApiExportRouteImport } from './routes/api/export'
+import { Route as ApiGoalPhasesRouteImport } from './routes/api/goal-phases'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as ApiNutritionEntriesRouteImport } from './routes/api/nutrition-entries'
@@ -28,6 +29,7 @@ import { Route as ApiProgressPhotosRouteImport } from './routes/api/progress-pho
 import { Route as ApiRecipeBundlesRouteImport } from './routes/api/recipe-bundles'
 import { Route as ApiRecipesRouteImport } from './routes/api/recipes'
 import { Route as ApiReportsRouteImport } from './routes/api/reports'
+import { Route as AppProfilePhasesRouteImport } from './routes/_app/profile.phases'
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
 import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
 import { Route as ApiAgentStateRouteImport } from './routes/api/agent/state'
@@ -93,6 +95,11 @@ const ApiExportRoute = ApiExportRouteImport.update({
   path: '/api/export',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGoalPhasesRoute = ApiGoalPhasesRouteImport.update({
+  id: '/api/goal-phases',
+  path: '/api/goal-phases',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
@@ -132,6 +139,11 @@ const ApiReportsRoute = ApiReportsRouteImport.update({
   id: '/api/reports',
   path: '/api/reports',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppProfilePhasesRoute = AppProfilePhasesRouteImport.update({
+  id: '/phases',
+  path: '/phases',
+  getParentRoute: () => AppProfileRoute,
 } as any)
 const ApiAgentContextRoute = ApiAgentContextRouteImport.update({
   id: '/api/agent/context',
@@ -191,13 +203,14 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/gallery': typeof AppGalleryRoute
   '/lyfta': typeof AppLyftaRoute
-  '/profile': typeof AppProfileRoute
+  '/profile': typeof AppProfileRouteWithChildren
   '/recipes': typeof AppRecipesRoute
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
   '/api/decisions': typeof ApiDecisionsRouteWithChildren
   '/api/export': typeof ApiExportRoute
+  '/api/goal-phases': typeof ApiGoalPhasesRoute
   '/api/health': typeof ApiHealthRoute
   '/api/mcp': typeof ApiMcpRoute
   '/api/nutrition-entries': typeof ApiNutritionEntriesRouteWithChildren
@@ -206,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/profile/phases': typeof AppProfilePhasesRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
@@ -220,13 +234,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/gallery': typeof AppGalleryRoute
   '/lyfta': typeof AppLyftaRoute
-  '/profile': typeof AppProfileRoute
+  '/profile': typeof AppProfileRouteWithChildren
   '/recipes': typeof AppRecipesRoute
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
   '/api/decisions': typeof ApiDecisionsRouteWithChildren
   '/api/export': typeof ApiExportRoute
+  '/api/goal-phases': typeof ApiGoalPhasesRoute
   '/api/health': typeof ApiHealthRoute
   '/api/mcp': typeof ApiMcpRoute
   '/api/nutrition-entries': typeof ApiNutritionEntriesRouteWithChildren
@@ -236,6 +251,7 @@ export interface FileRoutesByTo {
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
   '/': typeof AppIndexRoute
+  '/profile/phases': typeof AppProfilePhasesRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
@@ -252,13 +268,14 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_app/gallery': typeof AppGalleryRoute
   '/_app/lyfta': typeof AppLyftaRoute
-  '/_app/profile': typeof AppProfileRoute
+  '/_app/profile': typeof AppProfileRouteWithChildren
   '/_app/recipes': typeof AppRecipesRoute
   '/_app/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
   '/api/dashboard': typeof ApiDashboardRoute
   '/api/decisions': typeof ApiDecisionsRouteWithChildren
   '/api/export': typeof ApiExportRoute
+  '/api/goal-phases': typeof ApiGoalPhasesRoute
   '/api/health': typeof ApiHealthRoute
   '/api/mcp': typeof ApiMcpRoute
   '/api/nutrition-entries': typeof ApiNutritionEntriesRouteWithChildren
@@ -268,6 +285,7 @@ export interface FileRoutesById {
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/profile/phases': typeof AppProfilePhasesRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
@@ -292,6 +310,7 @@ export interface FileRouteTypes {
     | '/api/dashboard'
     | '/api/decisions'
     | '/api/export'
+    | '/api/goal-phases'
     | '/api/health'
     | '/api/mcp'
     | '/api/nutrition-entries'
@@ -300,6 +319,7 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/profile/phases'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
@@ -321,6 +341,7 @@ export interface FileRouteTypes {
     | '/api/dashboard'
     | '/api/decisions'
     | '/api/export'
+    | '/api/goal-phases'
     | '/api/health'
     | '/api/mcp'
     | '/api/nutrition-entries'
@@ -330,6 +351,7 @@ export interface FileRouteTypes {
     | '/api/recipes'
     | '/api/reports'
     | '/'
+    | '/profile/phases'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
@@ -352,6 +374,7 @@ export interface FileRouteTypes {
     | '/api/dashboard'
     | '/api/decisions'
     | '/api/export'
+    | '/api/goal-phases'
     | '/api/health'
     | '/api/mcp'
     | '/api/nutrition-entries'
@@ -361,6 +384,7 @@ export interface FileRouteTypes {
     | '/api/recipes'
     | '/api/reports'
     | '/_app/'
+    | '/_app/profile/phases'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
@@ -379,6 +403,7 @@ export interface RootRouteChildren {
   ApiDashboardRoute: typeof ApiDashboardRoute
   ApiDecisionsRoute: typeof ApiDecisionsRouteWithChildren
   ApiExportRoute: typeof ApiExportRoute
+  ApiGoalPhasesRoute: typeof ApiGoalPhasesRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMcpRoute: typeof ApiMcpRoute
   ApiNutritionEntriesRoute: typeof ApiNutritionEntriesRouteWithChildren
@@ -472,6 +497,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiExportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/goal-phases': {
+      id: '/api/goal-phases'
+      path: '/api/goal-phases'
+      fullPath: '/api/goal-phases'
+      preLoaderRoute: typeof ApiGoalPhasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/health': {
       id: '/api/health'
       path: '/api/health'
@@ -527,6 +559,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/reports'
       preLoaderRoute: typeof ApiReportsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/profile/phases': {
+      id: '/_app/profile/phases'
+      path: '/phases'
+      fullPath: '/profile/phases'
+      preLoaderRoute: typeof AppProfilePhasesRouteImport
+      parentRoute: typeof AppProfileRoute
     }
     '/api/agent/context': {
       id: '/api/agent/context'
@@ -601,10 +640,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppProfileRouteChildren {
+  AppProfilePhasesRoute: typeof AppProfilePhasesRoute
+}
+
+const AppProfileRouteChildren: AppProfileRouteChildren = {
+  AppProfilePhasesRoute: AppProfilePhasesRoute,
+}
+
+const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
+  AppProfileRouteChildren,
+)
+
 interface AppRouteChildren {
   AppGalleryRoute: typeof AppGalleryRoute
   AppLyftaRoute: typeof AppLyftaRoute
-  AppProfileRoute: typeof AppProfileRoute
+  AppProfileRoute: typeof AppProfileRouteWithChildren
   AppRecipesRoute: typeof AppRecipesRoute
   AppReportsRoute: typeof AppReportsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -613,7 +664,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppGalleryRoute: AppGalleryRoute,
   AppLyftaRoute: AppLyftaRoute,
-  AppProfileRoute: AppProfileRoute,
+  AppProfileRoute: AppProfileRouteWithChildren,
   AppRecipesRoute: AppRecipesRoute,
   AppReportsRoute: AppReportsRoute,
   AppIndexRoute: AppIndexRoute,
@@ -695,6 +746,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDashboardRoute: ApiDashboardRoute,
   ApiDecisionsRoute: ApiDecisionsRouteWithChildren,
   ApiExportRoute: ApiExportRoute,
+  ApiGoalPhasesRoute: ApiGoalPhasesRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiMcpRoute: ApiMcpRoute,
   ApiNutritionEntriesRoute: ApiNutritionEntriesRouteWithChildren,

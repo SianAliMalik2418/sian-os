@@ -4,7 +4,7 @@
 >
 > Owner: Sian Malik
 >
-> Last updated: 2026-09-21
+> Last updated: 2026-10-05
 >
 > Status: Active
 
@@ -215,6 +215,8 @@ Sian wants the nutrition approach aligned with Peter Khatcherian's physique-buil
 
 ### Active nutrition phase
 
+Sian OS now tracks the active phase as a structured record (`goal_phases`: phase type, optional weekly kg target, start date) via `GET /api/goal-phases` and `GET /api/agent/context`'s `activeGoalPhase`, instead of only this prose section. This structured record is the current phase mechanism (cut/bulk/recomp/maintain/lean_gain with a concrete weekly target); the long-term 2027 lean-gain vision in `profile.long_term_vision` stays the durable destination it is phased toward. Treat the live `activeGoalPhase` record as authoritative for the current phase; update this section when the phase itself changes, not just the record.
+
 The active default remains controlled lean gain unless Sian and the coach explicitly change phase.
 
 Controlled lean gain means:
@@ -340,6 +342,7 @@ Consequences are corrective, not punitive: identify the trigger, prepare the env
 | Daily body weight when measured | Sian OS daily check-in |
 | Protein and calories | Sian OS nutrition entries, then derived Sian OS daily check-in totals |
 | Daily calorie and protein targets | Sian OS profile |
+| Active structured goal phase (type, optional weekly kg target, note) | Sian OS `goal_phases` |
 | Estimated calories and protein by food item | Sian OS nutrition entries |
 | Repeat recipe macros and aliases | Sian OS saved recipes |
 | Repeat meal templates | Sian OS saved recipe bundles |
@@ -542,3 +545,4 @@ These references support the standing targets but do not replace individualized 
 | 2026-09-21 | Fats and carbs become legacy nutrition fields; Sian wants daily nutrition coaching to focus on calories and protein only. | The nutrition entry tracker, check-in dialog, dashboard, and Reports page no longer show fat/carb inputs, totals, charts, or table columns; the Custom GPT Instructions and Knowledge files no longer ask about or extract them. The database/API fields for `fat_grams`/`carb_grams` on check-ins, nutrition entries, and recipes remain unchanged for historical data and any future manual write. |
 | 2026-10-05 | Remove sleep entirely (dashboard widget, Reports widget/chart/table column, check-in API schema, `DailyCheckin` type, MCP tools, wearable-metrics endpoint) and add waist, steps, and active calories as manual check-in dialog fields. The dashboard body-metrics section is consolidated to a single weight-style widget; the separate steps/active/sleep widgets are removed. | Supersedes the 2026-09-17/2026-09-28 sleep decisions. Database columns `sleep_time`/`wake_time`/`sleep_hours` are left in place per the append-only migration rule but are no longer read or written anywhere in the app. |
 | 2026-10-05 | Remove the entire wearable sync pipeline: `/api/wearable-metrics`, `/api/device-tokens`, `/api/sync-request`, `src/lib/fcm.ts`, the `save_wearable_metrics` MCP tool, and the FCM Worker secrets. | Same-day follow-up to the sleep removal above. Sian is logging steps and active calories himself in the check-in dialog and no longer wants the Xiaomi Smart Band/Mi Fitness/Health Connect/"Sian OS Sync" Android app pipeline from 2026-09-28. `device_push_tokens` table and `wearable_synced_at`/`fcm_*` database columns are left in place per the append-only migration rule but are unused. |
+| 2026-10-05 | Add a structured, swappable active goal phase (`goal_phases` table: phase type, optional weekly kg target, note, start/end dates) distinct from the long-term lean-gain vision in `profile.long_term_vision`. | `POST /api/goal-phases` starts a new phase and automatically closes the current one; `GET /api/goal-phases`, `GET /api/dashboard`, and `GET /api/agent/context` expose it as `activeGoalPhase`. Starting a phase is a confirmed-pivot action with the same confirmation bar as `/api/decisions`. The dashboard shows the active phase next to the weight trend so Sian can compare actual vs. target; `/profile/phases` manages history. |

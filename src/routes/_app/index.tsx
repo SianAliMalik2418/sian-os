@@ -1,15 +1,16 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Flame, Pencil } from 'lucide-react'
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
+import { Flame, Pencil, Target } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { NutritionEntryTracker } from '@/components/nutrition-entry-tracker'
+import { phaseLabels, useChangePhaseDialog } from '@/components/phase-dialog-provider'
 import { EditableNumber } from '@/components/sunrise/editable-number'
 import { DaySun, Doodle, SunriseScene } from '@/components/sunrise/illustrations'
 import { LyftaSessionCard } from '@/components/sunrise/lyfta-session-card'
 import { CountUp, Page, SectionTitle, StripeBar, ToneTile } from '@/components/sunrise/primitives'
 import { getCoachNote, getDashboardData, getLatestLyftaWorkout } from '@/lib/app.functions'
 import type { LyftaWorkout } from '@/lib/lyfta'
-import type { DailyCheckin } from '@/lib/types'
+import type { DailyCheckin, DashboardSummary } from '@/lib/types'
 
 export const Route = createFileRoute('/_app/')({
   loader: async () => {
@@ -36,6 +37,7 @@ function Dashboard() {
   const data = Route.useLoaderData()
   const router = useRouter()
   const { openCheckin } = useDailyCheckinDialog()
+  const { openPhaseDialog } = useChangePhaseDialog()
   const [checkin, setCheckin] = useState(data.checkin)
   const [workout, setWorkout] = useState<LyftaWorkout | null>(null)
   const [greeting, setGreeting] = useState('Hey')
@@ -144,6 +146,8 @@ function Dashboard() {
               footer={weightDelta !== null ? `${weightDelta <= 0 ? '▼' : '▲'} ${Math.abs(weightDelta).toFixed(1)} kg trend` : 'Tap the weight to log it'} />
           </section>
 
+          <PhaseCard phase={data.activeGoalPhase} weightDelta={weightDelta} onStartPhase={openPhaseDialog} />
+
           {workout && <LyftaSessionCard workout={workout} className="rise" />}
 
           {data.coachNote && (
@@ -185,5 +189,51 @@ function MacroCard({ label, value, goal, unit, tone, percentValue, footer, style
       <StripeBar value={percentValue} tone={tone} className="mt-3" />
       <p className="mt-2.5 text-sm font-semibold text-muted-foreground">{footer}</p>
     </div>
+  )
+}
+
+function daysSince(dateIso: string) {
+  const started = new Date(`${dateIso}T00:00:00.000Z`).getTime()
+  const now = new Date().setUTCHours(0, 0, 0, 0)
+  return Math.max(Math.round((now - started) / 86400000), 0)
+}
+
+function PhaseCard({ phase, weightDelta, onStartPhase }: {
+  phase: DashboardSummary['activeGoalPhase']
+  weightDelta: number | null
+  onStartPhase: () => void
+}) {
+  if (!phase) {
+    return (
+      <section className="rise rounded-[1.8rem] border border-dashed border-white/12 bg-card p-5" style={delay(6)}>
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-lilac/15"><Target className="size-5 text-lilac" strokeWidth={2.4} /></span>
+          <div className="min-w-0 flex-1">
+            <p className="font-extrabold text-cream">No active phase</p>
+            <p className="text-sm font-semibold text-muted-foreground">Set a current cut/bulk/recomp phase and weekly target.</p>
+          </div>
+        </div>
+        <button type="button" onClick={onStartPhase} className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-cream px-4 py-2.5 text-sm font-extrabold text-[#1d1330]">Start a phase</button>
+      </section>
+    )
+  }
+
+  const label = phaseLabels[phase.phase_type] ?? phase.phase_type
+  const target = phase.target_rate_kg_per_week === null
+    ? 'No numeric target'
+    : `${phase.target_rate_kg_per_week > 0 ? '+' : ''}${phase.target_rate_kg_per_week} kg/week`
+  const days = daysSince(phase.started_at)
+
+  return (
+    <Link to="/profile/phases" className="rise block rounded-[1.8rem] border border-white/8 bg-card p-5 transition-colors hover:bg-dusk-high" style={delay(6)}>
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="font-bold text-muted-foreground">Phase</p>
+        <p className="text-xl leading-none font-extrabold tracking-tight text-cream">{label}</p>
+      </div>
+      <p className="mt-2 text-sm font-semibold text-muted-foreground">{target} target · day {days}</p>
+      {weightDelta !== null && (
+        <p className="mt-1 text-sm font-semibold text-muted-foreground">Actual trend: {weightDelta <= 0 ? '▼' : '▲'} {Math.abs(weightDelta).toFixed(1)} kg</p>
+      )}
+    </Link>
   )
 }

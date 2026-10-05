@@ -30,6 +30,13 @@ export const decisionSchema = z.object({
   decision: z.string().trim().min(1).max(300),
 }).strict()
 
+export const goalPhaseSchema = z.object({
+  phase_type: z.enum(['lean_gain', 'bulk', 'cut', 'recomp', 'maintain']),
+  target_rate_kg_per_week: z.number().min(-5).max(5).optional(),
+  note: optionalText,
+  started_at: date,
+}).strict()
+
 export const profileSchema = z.object({
   height_cm: z.number().positive().max(300).optional(),
   weight_kg: z.number().positive().max(500).optional(),
@@ -82,3 +89,4 @@ export type CheckinInput = z.infer<typeof checkinSchema>
 export type NutritionEntryInput = z.infer<typeof nutritionEntrySchema>
 export type RecipeInput = z.infer<typeof recipeSchema>
 export type RecipeBundleInput = z.infer<typeof recipeBundleSchema>
+export type GoalPhaseInput = z.infer<typeof goalPhaseSchema>

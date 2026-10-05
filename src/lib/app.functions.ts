@@ -6,7 +6,7 @@ import { fetchLyftaWorkouts } from './lyfta'
 import { listRecipeBundles } from './recipe-bundles'
 import { listRecipes } from './recipes'
 import { buildDailyReports } from './reports'
-import type { DailyCheckin, Profile, ProgressPhoto } from './types'
+import type { DailyCheckin, GoalPhase, Profile, ProgressPhoto } from './types'
 
 function disableCaching() {
   setResponseHeader('Cache-Control', 'no-store')
@@ -59,6 +59,12 @@ export const getLatestLyftaWorkout = createServerFn({ method: 'GET' }).handler(a
   } catch {
     return null
   }
+})
+
+export const getGoalPhasesData = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  const result = await db().prepare('SELECT * FROM goal_phases ORDER BY started_at DESC, id DESC LIMIT 100').all<GoalPhase>()
+  return result.results
 })
 
 export const getCoachNote = createServerFn({ method: 'GET' }).handler(async () => {

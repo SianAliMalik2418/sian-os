@@ -61,19 +61,26 @@ const decisionLogGuidance = {
   rule: 'Log only major, owner-confirmed pivots meant to be remembered months later: switching bulk/cut, changing the primary goal, a meaningful calorie/protein target change, a training split change. Do not log routine daily facts, minor tweaks, or anything not yet confirmed by the owner. Keep each entry to one line; this log is meant to stay short, not a daily journal.',
 }
 
+const goalPhaseGuidance = {
+  source: 'dashboard.activeGoalPhase (also bundled as recentGoalPhases below)',
+  writeEndpoint: 'POST /api/goal-phases with { "phase_type": "lean_gain" | "bulk" | "cut" | "recomp" | "maintain", "target_rate_kg_per_week": <number, optional>, "note": "<optional>", "started_at": "YYYY-MM-DD" }',
+  rule: 'The active goal phase is the structured, swappable counterpart to the long-term vision in profile.long_term_vision: a concrete current phase type and optional weekly kg target. The Coach may propose a phase change from evidence (weight trend, conditioning, adherence), but may only write it with POST /api/goal-phases after the owner explicitly confirms the change, the same confirmation bar as the decision log. Starting a new phase automatically closes the prior active phase.',
+}
+
 export const Route = createFileRoute('/api/agent/context')({
   server: {
     handlers: {
       GET: async () => handleApi(async () => {
         const database = db()
         const today = new Date().toISOString().slice(0, 10)
-        const [profile, dashboard, checkins, nutritionEntries, recipes, decisions, bundles] = await Promise.all([
+        const [profile, dashboard, checkins, nutritionEntries, recipes, decisions, goalPhases, bundles] = await Promise.all([
           database.prepare('SELECT * FROM profile WHERE id = 1').first(),
           dashboardSummary(),
           database.prepare('SELECT * FROM daily_checkins ORDER BY date DESC LIMIT 30').all(),
           database.prepare('SELECT * FROM nutrition_entries WHERE date >= date(?, \'-30 days\') ORDER BY date DESC, id DESC LIMIT 500').bind(today).all(),
           database.prepare('SELECT id, name, aliases, category, serving_description, calories, protein_grams, fat_grams, carb_grams, ingredients, notes, updated_at FROM recipes ORDER BY name COLLATE NOCASE LIMIT 500').all(),
           database.prepare('SELECT * FROM decisions ORDER BY date DESC, id DESC LIMIT 50').all(),
+          database.prepare('SELECT * FROM goal_phases ORDER BY started_at DESC, id DESC LIMIT 20').all(),
           database.prepare(`
             SELECT b.id AS bundle_id, b.name AS bundle_name, b.notes AS bundle_notes, i.recipe_id, i.default_quantity, i.position, r.name AS recipe_name
             FROM recipe_bundles b
@@ -94,11 +101,13 @@ export const Route = createFileRoute('/api/agent/context')({
             savedRecipes: recipes.results,
             savedRecipeBundles: bundles.results,
             recentDecisions: decisions.results,
+            recentGoalPhases: goalPhases.results,
             agent: {
               checkinWriteContract,
               weeklyReportGuidance,
               nightlyReviewGuidance,
               decisionLogGuidance,
+              goalPhaseGuidance,
               recipeGuidance,
               nutritionTargetGuidance,
             },

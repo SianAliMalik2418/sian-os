@@ -1,6 +1,7 @@
 import { Outlet, createFileRoute, useRouterState } from '@tanstack/react-router'
 import { MotionConfig } from 'motion/react'
 import { DailyCheckinDialogProvider } from '@/components/daily-checkin-dialog'
+import { PhaseDialogProvider } from '@/components/phase-dialog-provider'
 import { BottomNav, DesktopSidebar } from '@/components/sunrise/bottom-nav'
 import { getProfileData, getTodayCheckin } from '@/lib/app.functions'
 
@@ -16,7 +17,9 @@ function AppLayout() {
   const data = Route.useLoaderData()
   return (
     <MotionConfig reducedMotion="user">
-      <DailyCheckinDialogProvider existing={data.existing} profile={data.profile}><AppShell /></DailyCheckinDialogProvider>
+      <DailyCheckinDialogProvider existing={data.existing} profile={data.profile}>
+        <PhaseDialogProvider><AppShell /></PhaseDialogProvider>
+      </DailyCheckinDialogProvider>
     </MotionConfig>
   )
 }

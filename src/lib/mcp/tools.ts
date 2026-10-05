@@ -1,5 +1,5 @@
 import { z, type ZodType } from 'zod'
-import { checkinSchema, dateSchema, decisionSchema, nutritionEntrySchema, profileSchema, recipeBundleSchema, recipeSchema } from '@/lib/schemas'
+import { checkinSchema, dateSchema, decisionSchema, goalPhaseSchema, nutritionEntrySchema, profileSchema, recipeBundleSchema, recipeSchema } from '@/lib/schemas'
 
 const empty = z.object({}).strict()
 
@@ -41,6 +41,8 @@ const getLyftaWorkoutsArgs = z.object({
 
 const getDecisionsArgs = z.object({ limit: z.number().int().min(1).max(200).optional() }).strict()
 const deleteDecisionArgs = z.object({ decisionId: z.number().int().min(1) }).strict()
+
+const getGoalPhasesArgs = z.object({ limit: z.number().int().min(1).max(200).optional() }).strict()
 
 const agentStateKey = z.enum(['last_weekly_report_date', 'last_nightly_review_note'])
 const getAgentStateArgs = z.object({ key: agentStateKey.optional() }).strict()
@@ -231,6 +233,18 @@ export const tools: Tool[] = [
     description: 'Delete one decision log entry by id, for example to correct a mistaken entry. Ask for confirmation before calling this.',
     argsSchema: deleteDecisionArgs,
     buildRequest: (args: z.infer<typeof deleteDecisionArgs>) => ({ method: 'DELETE', path: `/api/decisions/${args.decisionId}` }),
+  },
+  {
+    name: 'get_goal_phases',
+    description: 'Get the goal phase history: the structured, swappable current phase (lean_gain, bulk, cut, recomp, or maintain) with an optional weekly kg target, distinct from the long-term vision in the profile. Pass limit to bound it (default 50, max 200). The most recent entry with is_active=1 is the current phase.',
+    argsSchema: getGoalPhasesArgs,
+    buildRequest: (args: z.infer<typeof getGoalPhasesArgs>) => ({ method: 'GET', path: `/api/goal-phases${query({ limit: args.limit })}` }),
+  },
+  {
+    name: 'start_goal_phase',
+    description: "Start a new goal phase (phase_type, optional target_rate_kg_per_week between -5 and 5, optional note, started_at). This automatically closes the currently active phase. Use this only after the owner explicitly confirms a phase change, such as switching from lean_gain to cut — the same confirmation bar as save_decision.",
+    argsSchema: goalPhaseSchema,
+    buildRequest: (args: z.infer<typeof goalPhaseSchema>) => ({ method: 'POST', path: '/api/goal-phases', body: args }),
   },
 ]
 

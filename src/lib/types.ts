@@ -24,6 +24,17 @@ export interface Decision {
   created_at: string
 }
 
+export interface GoalPhase {
+  id: number
+  phase_type: string
+  target_rate_kg_per_week: number | null
+  note: string | null
+  started_at: string
+  ended_at: string | null
+  is_active: number
+  created_at: string
+}
+
 export interface Profile {
   id: number
   height_cm: number | null
@@ -104,4 +115,5 @@ export interface DashboardSummary {
   weightTrend: Array<{ date: string; weight_kg: number }>
   streak: number
   weeklyCheckins: Array<{ date: string }>
+  activeGoalPhase: GoalPhase | null
 }

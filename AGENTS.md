@@ -132,6 +132,7 @@ Read endpoints:
 - `GET /api/lyfta/workouts?limit=20&page=1`
 - `GET /api/reports?interval=daily|weekly|monthly&from=YYYY-MM-DD&to=YYYY-MM-DD`
 - `GET /api/decisions?limit=50`: the standing decision log (see "Decision log" below).
+- `GET /api/goal-phases?limit=50`: the goal phase history (see "Decision log" below).
 
 Write endpoints:
 
@@ -145,12 +146,15 @@ Write endpoints:
 - `PUT /api/agent/state`: update `last_weekly_report_date` (`YYYY-MM-DD`) after giving a weekly report, or `last_nightly_review_note` (free text, max 2000 chars) after a nightly review. No other keys are accepted.
 - `POST /api/export`: create a production backup.
 - `POST /api/decisions`, `DELETE /api/decisions/{decisionId}`: manage the standing decision log (see "Decision log" below).
+- `POST /api/goal-phases`: start a new active goal phase, closing the current one (see "Decision log" below).
 
 ### Decision log
 
 `decisions` is a short, standing history of major owner-confirmed pivots the Coach can write during a normal conversation, without a coding session: switching bulk/cut, changing the primary goal, a meaningful calorie/protein target change, a training split change. Each entry is `date` plus a one-line `decision` (max 300 chars) and is meant to stay short, not become a daily journal — do not log routine daily facts, minor tweaks, or anything not yet confirmed by the owner. `GET /api/agent/context` already bundles the most recent 50 entries as `recentDecisions`, so read context first rather than calling `/api/decisions` separately.
 
 This is distinct from the dated decision-log table inside `docs/FITNESS_COACHING_CONTEXT.md`: that one is the deep, narrative record (decision + consequence + superseded markers) maintained during a coding session per "Coaching document maintenance" below. When a decision is big enough to change active coaching rules or guidance, do both — write the one-liner to `/api/decisions` immediately for the live record, and update the markdown document the next time a coding session touches this repo.
+
+Starting a goal phase (`POST /api/goal-phases`) is a confirmed-pivot action with the same confirmation bar as `/api/decisions`: the Coach may propose a phase change from evidence, but writes it only after the owner explicitly confirms. `goal_phases` is the structured, swappable current phase (`lean_gain`/`bulk`/`cut`/`recomp`/`maintain` plus an optional weekly kg target), distinct from the free-text long-term vision in `profile.long_term_vision`. Starting a new phase automatically closes the prior active one. `GET /api/dashboard` and `GET /api/agent/context` already bundle the active phase as `activeGoalPhase`.
 
 Routine food logging must use `/api/nutrition-entries`, not `nutrition_notes`. Each entry needs `date`, `item_name`, and `calories`, with optional `protein_grams`, `fat_grams`, and `carb_grams`.
 

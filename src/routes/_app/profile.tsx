@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { ArrowUpRight, Dumbbell, HeartPulse, Images, Pencil, Save, Target, TrendingUp, UserRound, X } from 'lucide-react'
+import { ArrowUpRight, Dumbbell, HeartPulse, Images, Pencil, Save, SquareDashedKanban, Target, TrendingUp, UserRound, X } from 'lucide-react'
 import { useState, type CSSProperties, type FormEvent, type ReactNode } from 'react'
 import { EditableNumber } from '@/components/sunrise/editable-number'
 import { Doodle, HeaderIllustration } from '@/components/sunrise/illustrations'
@@ -151,6 +151,12 @@ function ProfileMiniPages() {
           <Images className="size-6 text-lilac" strokeWidth={2.4} />
           <p className="mt-3 text-xl font-extrabold text-cream">Gallery</p>
           <p className="mt-0.5 text-sm font-semibold text-muted-foreground">Progress photos</p>
+          <ArrowUpRight className="absolute top-4 right-4 size-5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        </Link>
+        <Link to="/profile/phases" className="rise group relative min-h-40 overflow-hidden rounded-[1.8rem] border border-mint/20 bg-[linear-gradient(150deg,rgb(45_212_191/.24),#1c1836_75%)] p-4" style={delay(10)}>
+          <SquareDashedKanban className="size-6 text-mint" strokeWidth={2.4} />
+          <p className="mt-3 text-xl font-extrabold text-cream">Phases</p>
+          <p className="mt-0.5 text-sm font-semibold text-muted-foreground">Current cut/bulk target</p>
           <ArrowUpRight className="absolute top-4 right-4 size-5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </Link>
       </div>
