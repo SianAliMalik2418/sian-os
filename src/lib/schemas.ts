@@ -85,8 +85,59 @@ export const recipeBundleSchema = z.object({
   }).strict()).min(1).max(50),
 }).strict()
 
+const pct = z.number().min(0).max(100)
+
+export const financeCategorySchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  bucket: z.enum(['family', 'self', 'service']),
+  color: z.string().trim().max(50).optional(),
+}).strict()
+
+export const financeTransactionSchema = z.object({
+  date,
+  type: z.enum(['income', 'expense']),
+  amount: z.number().positive().max(10000000),
+  category_id: z.number().int().min(1).optional(),
+  note: optionalText,
+}).strict()
+
+export const financeDebtSchema = z.object({
+  counterparty: z.string().trim().min(1).max(200),
+  direction: z.enum(['owed_by_me', 'owed_to_me']),
+  principal: z.number().positive().max(10000000),
+  due_date: date.optional(),
+  note: optionalText,
+}).strict()
+
+export const financeDebtUpdateSchema = z.object({
+  balance: z.number().min(0).max(10000000).optional(),
+  status: z.enum(['outstanding', 'paid']).optional(),
+  due_date: date.optional(),
+  note: optionalText,
+}).strict()
+
+export const financeSettingsSchema = z.object({
+  level: z.enum(['muslim', 'mumin', 'muhsin']).optional(),
+  muslim_family_pct: pct.optional(),
+  muslim_self_pct: pct.optional(),
+  muslim_service_pct: pct.optional(),
+  mumin_family_pct: pct.optional(),
+  mumin_self_pct: pct.optional(),
+  mumin_service_pct: pct.optional(),
+  muhsin_family_pct: pct.optional(),
+  muhsin_self_pct: pct.optional(),
+  muhsin_service_pct: pct.optional(),
+  emergency_fund_target: z.number().min(0).max(100000000).optional(),
+  emergency_fund_balance: z.number().min(0).max(100000000).optional(),
+}).strict()
+
 export type CheckinInput = z.infer<typeof checkinSchema>
 export type NutritionEntryInput = z.infer<typeof nutritionEntrySchema>
 export type RecipeInput = z.infer<typeof recipeSchema>
 export type RecipeBundleInput = z.infer<typeof recipeBundleSchema>
 export type GoalPhaseInput = z.infer<typeof goalPhaseSchema>
+export type FinanceCategoryInput = z.infer<typeof financeCategorySchema>
+export type FinanceTransactionInput = z.infer<typeof financeTransactionSchema>
+export type FinanceDebtInput = z.infer<typeof financeDebtSchema>
+export type FinanceDebtUpdateInput = z.infer<typeof financeDebtUpdateSchema>
+export type FinanceSettingsInput = z.infer<typeof financeSettingsSchema>

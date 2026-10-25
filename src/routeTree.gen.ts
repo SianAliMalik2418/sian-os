@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppGalleryRouteImport } from './routes/_app/gallery'
 import { Route as AppLyftaRouteImport } from './routes/_app/lyfta'
@@ -29,20 +30,37 @@ import { Route as ApiProgressPhotosRouteImport } from './routes/api/progress-pho
 import { Route as ApiRecipeBundlesRouteImport } from './routes/api/recipe-bundles'
 import { Route as ApiRecipesRouteImport } from './routes/api/recipes'
 import { Route as ApiReportsRouteImport } from './routes/api/reports'
-import { Route as AppProfilePhasesRouteImport } from './routes/_app/profile.phases'
+import { Route as FinanceIndexRouteImport } from './routes/finance/index'
+import { Route as FinanceDebtsRouteImport } from './routes/finance/debts'
+import { Route as FinanceSettingsRouteImport } from './routes/finance/settings'
+import { Route as FinanceTransactionsRouteImport } from './routes/finance/transactions'
+import { Route as AppProfilePhasesRouteImport } from './routes/_app/profile_.phases'
 import { Route as ApiAgentContextRouteImport } from './routes/api/agent/context'
 import { Route as ApiAgentQueryRouteImport } from './routes/api/agent/query'
 import { Route as ApiAgentStateRouteImport } from './routes/api/agent/state'
 import { Route as ApiDecisionsDecisionIdRouteImport } from './routes/api/decisions/$decisionId'
+import { Route as ApiFinanceCategoriesRouteImport } from './routes/api/finance/categories'
+import { Route as ApiFinanceDebtsRouteImport } from './routes/api/finance/debts'
+import { Route as ApiFinanceSettingsRouteImport } from './routes/api/finance/settings'
+import { Route as ApiFinanceSummaryRouteImport } from './routes/api/finance/summary'
+import { Route as ApiFinanceTransactionsRouteImport } from './routes/api/finance/transactions'
 import { Route as ApiLyftaWorkoutsRouteImport } from './routes/api/lyfta/workouts'
 import { Route as ApiNutritionEntriesEntryIdRouteImport } from './routes/api/nutrition-entries/$entryId'
 import { Route as ApiProgressPhotosPhotoIdRouteImport } from './routes/api/progress-photos/$photoId'
 import { Route as ApiRecipeBundlesBundleIdRouteImport } from './routes/api/recipe-bundles/$bundleId'
 import { Route as ApiRecipesRecipeIdRouteImport } from './routes/api/recipes/$recipeId'
+import { Route as ApiFinanceCategoriesCategoryIdRouteImport } from './routes/api/finance/categories/$categoryId'
+import { Route as ApiFinanceDebtsDebtIdRouteImport } from './routes/api/finance/debts/$debtId'
+import { Route as ApiFinanceTransactionsTransactionIdRouteImport } from './routes/api/finance/transactions/$transactionId'
 import { Route as ApiRecipesRecipeIdPhotoRouteImport } from './routes/api/recipes/$recipeId/photo'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanceRoute = FinanceRouteImport.update({
+  id: '/finance',
+  path: '/finance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -140,10 +158,30 @@ const ApiReportsRoute = ApiReportsRouteImport.update({
   path: '/api/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FinanceIndexRoute = FinanceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FinanceRoute,
+} as any)
+const FinanceDebtsRoute = FinanceDebtsRouteImport.update({
+  id: '/debts',
+  path: '/debts',
+  getParentRoute: () => FinanceRoute,
+} as any)
+const FinanceSettingsRoute = FinanceSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => FinanceRoute,
+} as any)
+const FinanceTransactionsRoute = FinanceTransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => FinanceRoute,
+} as any)
 const AppProfilePhasesRoute = AppProfilePhasesRouteImport.update({
-  id: '/phases',
-  path: '/phases',
-  getParentRoute: () => AppProfileRoute,
+  id: '/profile_/phases',
+  path: '/profile/phases',
+  getParentRoute: () => AppRoute,
 } as any)
 const ApiAgentContextRoute = ApiAgentContextRouteImport.update({
   id: '/api/agent/context',
@@ -164,6 +202,31 @@ const ApiDecisionsDecisionIdRoute = ApiDecisionsDecisionIdRouteImport.update({
   id: '/$decisionId',
   path: '/$decisionId',
   getParentRoute: () => ApiDecisionsRoute,
+} as any)
+const ApiFinanceCategoriesRoute = ApiFinanceCategoriesRouteImport.update({
+  id: '/api/finance/categories',
+  path: '/api/finance/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFinanceDebtsRoute = ApiFinanceDebtsRouteImport.update({
+  id: '/api/finance/debts',
+  path: '/api/finance/debts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFinanceSettingsRoute = ApiFinanceSettingsRouteImport.update({
+  id: '/api/finance/settings',
+  path: '/api/finance/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFinanceSummaryRoute = ApiFinanceSummaryRouteImport.update({
+  id: '/api/finance/summary',
+  path: '/api/finance/summary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFinanceTransactionsRoute = ApiFinanceTransactionsRouteImport.update({
+  id: '/api/finance/transactions',
+  path: '/api/finance/transactions',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiLyftaWorkoutsRoute = ApiLyftaWorkoutsRouteImport.update({
   id: '/api/lyfta/workouts',
@@ -193,6 +256,23 @@ const ApiRecipesRecipeIdRoute = ApiRecipesRecipeIdRouteImport.update({
   path: '/$recipeId',
   getParentRoute: () => ApiRecipesRoute,
 } as any)
+const ApiFinanceCategoriesCategoryIdRoute =
+  ApiFinanceCategoriesCategoryIdRouteImport.update({
+    id: '/$categoryId',
+    path: '/$categoryId',
+    getParentRoute: () => ApiFinanceCategoriesRoute,
+  } as any)
+const ApiFinanceDebtsDebtIdRoute = ApiFinanceDebtsDebtIdRouteImport.update({
+  id: '/$debtId',
+  path: '/$debtId',
+  getParentRoute: () => ApiFinanceDebtsRoute,
+} as any)
+const ApiFinanceTransactionsTransactionIdRoute =
+  ApiFinanceTransactionsTransactionIdRouteImport.update({
+    id: '/$transactionId',
+    path: '/$transactionId',
+    getParentRoute: () => ApiFinanceTransactionsRoute,
+  } as any)
 const ApiRecipesRecipeIdPhotoRoute = ApiRecipesRecipeIdPhotoRouteImport.update({
   id: '/photo',
   path: '/photo',
@@ -201,9 +281,10 @@ const ApiRecipesRecipeIdPhotoRoute = ApiRecipesRecipeIdPhotoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/finance': typeof FinanceRouteWithChildren
   '/gallery': typeof AppGalleryRoute
   '/lyfta': typeof AppLyftaRoute
-  '/profile': typeof AppProfileRouteWithChildren
+  '/profile': typeof AppProfileRoute
   '/recipes': typeof AppRecipesRoute
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
@@ -219,22 +300,34 @@ export interface FileRoutesByFullPath {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/finance/debts': typeof FinanceDebtsRoute
+  '/finance/settings': typeof FinanceSettingsRoute
+  '/finance/transactions': typeof FinanceTransactionsRoute
+  '/finance/': typeof FinanceIndexRoute
   '/profile/phases': typeof AppProfilePhasesRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
   '/api/decisions/$decisionId': typeof ApiDecisionsDecisionIdRoute
+  '/api/finance/categories': typeof ApiFinanceCategoriesRouteWithChildren
+  '/api/finance/debts': typeof ApiFinanceDebtsRouteWithChildren
+  '/api/finance/settings': typeof ApiFinanceSettingsRoute
+  '/api/finance/summary': typeof ApiFinanceSummaryRoute
+  '/api/finance/transactions': typeof ApiFinanceTransactionsRouteWithChildren
   '/api/lyfta/workouts': typeof ApiLyftaWorkoutsRoute
   '/api/nutrition-entries/$entryId': typeof ApiNutritionEntriesEntryIdRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
   '/api/recipe-bundles/$bundleId': typeof ApiRecipeBundlesBundleIdRoute
   '/api/recipes/$recipeId': typeof ApiRecipesRecipeIdRouteWithChildren
+  '/api/finance/categories/$categoryId': typeof ApiFinanceCategoriesCategoryIdRoute
+  '/api/finance/debts/$debtId': typeof ApiFinanceDebtsDebtIdRoute
+  '/api/finance/transactions/$transactionId': typeof ApiFinanceTransactionsTransactionIdRoute
   '/api/recipes/$recipeId/photo': typeof ApiRecipesRecipeIdPhotoRoute
 }
 export interface FileRoutesByTo {
   '/gallery': typeof AppGalleryRoute
   '/lyfta': typeof AppLyftaRoute
-  '/profile': typeof AppProfileRouteWithChildren
+  '/profile': typeof AppProfileRoute
   '/recipes': typeof AppRecipesRoute
   '/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
@@ -250,25 +343,38 @@ export interface FileRoutesByTo {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/finance/debts': typeof FinanceDebtsRoute
+  '/finance/settings': typeof FinanceSettingsRoute
+  '/finance/transactions': typeof FinanceTransactionsRoute
   '/': typeof AppIndexRoute
+  '/finance': typeof FinanceIndexRoute
   '/profile/phases': typeof AppProfilePhasesRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
   '/api/decisions/$decisionId': typeof ApiDecisionsDecisionIdRoute
+  '/api/finance/categories': typeof ApiFinanceCategoriesRouteWithChildren
+  '/api/finance/debts': typeof ApiFinanceDebtsRouteWithChildren
+  '/api/finance/settings': typeof ApiFinanceSettingsRoute
+  '/api/finance/summary': typeof ApiFinanceSummaryRoute
+  '/api/finance/transactions': typeof ApiFinanceTransactionsRouteWithChildren
   '/api/lyfta/workouts': typeof ApiLyftaWorkoutsRoute
   '/api/nutrition-entries/$entryId': typeof ApiNutritionEntriesEntryIdRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
   '/api/recipe-bundles/$bundleId': typeof ApiRecipeBundlesBundleIdRoute
   '/api/recipes/$recipeId': typeof ApiRecipesRecipeIdRouteWithChildren
+  '/api/finance/categories/$categoryId': typeof ApiFinanceCategoriesCategoryIdRoute
+  '/api/finance/debts/$debtId': typeof ApiFinanceDebtsDebtIdRoute
+  '/api/finance/transactions/$transactionId': typeof ApiFinanceTransactionsTransactionIdRoute
   '/api/recipes/$recipeId/photo': typeof ApiRecipesRecipeIdPhotoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/finance': typeof FinanceRouteWithChildren
   '/_app/gallery': typeof AppGalleryRoute
   '/_app/lyfta': typeof AppLyftaRoute
-  '/_app/profile': typeof AppProfileRouteWithChildren
+  '/_app/profile': typeof AppProfileRoute
   '/_app/recipes': typeof AppRecipesRoute
   '/_app/reports': typeof AppReportsRoute
   '/api/checkins': typeof ApiCheckinsRoute
@@ -284,23 +390,36 @@ export interface FileRoutesById {
   '/api/recipe-bundles': typeof ApiRecipeBundlesRouteWithChildren
   '/api/recipes': typeof ApiRecipesRouteWithChildren
   '/api/reports': typeof ApiReportsRoute
+  '/finance/debts': typeof FinanceDebtsRoute
+  '/finance/settings': typeof FinanceSettingsRoute
+  '/finance/transactions': typeof FinanceTransactionsRoute
   '/_app/': typeof AppIndexRoute
-  '/_app/profile/phases': typeof AppProfilePhasesRoute
+  '/finance/': typeof FinanceIndexRoute
+  '/_app/profile_/phases': typeof AppProfilePhasesRoute
   '/api/agent/context': typeof ApiAgentContextRoute
   '/api/agent/query': typeof ApiAgentQueryRoute
   '/api/agent/state': typeof ApiAgentStateRoute
   '/api/decisions/$decisionId': typeof ApiDecisionsDecisionIdRoute
+  '/api/finance/categories': typeof ApiFinanceCategoriesRouteWithChildren
+  '/api/finance/debts': typeof ApiFinanceDebtsRouteWithChildren
+  '/api/finance/settings': typeof ApiFinanceSettingsRoute
+  '/api/finance/summary': typeof ApiFinanceSummaryRoute
+  '/api/finance/transactions': typeof ApiFinanceTransactionsRouteWithChildren
   '/api/lyfta/workouts': typeof ApiLyftaWorkoutsRoute
   '/api/nutrition-entries/$entryId': typeof ApiNutritionEntriesEntryIdRoute
   '/api/progress-photos/$photoId': typeof ApiProgressPhotosPhotoIdRoute
   '/api/recipe-bundles/$bundleId': typeof ApiRecipeBundlesBundleIdRoute
   '/api/recipes/$recipeId': typeof ApiRecipesRecipeIdRouteWithChildren
+  '/api/finance/categories/$categoryId': typeof ApiFinanceCategoriesCategoryIdRoute
+  '/api/finance/debts/$debtId': typeof ApiFinanceDebtsDebtIdRoute
+  '/api/finance/transactions/$transactionId': typeof ApiFinanceTransactionsTransactionIdRoute
   '/api/recipes/$recipeId/photo': typeof ApiRecipesRecipeIdPhotoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/finance'
     | '/gallery'
     | '/lyfta'
     | '/profile'
@@ -319,16 +438,28 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/finance/debts'
+    | '/finance/settings'
+    | '/finance/transactions'
+    | '/finance/'
     | '/profile/phases'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
     | '/api/decisions/$decisionId'
+    | '/api/finance/categories'
+    | '/api/finance/debts'
+    | '/api/finance/settings'
+    | '/api/finance/summary'
+    | '/api/finance/transactions'
     | '/api/lyfta/workouts'
     | '/api/nutrition-entries/$entryId'
     | '/api/progress-photos/$photoId'
     | '/api/recipe-bundles/$bundleId'
     | '/api/recipes/$recipeId'
+    | '/api/finance/categories/$categoryId'
+    | '/api/finance/debts/$debtId'
+    | '/api/finance/transactions/$transactionId'
     | '/api/recipes/$recipeId/photo'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -350,21 +481,34 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/finance/debts'
+    | '/finance/settings'
+    | '/finance/transactions'
     | '/'
+    | '/finance'
     | '/profile/phases'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
     | '/api/decisions/$decisionId'
+    | '/api/finance/categories'
+    | '/api/finance/debts'
+    | '/api/finance/settings'
+    | '/api/finance/summary'
+    | '/api/finance/transactions'
     | '/api/lyfta/workouts'
     | '/api/nutrition-entries/$entryId'
     | '/api/progress-photos/$photoId'
     | '/api/recipe-bundles/$bundleId'
     | '/api/recipes/$recipeId'
+    | '/api/finance/categories/$categoryId'
+    | '/api/finance/debts/$debtId'
+    | '/api/finance/transactions/$transactionId'
     | '/api/recipes/$recipeId/photo'
   id:
     | '__root__'
     | '/_app'
+    | '/finance'
     | '/_app/gallery'
     | '/_app/lyfta'
     | '/_app/profile'
@@ -383,22 +527,35 @@ export interface FileRouteTypes {
     | '/api/recipe-bundles'
     | '/api/recipes'
     | '/api/reports'
+    | '/finance/debts'
+    | '/finance/settings'
+    | '/finance/transactions'
     | '/_app/'
-    | '/_app/profile/phases'
+    | '/finance/'
+    | '/_app/profile_/phases'
     | '/api/agent/context'
     | '/api/agent/query'
     | '/api/agent/state'
     | '/api/decisions/$decisionId'
+    | '/api/finance/categories'
+    | '/api/finance/debts'
+    | '/api/finance/settings'
+    | '/api/finance/summary'
+    | '/api/finance/transactions'
     | '/api/lyfta/workouts'
     | '/api/nutrition-entries/$entryId'
     | '/api/progress-photos/$photoId'
     | '/api/recipe-bundles/$bundleId'
     | '/api/recipes/$recipeId'
+    | '/api/finance/categories/$categoryId'
+    | '/api/finance/debts/$debtId'
+    | '/api/finance/transactions/$transactionId'
     | '/api/recipes/$recipeId/photo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  FinanceRoute: typeof FinanceRouteWithChildren
   ApiCheckinsRoute: typeof ApiCheckinsRoute
   ApiDashboardRoute: typeof ApiDashboardRoute
   ApiDecisionsRoute: typeof ApiDecisionsRouteWithChildren
@@ -415,6 +572,11 @@ export interface RootRouteChildren {
   ApiAgentContextRoute: typeof ApiAgentContextRoute
   ApiAgentQueryRoute: typeof ApiAgentQueryRoute
   ApiAgentStateRoute: typeof ApiAgentStateRoute
+  ApiFinanceCategoriesRoute: typeof ApiFinanceCategoriesRouteWithChildren
+  ApiFinanceDebtsRoute: typeof ApiFinanceDebtsRouteWithChildren
+  ApiFinanceSettingsRoute: typeof ApiFinanceSettingsRoute
+  ApiFinanceSummaryRoute: typeof ApiFinanceSummaryRoute
+  ApiFinanceTransactionsRoute: typeof ApiFinanceTransactionsRouteWithChildren
   ApiLyftaWorkoutsRoute: typeof ApiLyftaWorkoutsRoute
 }
 
@@ -425,6 +587,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/finance': {
+      id: '/finance'
+      path: '/finance'
+      fullPath: '/finance'
+      preLoaderRoute: typeof FinanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -560,12 +729,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/profile/phases': {
-      id: '/_app/profile/phases'
-      path: '/phases'
+    '/finance/': {
+      id: '/finance/'
+      path: '/'
+      fullPath: '/finance/'
+      preLoaderRoute: typeof FinanceIndexRouteImport
+      parentRoute: typeof FinanceRoute
+    }
+    '/finance/debts': {
+      id: '/finance/debts'
+      path: '/debts'
+      fullPath: '/finance/debts'
+      preLoaderRoute: typeof FinanceDebtsRouteImport
+      parentRoute: typeof FinanceRoute
+    }
+    '/finance/settings': {
+      id: '/finance/settings'
+      path: '/settings'
+      fullPath: '/finance/settings'
+      preLoaderRoute: typeof FinanceSettingsRouteImport
+      parentRoute: typeof FinanceRoute
+    }
+    '/finance/transactions': {
+      id: '/finance/transactions'
+      path: '/transactions'
+      fullPath: '/finance/transactions'
+      preLoaderRoute: typeof FinanceTransactionsRouteImport
+      parentRoute: typeof FinanceRoute
+    }
+    '/_app/profile_/phases': {
+      id: '/_app/profile_/phases'
+      path: '/profile/phases'
       fullPath: '/profile/phases'
       preLoaderRoute: typeof AppProfilePhasesRouteImport
-      parentRoute: typeof AppProfileRoute
+      parentRoute: typeof AppRoute
     }
     '/api/agent/context': {
       id: '/api/agent/context'
@@ -594,6 +791,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/decisions/$decisionId'
       preLoaderRoute: typeof ApiDecisionsDecisionIdRouteImport
       parentRoute: typeof ApiDecisionsRoute
+    }
+    '/api/finance/categories': {
+      id: '/api/finance/categories'
+      path: '/api/finance/categories'
+      fullPath: '/api/finance/categories'
+      preLoaderRoute: typeof ApiFinanceCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/finance/debts': {
+      id: '/api/finance/debts'
+      path: '/api/finance/debts'
+      fullPath: '/api/finance/debts'
+      preLoaderRoute: typeof ApiFinanceDebtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/finance/settings': {
+      id: '/api/finance/settings'
+      path: '/api/finance/settings'
+      fullPath: '/api/finance/settings'
+      preLoaderRoute: typeof ApiFinanceSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/finance/summary': {
+      id: '/api/finance/summary'
+      path: '/api/finance/summary'
+      fullPath: '/api/finance/summary'
+      preLoaderRoute: typeof ApiFinanceSummaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/finance/transactions': {
+      id: '/api/finance/transactions'
+      path: '/api/finance/transactions'
+      fullPath: '/api/finance/transactions'
+      preLoaderRoute: typeof ApiFinanceTransactionsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/lyfta/workouts': {
       id: '/api/lyfta/workouts'
@@ -630,6 +862,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRecipesRecipeIdRouteImport
       parentRoute: typeof ApiRecipesRoute
     }
+    '/api/finance/categories/$categoryId': {
+      id: '/api/finance/categories/$categoryId'
+      path: '/$categoryId'
+      fullPath: '/api/finance/categories/$categoryId'
+      preLoaderRoute: typeof ApiFinanceCategoriesCategoryIdRouteImport
+      parentRoute: typeof ApiFinanceCategoriesRoute
+    }
+    '/api/finance/debts/$debtId': {
+      id: '/api/finance/debts/$debtId'
+      path: '/$debtId'
+      fullPath: '/api/finance/debts/$debtId'
+      preLoaderRoute: typeof ApiFinanceDebtsDebtIdRouteImport
+      parentRoute: typeof ApiFinanceDebtsRoute
+    }
+    '/api/finance/transactions/$transactionId': {
+      id: '/api/finance/transactions/$transactionId'
+      path: '/$transactionId'
+      fullPath: '/api/finance/transactions/$transactionId'
+      preLoaderRoute: typeof ApiFinanceTransactionsTransactionIdRouteImport
+      parentRoute: typeof ApiFinanceTransactionsRoute
+    }
     '/api/recipes/$recipeId/photo': {
       id: '/api/recipes/$recipeId/photo'
       path: '/photo'
@@ -640,37 +893,44 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppProfileRouteChildren {
-  AppProfilePhasesRoute: typeof AppProfilePhasesRoute
-}
-
-const AppProfileRouteChildren: AppProfileRouteChildren = {
-  AppProfilePhasesRoute: AppProfilePhasesRoute,
-}
-
-const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
-  AppProfileRouteChildren,
-)
-
 interface AppRouteChildren {
   AppGalleryRoute: typeof AppGalleryRoute
   AppLyftaRoute: typeof AppLyftaRoute
-  AppProfileRoute: typeof AppProfileRouteWithChildren
+  AppProfileRoute: typeof AppProfileRoute
   AppRecipesRoute: typeof AppRecipesRoute
   AppReportsRoute: typeof AppReportsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppProfilePhasesRoute: typeof AppProfilePhasesRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppGalleryRoute: AppGalleryRoute,
   AppLyftaRoute: AppLyftaRoute,
-  AppProfileRoute: AppProfileRouteWithChildren,
+  AppProfileRoute: AppProfileRoute,
   AppRecipesRoute: AppRecipesRoute,
   AppReportsRoute: AppReportsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppProfilePhasesRoute: AppProfilePhasesRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface FinanceRouteChildren {
+  FinanceDebtsRoute: typeof FinanceDebtsRoute
+  FinanceSettingsRoute: typeof FinanceSettingsRoute
+  FinanceTransactionsRoute: typeof FinanceTransactionsRoute
+  FinanceIndexRoute: typeof FinanceIndexRoute
+}
+
+const FinanceRouteChildren: FinanceRouteChildren = {
+  FinanceDebtsRoute: FinanceDebtsRoute,
+  FinanceSettingsRoute: FinanceSettingsRoute,
+  FinanceTransactionsRoute: FinanceTransactionsRoute,
+  FinanceIndexRoute: FinanceIndexRoute,
+}
+
+const FinanceRouteWithChildren =
+  FinanceRoute._addFileChildren(FinanceRouteChildren)
 
 interface ApiDecisionsRouteChildren {
   ApiDecisionsDecisionIdRoute: typeof ApiDecisionsDecisionIdRoute
@@ -740,8 +1000,47 @@ const ApiRecipesRouteWithChildren = ApiRecipesRoute._addFileChildren(
   ApiRecipesRouteChildren,
 )
 
+interface ApiFinanceCategoriesRouteChildren {
+  ApiFinanceCategoriesCategoryIdRoute: typeof ApiFinanceCategoriesCategoryIdRoute
+}
+
+const ApiFinanceCategoriesRouteChildren: ApiFinanceCategoriesRouteChildren = {
+  ApiFinanceCategoriesCategoryIdRoute: ApiFinanceCategoriesCategoryIdRoute,
+}
+
+const ApiFinanceCategoriesRouteWithChildren =
+  ApiFinanceCategoriesRoute._addFileChildren(ApiFinanceCategoriesRouteChildren)
+
+interface ApiFinanceDebtsRouteChildren {
+  ApiFinanceDebtsDebtIdRoute: typeof ApiFinanceDebtsDebtIdRoute
+}
+
+const ApiFinanceDebtsRouteChildren: ApiFinanceDebtsRouteChildren = {
+  ApiFinanceDebtsDebtIdRoute: ApiFinanceDebtsDebtIdRoute,
+}
+
+const ApiFinanceDebtsRouteWithChildren = ApiFinanceDebtsRoute._addFileChildren(
+  ApiFinanceDebtsRouteChildren,
+)
+
+interface ApiFinanceTransactionsRouteChildren {
+  ApiFinanceTransactionsTransactionIdRoute: typeof ApiFinanceTransactionsTransactionIdRoute
+}
+
+const ApiFinanceTransactionsRouteChildren: ApiFinanceTransactionsRouteChildren =
+  {
+    ApiFinanceTransactionsTransactionIdRoute:
+      ApiFinanceTransactionsTransactionIdRoute,
+  }
+
+const ApiFinanceTransactionsRouteWithChildren =
+  ApiFinanceTransactionsRoute._addFileChildren(
+    ApiFinanceTransactionsRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  FinanceRoute: FinanceRouteWithChildren,
   ApiCheckinsRoute: ApiCheckinsRoute,
   ApiDashboardRoute: ApiDashboardRoute,
   ApiDecisionsRoute: ApiDecisionsRouteWithChildren,
@@ -758,6 +1057,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAgentContextRoute: ApiAgentContextRoute,
   ApiAgentQueryRoute: ApiAgentQueryRoute,
   ApiAgentStateRoute: ApiAgentStateRoute,
+  ApiFinanceCategoriesRoute: ApiFinanceCategoriesRouteWithChildren,
+  ApiFinanceDebtsRoute: ApiFinanceDebtsRouteWithChildren,
+  ApiFinanceSettingsRoute: ApiFinanceSettingsRoute,
+  ApiFinanceSummaryRoute: ApiFinanceSummaryRoute,
+  ApiFinanceTransactionsRoute: ApiFinanceTransactionsRouteWithChildren,
   ApiLyftaWorkoutsRoute: ApiLyftaWorkoutsRoute,
 }
 export const routeTree = rootRouteImport

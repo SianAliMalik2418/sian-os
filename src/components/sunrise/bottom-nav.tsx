@@ -1,5 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { ChartNoAxesColumn, CookingPot, Plus, Sun, UserRound } from 'lucide-react'
+import { ChartNoAxesColumn, CookingPot, HandCoins, Plus, Sun, UserRound } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useDailyCheckinDialog } from '@/components/daily-checkin-dialog'
 import { SunMark } from '@/components/sunrise/illustrations'
@@ -10,6 +10,7 @@ export const navigation = [
   { to: '/recipes', label: 'Recipes', icon: CookingPot, match: (path: string) => path.startsWith('/recipes') },
   { to: '/reports', label: 'Reports', icon: ChartNoAxesColumn, match: (path: string) => path.startsWith('/reports') },
   { to: '/profile', label: 'You', icon: UserRound, match: (path: string) => ['/profile', '/lyfta', '/gallery'].some((prefix) => path.startsWith(prefix)) },
+  { to: '/finance', label: 'Finance', icon: HandCoins, match: (path: string) => path.startsWith('/finance') },
 ] as const
 
 const spring = { type: 'spring', bounce: 0.28, duration: 0.5 } as const

@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { setResponseHeader } from '@tanstack/react-start/server'
 import { env } from 'cloudflare:workers'
 import { dashboardSummary, db } from './db'
+import { financeSummary, getFinanceSettings, listFinanceCategories, listFinanceDebts, listFinanceTransactions } from './finance'
 import { fetchLyftaWorkouts } from './lyfta'
 import { listRecipeBundles } from './recipe-bundles'
 import { listRecipes } from './recipes'
@@ -71,4 +72,43 @@ export const getCoachNote = createServerFn({ method: 'GET' }).handler(async () =
   disableCaching()
   const row = await db().prepare("SELECT value FROM agent_state WHERE key = 'last_nightly_review_note'").first<{ value: string | null }>()
   return row?.value?.trim() || null
+})
+
+function monthStart(date: Date) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1)).toISOString().slice(0, 10)
+}
+
+export const getFinanceDashboardData = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  const now = new Date()
+  const from = monthStart(now)
+  const to = now.toISOString().slice(0, 10)
+  const [summary, categories, debts] = await Promise.all([
+    financeSummary({ from, to }),
+    listFinanceCategories(),
+    listFinanceDebts(),
+  ])
+  return { summary, categories, debts }
+})
+
+export const getFinanceCategoriesData = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  return listFinanceCategories()
+})
+
+export const getFinanceTransactionsData = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  const [transactions, categories] = await Promise.all([listFinanceTransactions({}), listFinanceCategories()])
+  return { transactions, categories }
+})
+
+export const getFinanceDebtsData = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  return listFinanceDebts()
+})
+
+export const getFinanceSettingsData = createServerFn({ method: 'GET' }).handler(async () => {
+  disableCaching()
+  const [settings, categories] = await Promise.all([getFinanceSettings(), listFinanceCategories()])
+  return { settings, categories }
 })

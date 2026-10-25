@@ -6,7 +6,7 @@ import { Page, PageHeader, SectionTitle } from '@/components/sunrise/primitives'
 import { getGoalPhasesData } from '@/lib/app.functions'
 import type { GoalPhase } from '@/lib/types'
 
-export const Route = createFileRoute('/_app/profile/phases')({ loader: () => getGoalPhasesData(), component: PhasesPage })
+export const Route = createFileRoute('/_app/profile_/phases')({ loader: () => getGoalPhasesData(), component: PhasesPage })
 
 function targetLabel(phase: GoalPhase) {
   return phase.target_rate_kg_per_week === null

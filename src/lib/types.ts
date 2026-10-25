@@ -108,6 +108,80 @@ export interface NutritionEntry {
   updated_at: string
 }
 
+export type FinanceBucket = 'family' | 'self' | 'service'
+
+export interface FinanceCategory {
+  id: number
+  name: string
+  bucket: FinanceBucket
+  color: string | null
+  created_at: string
+}
+
+export interface FinanceTransaction {
+  id: number
+  date: string
+  type: 'income' | 'expense'
+  amount: number
+  category_id: number | null
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface FinanceDebt {
+  id: number
+  counterparty: string
+  direction: 'owed_by_me' | 'owed_to_me'
+  principal: number
+  balance: number
+  status: 'outstanding' | 'paid'
+  due_date: string | null
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type FinanceLevel = 'muslim' | 'mumin' | 'muhsin'
+
+export interface FinanceSettings {
+  id: number
+  level: FinanceLevel
+  muslim_family_pct: number
+  muslim_self_pct: number
+  muslim_service_pct: number
+  mumin_family_pct: number
+  mumin_self_pct: number
+  mumin_service_pct: number
+  muhsin_family_pct: number
+  muhsin_self_pct: number
+  muhsin_service_pct: number
+  emergency_fund_target: number | null
+  emergency_fund_balance: number
+  updated_at: string
+}
+
+export interface FinanceBucketSplit {
+  family: number
+  self: number
+  service: number
+}
+
+export interface FinanceSummary {
+  from: string
+  to: string
+  income: number
+  expense: number
+  net: number
+  actual: FinanceBucketSplit
+  target: FinanceBucketSplit
+  targetPct: FinanceBucketSplit
+  owedByMe: number
+  owedToMe: number
+  settings: FinanceSettings
+  trend: Array<{ period: string; income: number; expense: number }>
+}
+
 export interface DashboardSummary {
   checkin: DailyCheckin | null
   profile: Profile | null
