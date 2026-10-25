@@ -1,5 +1,19 @@
 import { z, type ZodType } from 'zod'
-import { checkinSchema, dateSchema, decisionSchema, goalPhaseSchema, nutritionEntrySchema, profileSchema, recipeBundleSchema, recipeSchema } from '@/lib/schemas'
+import {
+  checkinSchema,
+  dateSchema,
+  decisionSchema,
+  financeCategorySchema,
+  financeDebtSchema,
+  financeDebtUpdateSchema,
+  financeSettingsSchema,
+  financeTransactionSchema,
+  goalPhaseSchema,
+  nutritionEntrySchema,
+  profileSchema,
+  recipeBundleSchema,
+  recipeSchema,
+} from '@/lib/schemas'
 
 const empty = z.object({}).strict()
 
@@ -43,6 +57,13 @@ const getDecisionsArgs = z.object({ limit: z.number().int().min(1).max(200).opti
 const deleteDecisionArgs = z.object({ decisionId: z.number().int().min(1) }).strict()
 
 const getGoalPhasesArgs = z.object({ limit: z.number().int().min(1).max(200).optional() }).strict()
+
+const deleteFinanceCategoryArgs = z.object({ categoryId: z.number().int().min(1) }).strict()
+const getFinanceTransactionsArgs = z.object({ from: dateSchema.optional(), to: dateSchema.optional() }).strict()
+const deleteFinanceTransactionArgs = z.object({ transactionId: z.number().int().min(1) }).strict()
+const updateFinanceDebtArgs = financeDebtUpdateSchema.extend({ debtId: z.number().int().min(1) }).strict()
+const deleteFinanceDebtArgs = z.object({ debtId: z.number().int().min(1) }).strict()
+const getFinanceSummaryArgs = z.object({ from: dateSchema.optional(), to: dateSchema.optional() }).strict()
 
 const agentStateKey = z.enum(['last_weekly_report_date', 'last_nightly_review_note'])
 const getAgentStateArgs = z.object({ key: agentStateKey.optional() }).strict()
@@ -245,6 +266,87 @@ export const tools: Tool[] = [
     description: "Start a new goal phase (phase_type, optional target_rate_kg_per_week between -5 and 5, optional note, started_at). This automatically closes the currently active phase. Use this only after the owner explicitly confirms a phase change, such as switching from lean_gain to cut — the same confirmation bar as save_decision.",
     argsSchema: goalPhaseSchema,
     buildRequest: (args: z.infer<typeof goalPhaseSchema>) => ({ method: 'POST', path: '/api/goal-phases', body: args }),
+  },
+  {
+    name: 'get_finance_categories',
+    description: 'Get Finance mode spending/income categories, each tagged to a Family/Self/Service bucket per the allocation framework in Finance settings.',
+    argsSchema: empty,
+    buildRequest: () => ({ method: 'GET', path: '/api/finance/categories' }),
+  },
+  {
+    name: 'create_finance_category',
+    description: 'Create a new Finance category (name plus Family/Self/Service bucket). Needed before logging transactions in that category.',
+    argsSchema: financeCategorySchema,
+    buildRequest: (args: z.infer<typeof financeCategorySchema>) => ({ method: 'POST', path: '/api/finance/categories', body: args }),
+  },
+  {
+    name: 'delete_finance_category',
+    description: 'Delete a Finance category by id. Ask for confirmation before calling this.',
+    argsSchema: deleteFinanceCategoryArgs,
+    buildRequest: (args: z.infer<typeof deleteFinanceCategoryArgs>) => ({ method: 'DELETE', path: `/api/finance/categories/${args.categoryId}` }),
+  },
+  {
+    name: 'get_finance_transactions',
+    description: 'Get Finance mode income/expense transactions. Pass from/to (YYYY-MM-DD) to bound the range, otherwise returns the most recent entries.',
+    argsSchema: getFinanceTransactionsArgs,
+    buildRequest: (args: z.infer<typeof getFinanceTransactionsArgs>) => ({ method: 'GET', path: `/api/finance/transactions${query({ from: args.from, to: args.to })}` }),
+  },
+  {
+    name: 'create_finance_transaction',
+    description: 'Log one Finance mode income or expense transaction (date, type, amount in PKR, optional category_id and note).',
+    argsSchema: financeTransactionSchema,
+    buildRequest: (args: z.infer<typeof financeTransactionSchema>) => ({ method: 'POST', path: '/api/finance/transactions', body: args }),
+  },
+  {
+    name: 'delete_finance_transaction',
+    description: 'Delete one Finance transaction by id. Ask for confirmation before calling this.',
+    argsSchema: deleteFinanceTransactionArgs,
+    buildRequest: (args: z.infer<typeof deleteFinanceTransactionArgs>) => ({ method: 'DELETE', path: `/api/finance/transactions/${args.transactionId}` }),
+  },
+  {
+    name: 'get_finance_debts',
+    description: "Get all Finance mode debts: money the owner has borrowed (direction owed_by_me) and money the owner has lent (direction owed_to_me), with outstanding/paid status.",
+    argsSchema: empty,
+    buildRequest: () => ({ method: 'GET', path: '/api/finance/debts' }),
+  },
+  {
+    name: 'create_finance_debt',
+    description: 'Record a new debt: who it is with, direction (owed_by_me or owed_to_me), principal amount in PKR, optional due date and note.',
+    argsSchema: financeDebtSchema,
+    buildRequest: (args: z.infer<typeof financeDebtSchema>) => ({ method: 'POST', path: '/api/finance/debts', body: args }),
+  },
+  {
+    name: 'update_finance_debt',
+    description: 'Update a debt by id: adjust its remaining balance, mark it outstanding/paid, or change its due date or note. Setting balance to 0 does not auto-mark it paid unless status is also passed.',
+    argsSchema: updateFinanceDebtArgs,
+    buildRequest: (args: z.infer<typeof updateFinanceDebtArgs>) => {
+      const { debtId, ...body } = args
+      return { method: 'PUT', path: `/api/finance/debts/${debtId}`, body }
+    },
+  },
+  {
+    name: 'delete_finance_debt',
+    description: 'Delete one Finance debt record by id. Ask for confirmation before calling this.',
+    argsSchema: deleteFinanceDebtArgs,
+    buildRequest: (args: z.infer<typeof deleteFinanceDebtArgs>) => ({ method: 'DELETE', path: `/api/finance/debts/${args.debtId}` }),
+  },
+  {
+    name: 'get_finance_settings',
+    description: "Get Finance mode's allocation framework settings: the active level (muslim/mumin/muhsin), each level's Family/Self/Service percentages, and the emergency fund target/balance.",
+    argsSchema: empty,
+    buildRequest: () => ({ method: 'GET', path: '/api/finance/settings' }),
+  },
+  {
+    name: 'save_finance_settings',
+    description: "Update Finance mode's allocation framework settings. Partial update: only pass the fields being changed (e.g. switch level, tune one level's percentages, or update the emergency fund target/balance).",
+    argsSchema: financeSettingsSchema,
+    buildRequest: (args: z.infer<typeof financeSettingsSchema>) => ({ method: 'PUT', path: '/api/finance/settings', body: args }),
+  },
+  {
+    name: 'get_finance_summary',
+    description: 'Get the Finance mode summary for a date range (defaults to the current month to date): total income/expense/net, actual spend per Family/Self/Service bucket vs the target split at the active level, outstanding owed-by-me/owed-to-me totals, and a 6-month income/expense trend.',
+    argsSchema: getFinanceSummaryArgs,
+    buildRequest: (args: z.infer<typeof getFinanceSummaryArgs>) => ({ method: 'GET', path: `/api/finance/summary${query({ from: args.from, to: args.to })}` }),
   },
 ]
 

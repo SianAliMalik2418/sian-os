@@ -11,16 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Notice, Page, PageHeader, SectionTitle } from '@/components/sunrise/primitives'
 import { getFinanceTransactionsData } from '@/lib/app.functions'
+import { formatMoney as money } from '@/lib/finance-format'
 import type { FinanceTransactionInput } from '@/lib/schemas'
 import type { FinanceTransaction } from '@/lib/types'
 
 export const Route = createFileRoute('/finance/transactions')({ loader: () => getFinanceTransactionsData(), component: TransactionsPage })
 
 const today = () => new Date().toISOString().slice(0, 10)
-
-function money(value: number) {
-  return `£${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
-}
 
 type ApiErrorResult = { error?: { message?: string; details?: { fieldErrors?: Record<string, string[]> } } }
 
@@ -112,7 +109,7 @@ function TransactionsPage() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Field>
-            <FieldLabel>Amount (£)</FieldLabel>
+            <FieldLabel>Amount (Rs)</FieldLabel>
             <Input nativeInput type="number" min="0.01" step="0.01" inputMode="decimal" required value={amount} onChange={(event) => setAmount(event.target.value)} />
           </Field>
           <Field>

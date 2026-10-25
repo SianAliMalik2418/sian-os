@@ -140,11 +140,11 @@ function SettingsPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <Field>
-            <FieldLabel>Emergency fund target (£)</FieldLabel>
+            <FieldLabel>Emergency fund target (Rs)</FieldLabel>
             <Input nativeInput type="number" min="0" step="1" value={settings.emergency_fund_target ?? ''} onChange={(event) => setSettings((current) => ({ ...current, emergency_fund_target: event.target.value ? Number(event.target.value) : null }))} placeholder="3–6 months of expenses" />
           </Field>
           <Field>
-            <FieldLabel>Emergency fund balance (£)</FieldLabel>
+            <FieldLabel>Emergency fund balance (Rs)</FieldLabel>
             <Input nativeInput type="number" min="0" step="1" value={settings.emergency_fund_balance} onChange={(event) => setSettings((current) => ({ ...current, emergency_fund_balance: Number(event.target.value) || 0 }))} />
           </Field>
         </div>

@@ -10,16 +10,13 @@ import { YAxis } from '@/components/dither-kit/y-axis'
 import { DonutLegend, MoneyDivisionDonut, type DonutSlice } from '@/components/finance/money-division-donut'
 import { CountUp, Notice, Page, PageHeader, SectionTitle, StripeBar, ToneTile, Unit } from '@/components/sunrise/primitives'
 import { getFinanceDashboardData } from '@/lib/app.functions'
+import { formatMoney as money } from '@/lib/finance-format'
 import { levelLabels } from '@/lib/finance-levels'
 
 export const Route = createFileRoute('/finance/')({ loader: () => getFinanceDashboardData(), component: FinanceDashboard })
 
 const BUCKET_COLORS = { family: '#ff6b2c', self: '#8b5cf6', service: '#2dd4bf' } as const
 const BUCKET_LABELS = { family: 'Family', self: 'Self', service: 'Service' } as const
-
-function money(value: number) {
-  return `£${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
-}
 
 function monthLabel(period: string) {
   return new Date(`${period}-01T00:00:00.000Z`).toLocaleDateString('en', { month: 'short', year: '2-digit', timeZone: 'UTC' })
@@ -41,9 +38,9 @@ function FinanceDashboard() {
       <PageHeader kicker="Finance" title="Divide it with intention." description={`Level: ${levelLabels[summary.settings.level]}`} illustration="reports" />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <ToneTile tone="mint" label="This month's income" className="rise" style={{ '--d': 1 } as CSSProperties} value={<><CountUp value={summary.income} />{' '}<Unit>GBP</Unit></>} footer={`${summary.from} – ${summary.to}`} />
-        <ToneTile tone="rose" label="This month's spending" className="rise" style={{ '--d': 2 } as CSSProperties} value={<><CountUp value={summary.expense} />{' '}<Unit>GBP</Unit></>} />
-        <ToneTile tone="sun" label="Net" className="rise" style={{ '--d': 3 } as CSSProperties} value={<><CountUp value={summary.net} />{' '}<Unit>GBP</Unit></>} />
+        <ToneTile tone="mint" label="This month's income" className="rise" style={{ '--d': 1 } as CSSProperties} value={<><CountUp value={summary.income} />{' '}<Unit>PKR</Unit></>} footer={`${summary.from} – ${summary.to}`} />
+        <ToneTile tone="rose" label="This month's spending" className="rise" style={{ '--d': 2 } as CSSProperties} value={<><CountUp value={summary.expense} />{' '}<Unit>PKR</Unit></>} />
+        <ToneTile tone="sun" label="Net" className="rise" style={{ '--d': 3 } as CSSProperties} value={<><CountUp value={summary.net} />{' '}<Unit>PKR</Unit></>} />
         <ToneTile tone="butter" label="Borrowed / lent" className="rise" style={{ '--d': 4 } as CSSProperties} value={<span className="text-xl">{money(summary.owedByMe)} <span className="text-muted-foreground">owed</span> · {money(summary.owedToMe)} <span className="text-muted-foreground">to me</span></span>} />
       </div>
 
